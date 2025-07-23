@@ -1,2 +1,0 @@
-# empathicaweb
-paginaweb de empathica
