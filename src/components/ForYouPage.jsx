@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { Home, CalendarDays, Heart, Users, LifeBuoy, User, LogOut } from 'lucide-react';
+import logoEmpathica from '../assets/Logoempathica.png';
+import ClientSidebar from './ClientSidebar';
+import MobileDashboardNav from './MobileDashboardNav';
 
 const ForYouPage = ({ navigationProps }) => {
   const [activeTab, setActiveTab] = useState('podcasts'); // 'podcasts', 'articles', 'tests'
@@ -19,14 +23,22 @@ const ForYouPage = ({ navigationProps }) => {
   // Usar el estado global del sidebar
   const sidebarOpen = navigationProps?.sidebarOpen ?? true;
 
-  const moods = [
-    { id: 'happy', label: 'Feliz', emoji: '😊' },
-    { id: 'sad', label: 'Triste', emoji: '😢' },
-    { id: 'anxious', label: 'Ansioso', emoji: '😰' },
-    { id: 'calm', label: 'Tranquilo', emoji: '😌' },
-    { id: 'tired', label: 'Cansado', emoji: '😴' },
-    { id: 'motivated', label: 'Motivado', emoji: '⭐' }
-  ];
+  // Datos de actividades mensuales
+  const monthlyActivities = {
+    sessions: { completed: 8, total: 12, percentage: 67 },
+    exercises: { completed: 15, total: 20, percentage: 75 },
+    readings: { completed: 6, total: 8, percentage: 75 },
+    meditations: { completed: 22, total: 30, percentage: 73 },
+    goals: { completed: 3, total: 5, percentage: 60 }
+  };
+
+  const activityLabels = {
+    sessions: 'Sesiones',
+    exercises: 'Ejercicios',
+    readings: 'Lecturas',
+    meditations: 'Meditaciones',
+    goals: 'Metas'
+  };
 
   const content = {
     podcasts: [
@@ -37,7 +49,28 @@ const ForYouPage = ({ navigationProps }) => {
         description: 'Aprende técnicas básicas de atención plena para reducir el estrés',
         author: 'Dr. Carlos Ruiz',
         duration: '25 min',
-        icon: '🎧'
+        icon: '🎧',
+        externalUrl: 'https://open.spotify.com/show/example-mindfulness'
+      },
+      {
+        id: 2,
+        type: 'Ansiedad',
+        title: 'Manejo del estrés diario',
+        description: 'Estrategias prácticas para reducir la ansiedad en el trabajo',
+        author: 'Dra. María González',
+        duration: '20 min',
+        icon: '🎧',
+        externalUrl: 'https://www.youtube.com/watch?v=example-stress'
+      },
+      {
+        id: 3,
+        type: 'Autoestima',
+        title: 'Construyendo confianza personal',
+        description: 'Herramientas para mejorar tu autoestima y autoconfianza',
+        author: 'Psic. Laura Torres',
+        duration: '30 min',
+        icon: '🎧',
+        externalUrl: 'https://anchor.fm/example-confidence'
       }
     ],
     articles: [
@@ -48,7 +81,28 @@ const ForYouPage = ({ navigationProps }) => {
         description: 'Estrategias prácticas para manejar situaciones sociales con confianza',
         author: 'Dra. Ana Martín',
         duration: '30 min',
-        icon: '📖'
+        icon: '📖',
+        externalUrl: 'https://www.psychologytoday.com/us/blog/example-social-anxiety'
+      },
+      {
+        id: 2,
+        type: 'Bienestar',
+        title: 'Hábitos matutinos para un día productivo',
+        description: 'Rutinas que transformarán tu mañana y tu día completo',
+        author: 'Dr. Roberto Silva',
+        duration: '15 min',
+        icon: '📖',
+        externalUrl: 'https://medium.com/@example/morning-habits'
+      },
+      {
+        id: 3,
+        type: 'Relaciones',
+        title: 'Comunicación efectiva en pareja',
+        description: 'Técnicas para mejorar la comunicación y fortalecer tu relación',
+        author: 'Psic. Carmen Vega',
+        duration: '25 min',
+        icon: '📖',
+        externalUrl: 'https://www.huffpost.com/entry/example-couple-communication'
       }
     ],
     tests: [
@@ -73,6 +127,11 @@ const ForYouPage = ({ navigationProps }) => {
     ]
   };
 
+  // Función para abrir URLs externas
+  const openExternalUrl = (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div style={{
       display: 'flex',
@@ -80,244 +139,7 @@ const ForYouPage = ({ navigationProps }) => {
       background: '#f8f9fa'
     }}>
       {/* Sidebar */}
-      <div style={{
-        width: sidebarOpen ? '280px' : '0px',
-        background: '#f5f5f5',
-        borderRight: '1px solid #e0e0e0',
-        transition: 'width 0.3s ease',
-        overflow: 'hidden'
-      }}>
-        {/* Logo y título */}
-        <div style={{
-          padding: '2rem 1.5rem',
-          borderBottom: '1px solid #e0e0e0'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: '#0057FF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <span style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>E</span>
-            </div>
-            {sidebarOpen && (
-              <div>
-                <div style={{
-                  fontWeight: 700,
-                  fontSize: 18,
-                  color: '#0057FF'
-                }}>
-                  Empathica
-                </div>
-                <div style={{
-                  fontSize: 12,
-                  color: '#666',
-                  marginTop: '2px'
-                }}>
-                  Tu bienestar emocional
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Navegación */}
-        <div style={{
-          padding: '1.5rem'
-        }}>
-          {sidebarOpen && (
-            <div style={{
-              fontSize: 12,
-              color: '#666',
-              fontWeight: 600,
-              marginBottom: '1rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
-              Navegación
-            </div>
-          )}
-          
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem'
-          }}>
-            {/* Inicio */}
-            <button
-              onClick={() => handleNavigation('psychologist-dashboard')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="home" style={{ fontSize: 18 }}>🏠</span>
-              {sidebarOpen && <span>Inicio</span>}
-            </button>
-
-            {/* Citas */}
-            <button
-              onClick={() => handleNavigation('appointments')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="calendar" style={{ fontSize: 18 }}>📅</span>
-              {sidebarOpen && <span>Citas</span>}
-            </button>
-
-            {/* For You - Activo */}
-            <button
-              onClick={() => handleNavigation('for-you')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: '#e3f2fd',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#0057FF',
-                fontWeight: 600
-              }}
-            >
-              <span role="img" aria-label="heart" style={{ fontSize: 18 }}>❤️</span>
-              {sidebarOpen && <span>For You</span>}
-            </button>
-
-            {/* Mi Especialista */}
-            <button
-              onClick={() => handleNavigation('my-specialist')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="specialist" style={{ fontSize: 18 }}>👥</span>
-              {sidebarOpen && <span>Mi Especialista</span>}
-            </button>
-
-            {/* Soporte */}
-            <button
-              onClick={() => handleNavigation('support')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="support" style={{ fontSize: 18 }}>❓</span>
-              {sidebarOpen && <span>Soporte</span>}
-            </button>
-
-            {/* Mi Perfil */}
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="profile" style={{ fontSize: 18 }}>👤</span>
-              {sidebarOpen && <span>Mi Perfil</span>}
-            </button>
-          </div>
-        </div>
-
-        {/* Cerrar sesión */}
-        <div style={{
-          marginTop: 'auto',
-          padding: '1.5rem'
-        }}>
-          <button
-            onClick={() => handleNavigation('individuals')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '0.75rem',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              width: '100%',
-              color: '#ff4444',
-              fontWeight: 600,
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#ffe6e6'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🚪</span>
-            {sidebarOpen && <span>Cerrar sesión</span>}
-          </button>
-        </div>
-      </div>
+      <ClientSidebar navigationProps={navigationProps} activePage="for-you" sidebarOpen={sidebarOpen} />
 
       {/* Contenido principal */}
       <div style={{
@@ -384,6 +206,23 @@ const ForYouPage = ({ navigationProps }) => {
           padding: '2rem',
           overflow: 'auto'
         }}>
+          {/* Navegación móvil */}
+          <MobileDashboardNav 
+            items={[
+              { icon: <Home size={20} />, label: 'Inicio', section: 'Dashboard' },
+              { icon: <CalendarDays size={20} />, label: 'Citas', section: 'Appointments' },
+              { icon: <Heart size={20} />, label: 'Para Ti', section: 'ForYou' },
+              { icon: <User size={20} />, label: 'Mi Especialista', section: 'MySpecialist' },
+              { icon: <LifeBuoy size={20} />, label: 'Soporte', section: 'Support' }
+            ]}
+            activeSection="ForYou"
+            onSectionChange={(section) => {
+              if (section === 'Dashboard') handleNavigation('client-dashboard');
+              else if (section === 'Appointments') handleNavigation('appointments');
+              else if (section === 'MySpecialist') handleNavigation('my-specialist');
+              else if (section === 'Support') handleNavigation('support');
+            }}
+          />
           {/* Header de la página */}
           <div style={{
             textAlign: 'center',
@@ -419,14 +258,14 @@ const ForYouPage = ({ navigationProps }) => {
               gap: '8px',
               marginBottom: '1rem'
             }}>
-              <span role="img" aria-label="heart" style={{ fontSize: 20 }}>❤️</span>
+              <span role="img" aria-label="chart" style={{ fontSize: 20 }}>📊</span>
               <h2 style={{
                 fontSize: 20,
                 fontWeight: 700,
                 margin: 0,
                 color: '#333'
               }}>
-                ¿Cómo te sientes hoy?
+                Actividades del mes
               </h2>
             </div>
             
@@ -435,43 +274,70 @@ const ForYouPage = ({ navigationProps }) => {
               margin: '0 0 1.5rem 0',
               fontSize: 14
             }}>
-              Tómate un momento para reflexionar sobre tu estado emocional
+              Tu progreso en las actividades de bienestar este mes
             </p>
             
             <div style={{
               display: 'flex',
-              gap: '1rem',
-              flexWrap: 'wrap',
-              justifyContent: 'center'
+              flexDirection: 'column',
+              gap: '1rem'
             }}>
-              {moods.map((mood) => (
-                <button
-                  key={mood.id}
-                  onClick={() => setSelectedMood(mood.id)}
-                  style={{
-                    background: selectedMood === mood.id ? '#fff' : 'rgba(255, 255, 255, 0.8)',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '0.75rem 1rem',
-                    cursor: 'pointer',
+              {Object.entries(monthlyActivities).map(([key, data]) => (
+                <div key={key} style={{
+                  background: '#fff',
+                  borderRadius: 12,
+                  padding: '1rem',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                }}>
+                  <div style={{
                     display: 'flex',
-                    flexDirection: 'column',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    gap: '4px',
-                    minWidth: '80px',
-                    transition: 'all 0.2s',
-                    boxShadow: selectedMood === mood.id ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none'
-                  }}
-                >
-                  <span style={{ fontSize: 24 }}>{mood.emoji}</span>
-                  <span style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: '#333'
+                    marginBottom: '0.5rem'
                   }}>
-                    {mood.label}
-                  </span>
-                </button>
+                    <span style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: '#333'
+                    }}>
+                      {activityLabels[key]}
+                    </span>
+                    <span style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: '#0057FF'
+                    }}>
+                      {data.percentage}%
+                    </span>
+                  </div>
+                  
+                  <div style={{
+                    width: '100%',
+                    height: 8,
+                    background: '#f0f0f0',
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <div style={{
+                      width: `${data.percentage}%`,
+                      height: '100%',
+                      background: '#0057FF',
+                      borderRadius: 4,
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: 12,
+                    color: '#666'
+                  }}>
+                    <span>{data.completed} de {data.total} completadas</span>
+                    <span>{data.completed}/{data.total}</span>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -647,17 +513,26 @@ const ForYouPage = ({ navigationProps }) => {
                 )}
 
                 {/* Botón de acción */}
-                <button style={{
-                  background: '#0057FF',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  width: '100%',
-                  fontSize: 14
-                }}>
+                <button 
+                  onClick={() => {
+                    if (activeTab === 'tests') {
+                      handleNavigation('questionnaire-match');
+                    } else {
+                      openExternalUrl(item.externalUrl);
+                    }
+                  }}
+                  style={{
+                    background: '#0057FF',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '0.75rem 1.5rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    width: '100%',
+                    fontSize: 14
+                  }}
+                >
                   {activeTab === 'podcasts' ? 'Escuchar ahora' : 
                    activeTab === 'articles' ? 'Leer ahora' : 
                    'Comenzar test'}

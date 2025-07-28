@@ -4,20 +4,7 @@ const benefits = [
   {
     color: '#FFA726',
     bg: 'linear-gradient(120deg, #fff8f0 80%, #fff 100%)',
-    icon: (
-      <svg width="38" height="38" fill="none" viewBox="0 0 38 38">
-        <rect x="4" y="4" width="30" height="30" rx="8" fill="url(#gradient1)"/>
-        <defs>
-          <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{stopColor: '#FFA726'}}/>
-            <stop offset="100%" style={{stopColor: '#FFB300'}}/>
-          </linearGradient>
-        </defs>
-        <circle cx="19" cy="19" r="8" stroke="#fff" strokeWidth="2"/>
-        <circle cx="19" cy="19" r="5" stroke="#fff" strokeWidth="2"/>
-        <circle cx="19" cy="19" r="2" fill="#fff"/>
-      </svg>
-    ),
+    icon: <span style={{ fontSize: 32 }}>🎯</span>,
     title: 'Personalización Total',
     subtitle: 'Encontramos según lo que necesitas',
     content: (
@@ -41,21 +28,7 @@ const benefits = [
   {
     color: '#7C4DFF',
     bg: 'linear-gradient(120deg, #f6f3ff 80%, #fff 100%)',
-    icon: (
-      <svg width="38" height="38" fill="none" viewBox="0 0 38 38">
-        <rect x="4" y="4" width="30" height="30" rx="8" fill="url(#gradient2)"/>
-        <defs>
-          <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{stopColor: '#7C4DFF'}}/>
-            <stop offset="100%" style={{stopColor: '#6EA8FE'}}/>
-          </linearGradient>
-        </defs>
-        <rect x="12" y="12" width="14" height="14" rx="3" fill="#fff"/>
-        <circle cx="16" cy="16" r="1.5" fill="#7C4DFF"/>
-        <circle cx="22" cy="16" r="1.5" fill="#7C4DFF"/>
-        <path d="M16 20c0 1.1.9 2 2 2s2-.9 2-2" stroke="#7C4DFF" strokeWidth="1.5" fill="none"/>
-      </svg>
-    ),
+    icon: <span style={{ fontSize: 32 }}>🤖</span>,
     title: 'Apoyo IA 24/7',
     subtitle: 'Asistente inteligente siempre disponible',
     content: (
@@ -79,15 +52,7 @@ const benefits = [
   {
     color: '#2ECC40',
     bg: 'linear-gradient(120deg, #eafaf2 80%, #fff 100%)',
-    icon: (
-      <svg width="38" height="38" fill="none" viewBox="0 0 38 38">
-        <rect x="4" y="4" width="30" height="30" rx="8" fill="#2ECC40"/>
-        <path d="M12 14h14v2H12zM12 18h14v2H12zM12 22h10v2H12z" fill="#fff"/>
-        <path d="M12 12h14v2H12z" fill="#fff"/>
-        <path d="M12 26h14v2H12z" fill="#fff"/>
-        <path d="M10 10h18v18H10z" stroke="#fff" strokeWidth="1.5" fill="none"/>
-      </svg>
-    ),
+    icon: <span style={{ fontSize: 32 }}>👤</span>,
     title: 'Contenido Personalizado',
     subtitle: 'Recursos adaptados a tu proceso',
     content: (
@@ -110,23 +75,24 @@ const benefits = [
 ];
 
 const BenefitsSection = () => (
-  <section style={{ background: 'linear-gradient(180deg, #f8f9fb 60%, #f3f6fd 100%)', padding: '5rem 0 4rem 0' }}>
-    <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
+  <section className="section-container" style={{ background: 'linear-gradient(180deg, #f8f9fb 60%, #f3f6fd 100%)', padding: '5rem 0 4rem 0' }}>
+    <div className="container" style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
         <span style={{ background: '#e8f0ff', color: '#0057FF', fontWeight: 600, fontSize: 16, borderRadius: 20, padding: '0.4rem 1.2rem', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span role="img" aria-label="science">🧬</span> Proceso científicamente respaldado
         </span>
       </div>
-      <h2 style={{ fontSize: 38, fontWeight: 800, margin: 0, marginBottom: 12, letterSpacing: -1 }}>
+      <h2 className="section-title" style={{ fontSize: 38, fontWeight: 800, margin: 0, marginBottom: 12, letterSpacing: -1 }}>
         Cómo <span style={{ color: '#0057FF' }}>Funciona</span> <span style={{ color: '#c8b6ff' }}> </span>
       </h2>
-      <p style={{ color: '#555', fontSize: 18, margin: '0 0 2.5rem 0', fontWeight: 400 }}>
+      <p className="section-subtitle" style={{ color: '#555', fontSize: 18, margin: '0 0 2.5rem 0', fontWeight: 400 }}>
         Nuestro proceso científicamente respaldado te conecta con el profesional ideal y te acompaña en cada paso de tu bienestar emocional.
       </p>
-      <div style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', alignItems: 'stretch', marginTop: 40, flexWrap: 'nowrap' }}>
+      <div className="cards-grid" style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', alignItems: 'stretch', marginTop: 40, flexWrap: 'nowrap' }}>
         {benefits.map((benefit, i) => (
           <div
             key={i}
+            className="card"
             style={{
               background: benefit.bg,
               borderRadius: 24,
@@ -155,9 +121,10 @@ const BenefitsSection = () => (
         ))}
       </div>
       {/* Tarjetas adicionales */}
-      <div style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', alignItems: 'stretch', marginTop: 40, flexWrap: 'nowrap' }}>
+      <div className="cards-grid" style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', alignItems: 'stretch', marginTop: 40, flexWrap: 'nowrap' }}>
         {/* Matching Científico */}
         <div
+          className="card"
           style={{
             background: '#fff',
             borderRadius: 20,
@@ -185,18 +152,7 @@ const BenefitsSection = () => (
         >
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 18, gap: 14 }}>
             <div style={{ background: 'linear-gradient(135deg, #a259ff 40%, #ff6f91 100%)', color: '#fff', fontWeight: 700, fontSize: 20, borderRadius: 12, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px #0001' }}>
-              <svg width="28" height="28" fill="none" viewBox="0 0 28 28">
-                <rect x="2" y="2" width="24" height="24" rx="6" fill="url(#gradient3)"/>
-                <defs>
-                  <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{stopColor: '#a259ff'}}/>
-                    <stop offset="100%" style={{stopColor: '#ff6f91'}}/>
-                  </linearGradient>
-                </defs>
-                <circle cx="14" cy="14" r="6" stroke="#fff" strokeWidth="1.5"/>
-                <circle cx="14" cy="14" r="3.5" stroke="#fff" strokeWidth="1.5"/>
-                <circle cx="14" cy="14" r="1.5" fill="#fff"/>
-              </svg>
+              <span style={{ fontSize: 24 }}>❤️</span>
             </div>
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 700, fontSize: 20 }}>Matching Científico</div>
@@ -221,6 +177,7 @@ const BenefitsSection = () => (
         </div>
         {/* Seguimiento de Progreso */}
         <div
+          className="card"
           style={{
             background: '#fff',
             borderRadius: 20,
@@ -248,18 +205,7 @@ const BenefitsSection = () => (
         >
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 18, gap: 14 }}>
             <div style={{ background: 'linear-gradient(135deg, #ff9800 40%, #ff6f91 100%)', color: '#fff', fontWeight: 700, fontSize: 20, borderRadius: 12, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px #0001' }}>
-              <svg width="28" height="28" fill="none" viewBox="0 0 28 28">
-                <rect x="2" y="2" width="24" height="24" rx="6" fill="url(#gradient4)"/>
-                <defs>
-                  <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{stopColor: '#ff9800'}}/>
-                    <stop offset="100%" style={{stopColor: '#ff6f91'}}/>
-                  </linearGradient>
-                </defs>
-                <path d="M8 20l4-4 4 4 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 16v8" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M20 16v8" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
+              <span style={{ fontSize: 24 }}>📈</span>
             </div>
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 700, fontSize: 20 }}>Seguimiento de Progreso</div>

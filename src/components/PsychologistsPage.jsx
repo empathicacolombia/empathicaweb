@@ -7,11 +7,17 @@ const PsychologistsPage = ({ navigationProps }) => {
     age: 'Todas las edades',
     approach: 'Todos los enfoques'
   });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
     }
+    setMobileMenuOpen(false); // Cerrar menú móvil al navegar
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   const handleFilterChange = (filterType, value) => {
@@ -36,13 +42,13 @@ const PsychologistsPage = ({ navigationProps }) => {
       background: '#fff'
     }}>
       {/* Header */}
-      <nav style={{ 
+      <nav className="navbar-container" style={{ 
         background: '#0057FF', 
         color: '#fff', 
         padding: '1.2rem 0', 
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
       }}>
-        <div style={{ 
+        <div className="container" style={{ 
           maxWidth: 1300, 
           margin: '0 auto', 
           display: 'flex', 
@@ -52,6 +58,7 @@ const PsychologistsPage = ({ navigationProps }) => {
         }}>
           {/* Logo */}
           <span
+            className="navbar-logo"
             style={{
               fontWeight: 'bold',
               fontSize: 28,
@@ -66,8 +73,25 @@ const PsychologistsPage = ({ navigationProps }) => {
             Empathica
           </span>
 
+          {/* Menú hamburguesa móvil */}
+          <button
+            className="visible-mobile"
+            onClick={toggleMobileMenu}
+            style={{
+              display: 'none',
+              background: 'none',
+              border: 'none',
+              color: '#fff',
+              fontSize: '24px',
+              cursor: 'pointer',
+              padding: '0.5rem'
+            }}
+          >
+            ☰
+          </button>
+
           {/* Enlaces de navegación */}
-          <ul style={{ 
+          <ul className="navbar-links" style={{ 
             display: 'flex', 
             gap: '2.5rem', 
             listStyle: 'none', 
@@ -143,8 +167,9 @@ const PsychologistsPage = ({ navigationProps }) => {
           </ul>
 
           {/* Botones */}
-          <div style={{ display: 'flex', gap: '1.2rem' }}>
+          <div className="navbar-buttons" style={{ display: 'flex', gap: '1.2rem' }}>
             <button
+              className="btn-secondary"
               onClick={() => handleNavigation('login')}
               style={{
                 background: 'transparent',
@@ -163,6 +188,7 @@ const PsychologistsPage = ({ navigationProps }) => {
               Iniciar sesión
             </button>
             <button
+              className="btn-primary"
               onClick={() => handleNavigation('register')}
               style={{
                 background: '#fff',
@@ -182,16 +208,132 @@ const PsychologistsPage = ({ navigationProps }) => {
             </button>
           </div>
         </div>
+
+        {/* Menú móvil */}
+        {mobileMenuOpen && (
+          <div className="navbar-mobile-menu visible-mobile" style={{ display: 'none', background: '#0057FF', padding: '1rem 2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              <li style={{ marginBottom: '1rem' }}>
+                <button
+                  onClick={() => handleNavigation('psychologists')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '0.5rem 0'
+                  }}
+                >
+                  Psicólogos
+                </button>
+              </li>
+              <li style={{ marginBottom: '1rem' }}>
+                <button
+                  onClick={() => handleNavigation('business')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '0.5rem 0'
+                  }}
+                >
+                  Empresas
+                </button>
+              </li>
+              <li style={{ marginBottom: '1rem' }}>
+                <button
+                  onClick={() => handleNavigation('about')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '0.5rem 0'
+                  }}
+                >
+                  Acerca de
+                </button>
+              </li>
+              <li style={{ marginBottom: '1rem' }}>
+                <button
+                  onClick={() => handleNavigation('pricing')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '0.5rem 0'
+                  }}
+                >
+                  Precios
+                </button>
+              </li>
+            </ul>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+              <button
+                className="btn-secondary"
+                onClick={() => handleNavigation('login')}
+                style={{
+                  background: 'transparent',
+                  color: '#fff',
+                  border: '2px solid #fff',
+                  borderRadius: 20,
+                  padding: '0.7rem 1.5rem',
+                  fontWeight: 500,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              >
+                Iniciar sesión
+              </button>
+              <button
+                className="btn-primary"
+                onClick={() => handleNavigation('register')}
+                style={{
+                  background: '#fff',
+                  color: '#0057FF',
+                  border: 'none',
+                  borderRadius: 20,
+                  padding: '0.7rem 1.5rem',
+                  fontWeight: 500,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              >
+                Registrarse
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
-      <div style={{
+      <div className="section-container" style={{
         padding: '4rem 2rem',
         textAlign: 'center',
         maxWidth: 800,
         margin: '0 auto'
       }}>
-        <h1 style={{
+        <h1 className="section-title" style={{
           fontSize: '3.5rem',
           fontWeight: 800,
           margin: '0 0 1.5rem 0',
@@ -202,7 +344,7 @@ const PsychologistsPage = ({ navigationProps }) => {
           <span style={{ color: '#9e9e9e' }}>Ideal</span>
         </h1>
         
-        <p style={{
+        <p className="section-subtitle" style={{
           fontSize: '1.2rem',
           color: '#333',
           margin: '0 0 2.5rem 0',
@@ -212,7 +354,8 @@ const PsychologistsPage = ({ navigationProps }) => {
         </p>
         
         <button
-          onClick={() => handleNavigation('individuals')}
+          className="btn-primary"
+          onClick={() => handleNavigation('questionnaire-match')}
           style={{
             background: '#0057FF',
             color: '#fff',
@@ -238,12 +381,12 @@ const PsychologistsPage = ({ navigationProps }) => {
       </div>
 
       {/* Sección de Filtros */}
-      <div style={{
+      <div className="section-container" style={{
         background: '#fff',
         padding: '2rem',
         borderBottom: '1px solid #e0e0e0'
       }}>
-        <div style={{
+        <div className="container filters-container" style={{
           maxWidth: 1300,
           margin: '0 auto',
           display: 'flex',
@@ -340,7 +483,7 @@ const PsychologistsPage = ({ navigationProps }) => {
       </div>
 
       {/* Sección de Resultados */}
-      <div style={{
+      <div className="section-container" style={{
         padding: '3rem 2rem',
         maxWidth: 1300,
         margin: '0 auto'

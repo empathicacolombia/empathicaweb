@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Home, CalendarDays, Heart, Users, LifeBuoy, User, LogOut } from 'lucide-react';
+import logoEmpathica from '../assets/Logoempathica.png';
+import ClientSidebar from './ClientSidebar';
+import AppointmentCalendarModal from './AppointmentCalendarModal';
+import MobileDashboardNav from './MobileDashboardNav';
 
 const MySpecialistPage = ({ navigationProps }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
@@ -23,244 +30,7 @@ const MySpecialistPage = ({ navigationProps }) => {
       background: '#f8f9fa'
     }}>
       {/* Sidebar */}
-      <div style={{
-        width: sidebarOpen ? '280px' : '0px',
-        background: '#f5f5f5',
-        borderRight: '1px solid #e0e0e0',
-        transition: 'width 0.3s ease',
-        overflow: 'hidden'
-      }}>
-        {/* Logo y título */}
-        <div style={{
-          padding: '2rem 1.5rem',
-          borderBottom: '1px solid #e0e0e0'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: '#0057FF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <span style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>E</span>
-            </div>
-            {sidebarOpen && (
-              <div>
-                <div style={{
-                  fontWeight: 700,
-                  fontSize: 18,
-                  color: '#0057FF'
-                }}>
-                  Empathica
-                </div>
-                <div style={{
-                  fontSize: 12,
-                  color: '#666',
-                  marginTop: '2px'
-                }}>
-                  Tu bienestar emocional
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Navegación */}
-        <div style={{
-          padding: '1.5rem'
-        }}>
-          {sidebarOpen && (
-            <div style={{
-              fontSize: 12,
-              color: '#666',
-              fontWeight: 600,
-              marginBottom: '1rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
-              Navegación
-            </div>
-          )}
-          
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem'
-          }}>
-            {/* Inicio */}
-            <button
-              onClick={() => handleNavigation('psychologist-dashboard')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="home" style={{ fontSize: 18 }}>🏠</span>
-              {sidebarOpen && <span>Inicio</span>}
-            </button>
-
-            {/* Citas */}
-            <button
-              onClick={() => handleNavigation('appointments')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="calendar" style={{ fontSize: 18 }}>📅</span>
-              {sidebarOpen && <span>Citas</span>}
-            </button>
-
-            {/* For You */}
-            <button
-              onClick={() => handleNavigation('for-you')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="heart" style={{ fontSize: 18 }}>❤️</span>
-              {sidebarOpen && <span>For You</span>}
-            </button>
-
-            {/* Mi Especialista - Activo */}
-            <button
-              onClick={() => handleNavigation('my-specialist')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: '#e3f2fd',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#0057FF',
-                fontWeight: 600
-              }}
-            >
-              <span role="img" aria-label="specialist" style={{ fontSize: 18 }}>👥</span>
-              {sidebarOpen && <span>Mi Especialista</span>}
-            </button>
-
-            {/* Soporte */}
-            <button
-              onClick={() => handleNavigation('support')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="support" style={{ fontSize: 18 }}>❓</span>
-              {sidebarOpen && <span>Soporte</span>}
-            </button>
-
-            {/* Mi Perfil */}
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="profile" style={{ fontSize: 18 }}>👤</span>
-              {sidebarOpen && <span>Mi Perfil</span>}
-            </button>
-          </div>
-        </div>
-
-        {/* Cerrar sesión */}
-        <div style={{
-          marginTop: 'auto',
-          padding: '1.5rem'
-        }}>
-          <button
-            onClick={() => handleNavigation('individuals')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '0.75rem',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              width: '100%',
-              color: '#ff4444',
-              fontWeight: 600,
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#ffe6e6'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🚪</span>
-            {sidebarOpen && <span>Cerrar sesión</span>}
-          </button>
-        </div>
-      </div>
+      <ClientSidebar navigationProps={navigationProps} activePage="my-specialist" sidebarOpen={sidebarOpen} />
 
       {/* Contenido principal */}
       <div style={{
@@ -327,6 +97,23 @@ const MySpecialistPage = ({ navigationProps }) => {
           padding: '2rem',
           overflow: 'auto'
         }}>
+          {/* Navegación móvil */}
+          <MobileDashboardNav 
+            items={[
+              { icon: <Home size={20} />, label: 'Inicio', section: 'Dashboard' },
+              { icon: <CalendarDays size={20} />, label: 'Citas', section: 'Appointments' },
+              { icon: <Heart size={20} />, label: 'Para Ti', section: 'ForYou' },
+              { icon: <User size={20} />, label: 'Mi Especialista', section: 'MySpecialist' },
+              { icon: <LifeBuoy size={20} />, label: 'Soporte', section: 'Support' }
+            ]}
+            activeSection="MySpecialist"
+            onSectionChange={(section) => {
+              if (section === 'Dashboard') handleNavigation('client-dashboard');
+              else if (section === 'Appointments') handleNavigation('appointments');
+              else if (section === 'ForYou') handleNavigation('for-you');
+              else if (section === 'Support') handleNavigation('support');
+            }}
+          />
           {/* Header de la página */}
           <div style={{
             marginBottom: '2rem'
@@ -434,20 +221,23 @@ const MySpecialistPage = ({ navigationProps }) => {
                 </p>
 
                 {/* Botón */}
-                <button style={{
-                  background: '#fff',
-                  color: '#0057FF',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontSize: 14,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <span role="img" aria-label="calendar" style={{ fontSize: 16 }}>📅</span>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  style={{
+                    background: '#fff',
+                    color: '#0057FF',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '0.75rem 1.5rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <CalendarDays size={16} />
                   Agendar cita
                 </button>
               </div>
@@ -676,6 +466,7 @@ const MySpecialistPage = ({ navigationProps }) => {
           </div>
         </div>
       </div>
+      <AppointmentCalendarModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

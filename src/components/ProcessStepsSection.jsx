@@ -7,8 +7,8 @@ const steps = [
     icon: (
       <svg width="38" height="38" fill="none" viewBox="0 0 38 38">
         <rect x="4" y="4" width="30" height="30" rx="6" fill="#E8F0FF"/>
-        <path d="M19 12c-2.5 0-4.5 2-4.5 4.5v2c0 2.5 2 4.5 4.5 4.5s4.5-2 4.5-4.5v-2c0-2.5-2-4.5-4.5-4.5Zm0 10c-1.7 0-3-1.3-3-3v-2c0-1.7 1.3-3 3-3s3 1.3 3 3v2c0 1.7-1.3 3-3 3Z" fill="#0057FF"/>
-        <path d="M12 22c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-2c0-1.1-.9-2-2-2H14c-1.1 0-2 .9-2 2v2z" fill="#0057FF"/>
+        <path d="M12 8h14c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H12c-1.1 0-2-.9-2-2v-8c0-1.1.9-2 2-2zm2 2v6h10v-6H14z" fill="#0057FF"/>
+        <path d="M16 12h6v1h-6v-1zm0 2h4v1h-4v-1z" fill="#0057FF"/>
       </svg>
     ),
     title: 'Cuestionario Científico',
@@ -21,9 +21,7 @@ const steps = [
     icon: (
       <svg width="38" height="38" fill="none" viewBox="0 0 38 38">
         <rect x="4" y="4" width="30" height="30" rx="6" fill="#F7F2ED"/>
-        <circle cx="19" cy="19" r="8" stroke="#C89B7B" strokeWidth="2"/>
-        <circle cx="19" cy="19" r="5" stroke="#C89B7B" strokeWidth="2"/>
-        <circle cx="19" cy="19" r="2" fill="#C89B7B"/>
+        <path d="M19 8l2.5 5.1 5.5.8-4 3.9.9 5.3L19 20.5l-4.8 2.5.9-5.3-4-3.9 5.5-.8L19 8z" fill="#C89B7B"/>
       </svg>
     ),
     title: 'Match Inteligente',
@@ -36,8 +34,8 @@ const steps = [
     icon: (
       <svg width="38" height="38" fill="none" viewBox="0 0 38 38">
         <rect x="4" y="4" width="30" height="30" rx="6" fill="#E6F9ED"/>
-        <path d="M12 16c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v6c0 2.2-1.8 4-4 4h-6c-2.2 0-4-1.8-4-4v-6z" stroke="#2ECC40" strokeWidth="2"/>
-        <path d="M16 14h6M16 18h6M16 22h4" stroke="#2ECC40" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M19 8c-2.5 0-4.5 2-4.5 4.5s2 4.5 4.5 4.5 4.5-2 4.5-4.5S21.5 8 19 8zm0 6c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5z" fill="#2ECC40"/>
+        <path d="M19 15c-3.3 0-6 2.7-6 6v3h12v-3c0-3.3-2.7-6-6-6z" fill="#2ECC40"/>
       </svg>
     ),
     title: 'Seguimiento 24/7',
@@ -47,30 +45,30 @@ const steps = [
 ];
 
 const Arrow = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+  <div className="hidden-mobile" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M16 24h16M32 24l-6-6M32 24l-6 6" stroke="#0057FF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
   </div>
 );
 
 const ProcessStepsSection = () => (
-  <section style={{ background: 'linear-gradient(180deg, #f8f9fb 60%, #f3f6fd 100%)', padding: '5rem 0 4rem 0' }}>
-    <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
+  <section className="section-container" style={{ background: 'linear-gradient(180deg, #f8f9fb 60%, #f3f6fd 100%)', padding: '5rem 0 4rem 0' }}>
+    <div className="container" style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
         <span style={{ background: '#e8f0ff', color: '#0057FF', fontWeight: 600, fontSize: 16, borderRadius: 20, padding: '0.4rem 1.2rem', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span role="img" aria-label="bolt">⚡</span> ¿Cómo inicio mi proceso?
         </span>
       </div>
-      <h2 style={{ fontSize: 38, fontWeight: 800, margin: 0, marginBottom: 12, letterSpacing: -1 }}>
+      <h2 className="section-title" style={{ fontSize: 38, fontWeight: 800, margin: 0, marginBottom: 12, letterSpacing: -1 }}>
         Tu <span style={{ color: '#0057FF' }}>Ecosistema de Bienestar</span> <span style={{ color: '#c8b6ff' }}>en 3 pasos</span>
       </h2>
-      <p style={{ color: '#555', fontSize: 18, margin: '0 0 2.5rem 0', fontWeight: 400 }}>
+      <p className="section-subtitle" style={{ color: '#555', fontSize: 18, margin: '0 0 2.5rem 0', fontWeight: 400 }}>
         Creamos un ecosistema completo diseñado para mejorar y mantener tu salud mental. Desde el primer contacto hasta el seguimiento continuo, cada elemento trabaja en armonía para tu bienestar emocional.
       </p>
-      <div style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', alignItems: 'stretch', marginTop: 40, flexWrap: 'nowrap' }}>
+      <div className="cards-grid" style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', alignItems: 'stretch', marginTop: 40, flexWrap: 'nowrap' }}>
         {steps.map((step, i) => (
           <React.Fragment key={i}>
             <div
-              key={i}
+              className="card"
               style={{
                 background: '#fff',
                 borderRadius: 24,

@@ -1,13 +1,22 @@
 import React from 'react';
+import brochurePdf from '../assets/brochure empathica.pdf';
 
-const BusinessHeroSection = () => {
+const BusinessHeroSection = ({ navigationProps }) => {
+  const handleDownloadBrochure = () => {
+    const link = document.createElement('a');
+    link.href = brochurePdf;
+    link.download = 'brochure-empathica.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
-    <section style={{ 
+    <section className="section-container" style={{ 
       background: 'linear-gradient(120deg, #f8f9fb 0%, #f3f6fd 100%)', 
       minHeight: '90vh', 
       padding: '5rem 0 6rem 0' 
     }}>
-      <div style={{ 
+      <div className="container hero-container" style={{ 
         maxWidth: 1300, 
         margin: '0 auto', 
         display: 'flex', 
@@ -16,7 +25,7 @@ const BusinessHeroSection = () => {
         gap: '4rem' 
       }}>
         {/* Columna izquierda */}
-        <div style={{ 
+        <div className="hero-content" style={{ 
           flex: 1, 
           minWidth: 340, 
           marginRight: '2rem', 
@@ -80,12 +89,12 @@ const BusinessHeroSection = () => {
           </p>
 
           {/* Tarjetas de características */}
-          <div style={{ 
+          <div className="cards-grid" style={{ 
             display: 'flex', 
             gap: '1.5rem', 
             marginBottom: '2.5rem' 
           }}>
-            <div style={{ 
+            <div className="card" style={{ 
               background: '#fff', 
               borderRadius: 16, 
               padding: '1.2rem 1.5rem', 
@@ -112,7 +121,7 @@ const BusinessHeroSection = () => {
               </div>
             </div>
 
-            <div style={{ 
+            <div className="card" style={{ 
               background: '#fff', 
               borderRadius: 16, 
               padding: '1.2rem 1.5rem', 
@@ -141,38 +150,44 @@ const BusinessHeroSection = () => {
           </div>
 
           {/* Botones CTA */}
-          <div style={{ 
+          <div className="hero-buttons" style={{ 
             display: 'flex', 
             gap: '1.2rem', 
             marginBottom: '2rem', 
             alignItems: 'center' 
           }}>
-            <button style={{ 
-              background: '#ff9800', 
-              color: '#fff', 
-              border: 'none', 
-              borderRadius: 12, 
-              padding: '0.9rem 2rem', 
-              fontWeight: 700, 
-              fontSize: 16, 
-              cursor: 'pointer', 
-              boxShadow: '0 2px 8px #ff980022',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}>
+            <button
+              style={{ 
+                background: '#ff9800', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 12, 
+                padding: '0.9rem 2rem', 
+                fontWeight: 700, 
+                fontSize: 16, 
+                cursor: 'pointer', 
+                boxShadow: '0 2px 8px #ff980022',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}
+              onClick={() => navigationProps && navigationProps.onNavigate && navigationProps.onNavigate('business-demo-dashboard')}
+            >
               Ver demo <span style={{ fontSize: 18 }}>→</span>
             </button>
-            <button style={{ 
-              background: '#fff', 
-              color: '#0057FF', 
-              border: '2px solid #0057FF', 
-              borderRadius: 12, 
-              padding: '0.9rem 2rem', 
-              fontWeight: 700, 
-              fontSize: 16, 
-              cursor: 'pointer' 
-            }}>
+            <button 
+              onClick={handleDownloadBrochure}
+              style={{ 
+                background: '#fff', 
+                color: '#0057FF', 
+                border: '2px solid #0057FF', 
+                borderRadius: 12, 
+                padding: '0.9rem 2rem', 
+                fontWeight: 700, 
+                fontSize: 16, 
+                cursor: 'pointer' 
+              }}
+            >
               Descargar brochure
             </button>
           </div>
@@ -197,7 +212,7 @@ const BusinessHeroSection = () => {
         </div>
 
         {/* Columna derecha: Match Emocional Dinámico - Fijo */}
-        <div style={{ 
+        <div className="hero-card" style={{ 
           flex: 1, 
           minWidth: 340, 
           display: 'flex', 

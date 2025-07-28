@@ -1,705 +1,233 @@
-import React from 'react';
+import React, { useState } from 'react';
+import {
+  Home,
+  Clock,
+  Calendar,
+  CalendarDays,
+  Users,
+  FileText,
+  BookOpen,
+  CreditCard,
+  LogOut,
+  CheckCircle,
+  Activity
+} from 'lucide-react';
+import logoEmpathica from '../assets/Logoempathica.png';
+import PsychologistPatients from './PsychologistPatients';
+import PsychologistPatientsList from './PsychologistPatientsList';
+import PsychologistSchedule from './PsychologistSchedule';
+import PsychologistAppointments from './PsychologistAppointments';
+import PsychologistHistory from './PsychologistHistory';
+import PsychologistLibrary from './PsychologistLibrary';
+import PsychologistBilling from './PsychologistBilling';
+import MobileDashboardNav from './MobileDashboardNav';
+
+const sidebarItems = [
+  { icon: <Home size={22} />, label: 'Inicio', section: 'Dashboard' },
+  { icon: <Clock size={22} />, label: 'Horarios', section: 'Horarios' },
+  { icon: <Calendar size={22} />, label: 'Mis Citas', section: 'Citas' },
+  { icon: <Users size={22} />, label: 'Pacientes', section: 'Pacientes' },
+  { icon: <FileText size={22} />, label: 'Historial', section: 'Historial' },
+  { icon: <BookOpen size={22} />, label: 'Biblioteca', section: 'Biblioteca' },
+  { icon: <CreditCard size={22} />, label: 'Facturación', section: 'Facturación' },
+];
+
+function HeaderBar({ sidebarOpen, toggleSidebar }) {
+  return (
+    <div className="header-bar" style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '1.2rem 24px',
+      background: '#f6f8fa',
+      borderBottom: '2px solid #e0e7ef',
+      borderRadius: 0,
+      position: 'sticky',
+      top: 0,
+      zIndex: 10,
+      width: '100%'
+    }}>
+      <div className="header-info" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <button 
+          className="hidden-mobile"
+          onClick={toggleSidebar} 
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: 22,
+            color: '#7a8bbd',
+            cursor: 'pointer',
+            marginRight: 4,
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ fontSize: 26 }}>{sidebarOpen ? '☰' : '☰'}</span>
+        </button>
+        <div>
+          <div className="hidden-mobile" style={{ color: '#7a8bbd', fontWeight: 700, fontSize: 15 }}>Panel de Control - Psicólogo</div>
+          <div style={{ color: '#222', fontWeight: 800, fontSize: 22, marginTop: 2 }}>Panel del Psicólogo</div>
+        </div>
+      </div>
+      <div className="user-info" style={{ background: '#fff', borderRadius: 18, padding: '0.5rem 1.2rem', fontWeight: 600, color: '#222', fontSize: 15, boxShadow: '0 2px 8px #e0e7ef' }}>valentina prueba</div>
+    </div>
+  );
+}
 
 const PsychologistDashboard = ({ navigationProps }) => {
-  const handleNavigation = (page) => {
+  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [activeSection, setActiveSection] = useState('Dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleLogout = () => {
     if (navigationProps && navigationProps.onNavigate) {
-      navigationProps.onNavigate(page);
+      navigationProps.onNavigate('individuals');
     }
   };
-
-  const toggleSidebar = () => {
-    if (navigationProps && navigationProps.toggleSidebar) {
-      navigationProps.toggleSidebar();
-    }
-  };
-
-  // Usar el estado global del sidebar
-  const sidebarOpen = navigationProps?.sidebarOpen ?? true;
 
   return (
-    <div style={{
+    <div className="dashboard-container psychologist-dashboard" style={{
       display: 'flex',
-      minHeight: '100vh',
-      background: '#f8f9fa'
+      height: '100vh',
+      background: '#f8f9fb',
+      overflow: 'hidden'
     }}>
       {/* Sidebar */}
-      <div style={{
-        width: sidebarOpen ? '280px' : '0px',
-        background: '#f5f5f5',
-        borderRight: '1px solid #e0e0e0',
-        transition: 'width 0.3s ease',
-        overflow: 'hidden'
-      }}>
-        {/* Logo y título */}
-        <div style={{
-          padding: '2rem 1.5rem',
-          borderBottom: '1px solid #e0e0e0'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: '#0057FF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <span style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>E</span>
-            </div>
-            {sidebarOpen && (
-              <div>
-                <div style={{
-                  fontWeight: 700,
-                  fontSize: 18,
-                  color: '#0057FF'
-                }}>
-                  Empathica
-                </div>
-                <div style={{
-                  fontSize: 12,
-                  color: '#666',
-                  marginTop: '2px'
-                }}>
-                  Tu bienestar emocional
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Navegación */}
-        <div style={{
-          padding: '1.5rem'
-        }}>
-          {sidebarOpen && (
-            <div style={{
-              fontSize: 12,
-              color: '#666',
-              fontWeight: 600,
-              marginBottom: '1rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
-              Navegación
-            </div>
-          )}
-          
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem'
-          }}>
-            {/* Inicio - Activo */}
-            <button
-              onClick={() => handleNavigation('psychologist-dashboard')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: '#e3f2fd',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#0057FF',
-                fontWeight: 600
-              }}
-            >
-              <span role="img" aria-label="home" style={{ fontSize: 18 }}>🏠</span>
-              {sidebarOpen && <span>Inicio</span>}
-            </button>
-
-            {/* Citas */}
-            <button
-              onClick={() => handleNavigation('appointments')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="calendar" style={{ fontSize: 18 }}>📅</span>
-              {sidebarOpen && <span>Citas</span>}
-            </button>
-
-            {/* For You */}
-            <button
-              onClick={() => handleNavigation('for-you')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="heart" style={{ fontSize: 18 }}>❤️</span>
-              {sidebarOpen && <span>For You</span>}
-            </button>
-
-            {/* Mi Especialista */}
-            <button
-              onClick={() => handleNavigation('my-specialist')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="specialist" style={{ fontSize: 18 }}>👥</span>
-              {sidebarOpen && <span>Mi Especialista</span>}
-            </button>
-
-            {/* Soporte */}
-            <button
-              onClick={() => handleNavigation('support')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="support" style={{ fontSize: 18 }}>❓</span>
-              {sidebarOpen && <span>Soporte</span>}
-            </button>
-
-            {/* Mi Perfil */}
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="profile" style={{ fontSize: 18 }}>👤</span>
-              {sidebarOpen && <span>Mi Perfil</span>}
-            </button>
-          </div>
-        </div>
-
-        {/* Cerrar sesión */}
-        <div style={{
-          marginTop: 'auto',
-          padding: '1.5rem'
-        }}>
-          <button
-            onClick={() => handleNavigation('individuals')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '0.75rem',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              width: '100%',
-              color: '#ff4444',
-              fontWeight: 600,
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#ffe6e6'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🚪</span>
-            {sidebarOpen && <span>Cerrar sesión</span>}
-          </button>
-        </div>
-      </div>
-
-      {/* Contenido principal */}
-      <div style={{
-        flex: 1,
+      <aside className="sidebar" style={{
+        width: sidebarOpen ? 260 : 0,
+        minWidth: sidebarOpen ? 260 : 0,
+        maxWidth: 260,
+        background: '#e9eef6',
+        borderRight: '1px solid #dde3ec',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        padding: sidebarOpen ? '2rem 0 1rem 0' : '2rem 0 1rem 0',
+        alignItems: sidebarOpen ? 'center' : 'flex-start',
+        transition: 'width 0.3s cubic-bezier(.4,2,.6,1), min-width 0.3s cubic-bezier(.4,2,.6,1)',
+        overflow: 'hidden',
       }}>
-        {/* Header superior */}
-        <div style={{
-          background: '#fff',
-          padding: '1rem 2rem',
-          borderBottom: '1px solid #e0e0e0',
+        {/* Logo y usuario */}
+        <div style={{ width: '100%', marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 2rem' }}>
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#4a7cff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <img 
+                src={logoEmpathica} 
+                alt="Empathica Logo" 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  borderRadius: '50%'
+                }} 
+              />
+            </div>
+            <div>
+              <div style={{ color: '#2050c7', fontWeight: 700, fontSize: 18, lineHeight: 1 }}>Empathica</div>
+              <div style={{ color: '#7a8bbd', fontSize: 13 }}>Panel Profesional</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 32, padding: '0 2rem' }}>
+            <div>
+              <div style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>Dr. valentina</div>
+              <div style={{ color: '#7a8bbd', fontSize: 13 }}>soy prueba</div>
+            </div>
+          </div>
+        </div>
+        {/* Navegación */}
+        <div style={{ width: '100%', flex: 1 }}>
+          <div style={{ color: '#7a8bbd', fontWeight: 700, fontSize: 13, margin: '1.5rem 0 0.5rem 2rem', letterSpacing: 1 }}>NAVEGACIÓN</div>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {sidebarItems.map((item, idx) => (
+              <button key={item.label} onClick={() => setActiveSection(item.section)} style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: '0.7rem 2rem',
+                background: activeSection === item.section ? '#e6f0ff' : 'transparent',
+                color: activeSection === item.section ? '#2050c7' : '#7a8bbd',
+                border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 16, cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}>{item.icon} {item.label}</button>
+            ))}
+          </nav>
+        </div>
+        {/* Cerrar sesión */}
+        <button onClick={handleLogout} style={{
+          marginTop: 'auto',
+          color: '#e74c3c',
+          background: 'none',
+          border: 'none',
+          fontWeight: 700,
+          fontSize: 18,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          gap: 10,
+          padding: '0.7rem 2rem',
+          cursor: 'pointer',
+          letterSpacing: 0.5,
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
-          }}>
-            <button
-              onClick={toggleSidebar}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 20,
-                color: '#666'
-              }}
-            >
-              ☰
-            </button>
-            <span style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: '#333'
-            }}>
-              Tu espacio de bienestar
-            </span>
-          </div>
-          
-          <div style={{
-            width: 40,
-            height: 40,
-            borderRadius: 8,
-            background: '#f0f0f0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <div style={{
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              background: '#0057FF'
-            }} />
-          </div>
+          <LogOut size={22} color="#e74c3c" style={{marginRight: 2}} /> Cerrar sesión
+        </button>
+      </aside>
+      {/* Main */}
+      <main className="main-content" style={{ flex: 1, padding: '0 3.5rem', transition: 'margin-left 0.3s cubic-bezier(.4,2,.6,1)', height: '100vh', overflowY: 'auto', width: '100%' }}>
+        {/* Cabecera compacta */}
+        <HeaderBar sidebarOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen((open) => !open)} />
+        
+        {/* Navegación móvil */}
+        <MobileDashboardNav 
+          items={sidebarItems}
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+        
+        {/* Botón de cerrar sesión móvil */}
+        <div className="visible-mobile mobile-logout-container">
+          <button 
+            className="mobile-logout-button"
+            onClick={handleLogout}
+          >
+            <LogOut size={16} />
+            Cerrar sesión
+          </button>
         </div>
-
-        {/* Contenido del dashboard */}
-        <div style={{
-          flex: 1,
-          padding: '2rem',
-          overflow: 'auto'
-        }}>
-          {/* Banner de bienvenida */}
-          <div style={{
-            background: 'linear-gradient(135deg, #0057FF 0%, #1a237e 100%)',
-            borderRadius: 16,
-            padding: '2.5rem',
-            color: '#fff',
-            marginBottom: '2rem'
-          }}>
-            <h1 style={{
-              fontSize: 32,
-              fontWeight: 800,
-              margin: '0 0 0.5rem 0'
-            }}>
-              Hola Chris, ¿cómo estás hoy?
-            </h1>
-            <p style={{
-              fontSize: 16,
-              margin: '0 0 2rem 0',
-              opacity: 0.9
-            }}>
-              Es un nuevo día para cuidar tu bienestar emocional
-            </p>
-            
-            {/* Botones de acción */}
-            <div style={{
-              display: 'flex',
-              gap: '1rem',
-              flexWrap: 'wrap'
-            }}>
-              <button
-                onClick={() => handleNavigation('appointments')}
-                style={{
-                  background: '#fff',
-                  color: '#0057FF',
-                  border: '1px solid #fff',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                Agendar cita
-              </button>
-              <button
-                onClick={() => handleNavigation('support')}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  color: '#fff',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                Solicitar orientación
-              </button>
-            </div>
+        
+        {/* Renderizado de secciones */}
+        {activeSection === 'Dashboard' && (
+          <div className="dashboard-section">
+            <PsychologistPatients />
           </div>
-
-          {/* Métricas */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '1.5rem',
-            marginBottom: '2rem'
-          }}>
-            {/* Citas realizadas */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: '1.5rem',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-            }}
-            >
-              <div style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                color: '#0057FF',
-                fontSize: 20
-              }}>
-                📅
-              </div>
-              <h3 style={{
-                fontSize: 14,
-                color: '#666',
-                margin: '0 0 0.5rem 0',
-                fontWeight: 500
-              }}>
-                Citas realizadas
-              </h3>
-              <div style={{
-                fontSize: 32,
-                fontWeight: 800,
-                color: '#0057FF',
-                marginBottom: '0.5rem'
-              }}>
-                12
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: '#666',
-                margin: 0
-              }}>
-                En los últimos 6 meses
-              </p>
-            </div>
-
-            {/* Días consecutivos */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: '1.5rem',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-            }}
-            >
-              <div style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                color: '#0057FF',
-                fontSize: 20
-              }}>
-                📈
-              </div>
-              <h3 style={{
-                fontSize: 14,
-                color: '#666',
-                margin: '0 0 0.5rem 0',
-                fontWeight: 500
-              }}>
-                Días consecutivos
-              </h3>
-              <div style={{
-                fontSize: 32,
-                fontWeight: 800,
-                color: '#00C851',
-                marginBottom: '0.5rem'
-              }}>
-                15
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: '#666',
-                margin: 0
-              }}>
-                Trabajando en tu bienestar
-              </p>
-            </div>
-
-            {/* Progreso emocional */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: '1.5rem',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-            }}
-            >
-              <div style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                color: '#0057FF',
-                fontSize: 20
-              }}>
-                ❤️
-              </div>
-              <h3 style={{
-                fontSize: 14,
-                color: '#666',
-                margin: '0 0 0.5rem 0',
-                fontWeight: 500
-              }}>
-                Progreso emocional
-              </h3>
-              <div style={{
-                fontSize: 32,
-                fontWeight: 800,
-                color: '#ff9800',
-                marginBottom: '0.5rem'
-              }}>
-                85%
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: '#666',
-                margin: 0
-              }}>
-                Basado en tus sesiones
-              </p>
-            </div>
+        )}
+        {activeSection === 'Horarios' && (
+          <div className="dashboard-section">
+            <PsychologistSchedule />
           </div>
-
-          {/* Secciones inferiores */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-            gap: '1.5rem'
-          }}>
-            {/* Mi Especialista */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: '1.5rem',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '1.5rem'
-              }}>
-                <span role="img" aria-label="specialist" style={{ fontSize: 18 }}>👥</span>
-                <h3 style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  margin: 0,
-                  color: '#333'
-                }}>
-                  Mi Especialista
-                </h3>
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                marginBottom: '1.5rem'
-              }}>
-                <div style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: '50%',
-                  background: '#f0f0f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 24
-                }}>
-                  👤
-                </div>
-                <div>
-                  <div style={{
-                    fontSize: 16,
-                    fontWeight: 700,
-                    color: '#333',
-                    marginBottom: '4px'
-                  }}>
-                    Dra. María González
-                  </div>
-                  <div style={{
-                    fontSize: 14,
-                    color: '#666'
-                  }}>
-                    Psicóloga especialista en ansiedad
-                  </div>
-                </div>
-              </div>
-              
-              <button
-                onClick={() => handleNavigation('my-specialist')}
-                style={{
-                  background: '#0057FF',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  width: '100%'
-                }}
-              >
-                Ver perfil completo
-              </button>
-            </div>
-
-            {/* Próxima Cita */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: '1.5rem',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '1.5rem'
-              }}>
-                <span role="img" aria-label="calendar" style={{ fontSize: 18 }}>📅</span>
-                <h3 style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  margin: 0,
-                  color: '#333'
-                }}>
-                  Próxima Cita
-                </h3>
-              </div>
-              
-              <div style={{
-                marginBottom: '1.5rem'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.5rem'
-                }}>
-                  <span style={{ color: '#666', fontSize: 14 }}>Fecha:</span>
-                  <span style={{ fontWeight: 600, color: '#333' }}>Viernes 19 de Julio, 2024</span>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }}>
-                  <span style={{ color: '#666', fontSize: 14 }}>Hora:</span>
-                  <span style={{ fontWeight: 600, color: '#333' }}>10:00 AM</span>
-                </div>
-              </div>
-              
-              <button
-                onClick={() => handleNavigation('appointments')}
-                style={{
-                  background: '#0057FF',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  width: '100%'
-                }}
-              >
-                Ver todas las citas
-              </button>
-            </div>
+        )}
+        {activeSection === 'Citas' && (
+          <div className="dashboard-section">
+            <PsychologistAppointments />
           </div>
-        </div>
-      </div>
+        )}
+        {activeSection === 'Pacientes' && (
+          <div className="dashboard-section">
+            <PsychologistPatientsList />
+          </div>
+        )}
+        {activeSection === 'Historial' && (
+          <div className="dashboard-section">
+            <PsychologistHistory />
+          </div>
+        )}
+        {activeSection === 'Biblioteca' && (
+          <div className="dashboard-section">
+            <PsychologistLibrary />
+          </div>
+        )}
+        {activeSection === 'Facturación' && (
+          <div className="dashboard-section">
+            <PsychologistBilling />
+          </div>
+        )}
+        {/* Otros tabs pueden ir aquí */}
+      </main>
     </div>
   );
 };

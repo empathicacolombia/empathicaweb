@@ -14,13 +14,13 @@ function App({ navigationProps }) {
   return (
     <div className="App">
       <Navbar navigationProps={navigationProps} />
-      <HeroSection />
+      <HeroSection navigationProps={navigationProps} />
       <ProcessStepsSection />
-      <CallToActionSection />
+      <CallToActionSection navigationProps={navigationProps} />
       <BenefitsSection />
-      <PsychologistsSection />
-      <PlansSection />
-      <BusinessSection />
+      <PsychologistsSection navigationProps={navigationProps} />
+      <PlansSection navigationProps={navigationProps} />
+      <BusinessSection navigationProps={navigationProps} />
       <TrustSection />
       <Footer />
     </div>

@@ -14,7 +14,7 @@ function AppBusiness({ navigationProps }) {
   return (
     <div className="App">
       <Navbar navigationProps={navigationProps} />
-      <BusinessHeroSection />
+      <BusinessHeroSection navigationProps={navigationProps} />
       <BusinessWhatSection />
       <BusinessTechSection />
       <BusinessDashboardSection />

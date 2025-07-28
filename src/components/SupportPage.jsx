@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { Home, CalendarDays, Heart, Users, LifeBuoy, User, LogOut } from 'lucide-react';
+import logoEmpathica from '../assets/Logoempathica.png';
+import ClientSidebar from './ClientSidebar';
+import MobileDashboardNav from './MobileDashboardNav';
 
 const SupportPage = ({ navigationProps }) => {
   const [formData, setFormData] = useState({
@@ -37,6 +41,14 @@ const SupportPage = ({ navigationProps }) => {
     console.log('Formulario enviado:', formData);
   };
 
+  // Función para abrir WhatsApp
+  const openWhatsApp = () => {
+    const phoneNumber = '573229253891'; // Número de WhatsApp de Empathica
+    const message = 'Hola, necesito ayuda con Empathica';
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div style={{
       display: 'flex',
@@ -44,244 +56,7 @@ const SupportPage = ({ navigationProps }) => {
       background: '#f8f9fa'
     }}>
       {/* Sidebar */}
-      <div style={{
-        width: sidebarOpen ? '280px' : '0px',
-        background: '#f5f5f5',
-        borderRight: '1px solid #e0e0e0',
-        transition: 'width 0.3s ease',
-        overflow: 'hidden'
-      }}>
-        {/* Logo y título */}
-        <div style={{
-          padding: '2rem 1.5rem',
-          borderBottom: '1px solid #e0e0e0'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: '#0057FF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <span style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>E</span>
-            </div>
-            {sidebarOpen && (
-              <div>
-                <div style={{
-                  fontWeight: 700,
-                  fontSize: 18,
-                  color: '#0057FF'
-                }}>
-                  Empathica
-                </div>
-                <div style={{
-                  fontSize: 12,
-                  color: '#666',
-                  marginTop: '2px'
-                }}>
-                  Tu bienestar emocional
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Navegación */}
-        <div style={{
-          padding: '1.5rem'
-        }}>
-          {sidebarOpen && (
-            <div style={{
-              fontSize: 12,
-              color: '#666',
-              fontWeight: 600,
-              marginBottom: '1rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
-              Navegación
-            </div>
-          )}
-          
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem'
-          }}>
-            {/* Inicio */}
-            <button
-              onClick={() => handleNavigation('psychologist-dashboard')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="home" style={{ fontSize: 18 }}>🏠</span>
-              {sidebarOpen && <span>Inicio</span>}
-            </button>
-
-            {/* Citas */}
-            <button
-              onClick={() => handleNavigation('appointments')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="calendar" style={{ fontSize: 18 }}>📅</span>
-              {sidebarOpen && <span>Citas</span>}
-            </button>
-
-            {/* For You */}
-            <button
-              onClick={() => handleNavigation('for-you')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="heart" style={{ fontSize: 18 }}>❤️</span>
-              {sidebarOpen && <span>For You</span>}
-            </button>
-
-            {/* Mi Especialista */}
-            <button
-              onClick={() => handleNavigation('my-specialist')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="specialist" style={{ fontSize: 18 }}>👥</span>
-              {sidebarOpen && <span>Mi Especialista</span>}
-            </button>
-
-            {/* Soporte - Activo */}
-            <button
-              onClick={() => handleNavigation('support')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: '#e3f2fd',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#0057FF',
-                fontWeight: 600
-              }}
-            >
-              <span role="img" aria-label="support" style={{ fontSize: 18 }}>❓</span>
-              {sidebarOpen && <span>Soporte</span>}
-            </button>
-
-            {/* Mi Perfil */}
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '0.75rem',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                width: '100%',
-                color: '#666',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span role="img" aria-label="profile" style={{ fontSize: 18 }}>👤</span>
-              {sidebarOpen && <span>Mi Perfil</span>}
-            </button>
-          </div>
-        </div>
-
-        {/* Cerrar sesión */}
-        <div style={{
-          marginTop: 'auto',
-          padding: '1.5rem'
-        }}>
-          <button
-            onClick={() => handleNavigation('individuals')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '0.75rem',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              width: '100%',
-              color: '#ff4444',
-              fontWeight: 600,
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#ffe6e6'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🚪</span>
-            {sidebarOpen && <span>Cerrar sesión</span>}
-          </button>
-        </div>
-      </div>
+      <ClientSidebar navigationProps={navigationProps} activePage="support" sidebarOpen={sidebarOpen} />
 
       {/* Contenido principal */}
       <div style={{
@@ -348,6 +123,23 @@ const SupportPage = ({ navigationProps }) => {
           padding: '2rem',
           overflow: 'auto'
         }}>
+          {/* Navegación móvil */}
+          <MobileDashboardNav 
+            items={[
+              { icon: <Home size={20} />, label: 'Inicio', section: 'Dashboard' },
+              { icon: <CalendarDays size={20} />, label: 'Citas', section: 'Appointments' },
+              { icon: <Heart size={20} />, label: 'Para Ti', section: 'ForYou' },
+              { icon: <User size={20} />, label: 'Mi Especialista', section: 'MySpecialist' },
+              { icon: <LifeBuoy size={20} />, label: 'Soporte', section: 'Support' }
+            ]}
+            activeSection="Support"
+            onSectionChange={(section) => {
+              if (section === 'Dashboard') handleNavigation('client-dashboard');
+              else if (section === 'Appointments') handleNavigation('appointments');
+              else if (section === 'ForYou') handleNavigation('for-you');
+              else if (section === 'MySpecialist') handleNavigation('my-specialist');
+            }}
+          />
           {/* Header de la página */}
           <div style={{
             marginBottom: '2rem'
@@ -418,17 +210,20 @@ const SupportPage = ({ navigationProps }) => {
                 Respuesta inmediata de nuestro equipo
               </p>
               
-              <button style={{
-                background: '#0057FF',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '0.75rem 1.5rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: 14,
-                width: '100%'
-              }}>
+              <button 
+                onClick={openWhatsApp}
+                style={{
+                  background: '#0057FF',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '0.75rem 1.5rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  width: '100%'
+                }}
+              >
                 Iniciar chat
               </button>
             </div>
@@ -566,167 +361,6 @@ const SupportPage = ({ navigationProps }) => {
                 Llamar ahora
               </button>
             </div>
-          </div>
-
-          {/* Formulario de contacto */}
-          <div style={{
-            background: '#fff',
-            borderRadius: 12,
-            padding: '2rem',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '1.5rem'
-            }}>
-              <span role="img" aria-label="message" style={{ fontSize: 20, color: '#0057FF' }}>💬</span>
-              <h3 style={{
-                fontSize: 20,
-                fontWeight: 700,
-                margin: 0,
-                color: '#333'
-              }}>
-                Envíanos un mensaje
-              </h3>
-            </div>
-            
-            <form onSubmit={handleSubmit}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: '#333',
-                    marginBottom: '0.5rem'
-                  }}>
-                    Nombre completo
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Tu nombre"
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: 8,
-                      fontSize: 14,
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: '#333',
-                    marginBottom: '0.5rem'
-                  }}>
-                    Correo electrónico
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="tu@email.com"
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: 8,
-                      fontSize: 14,
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-              </div>
-              
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#333',
-                  marginBottom: '0.5rem'
-                }}>
-                  Asunto
-                </label>
-                <input
-                  type="text"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  placeholder="¿En qué podemos ayudarte?"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 8,
-                    fontSize: 14,
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-              
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#333',
-                  marginBottom: '0.5rem'
-                }}>
-                  Mensaje
-                </label>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  placeholder="Describe tu consulta o problema..."
-                  rows={5}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 8,
-                    fontSize: 14,
-                    resize: 'vertical',
-                    boxSizing: 'border-box',
-                    fontFamily: 'inherit'
-                  }}
-                />
-              </div>
-              
-              <button
-                type="submit"
-                style={{
-                  background: '#0057FF',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontSize: 14,
-                  width: '100%'
-                }}
-              >
-                Enviar mensaje
-              </button>
-            </form>
           </div>
         </div>
       </div>

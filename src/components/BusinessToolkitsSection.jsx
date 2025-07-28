@@ -268,17 +268,23 @@ const BusinessToolkitsSection = () => {
                   paddingTop: '1rem',
                   borderTop: '1px solid #f0f0f0'
                 }}>
-                  <a href="#" style={{
-                    color: '#0057FF',
-                    textDecoration: 'none',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}>
+                  <button 
+                    onClick={() => window.location.href = '#toolkits'}
+                    style={{
+                      color: '#0057FF',
+                      textDecoration: 'none',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
                     Ver todas las herramientas →
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>

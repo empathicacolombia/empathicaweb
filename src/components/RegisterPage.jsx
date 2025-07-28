@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import logoEmpathica from '../assets/Logoempathica.png';
 
 const RegisterPage = ({ navigationProps }) => {
   const [userType, setUserType] = useState('patient'); // 'patient' o 'psychologist'
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -17,6 +19,7 @@ const RegisterPage = ({ navigationProps }) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
     }
+    setMobileMenuOpen(false);
   };
 
   const handleInputChange = (field, value) => {
@@ -30,17 +33,21 @@ const RegisterPage = ({ navigationProps }) => {
     e.preventDefault();
     console.log('Register attempt:', { userType, formData });
     
+    // Marcar al usuario como registrado
+    if (navigationProps && navigationProps.onUserRegistration) {
+      navigationProps.onUserRegistration();
+    }
+    
     // Redirigir según el tipo de usuario
     if (userType === 'psychologist') {
-      handleNavigation('psychologist-dashboard');
+      handleNavigation('psychologist-profile-form');
     } else {
-      // Para pacientes, podrías redirigir a otra página o mostrar un mensaje
-      console.log('Registro de paciente completado');
+      handleNavigation('questionnaire-match');
     }
   };
 
   return (
-    <div style={{
+    <div className="form-container" style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #fff 0%, #fff3e0 100%)',
       position: 'relative'
@@ -49,22 +56,23 @@ const RegisterPage = ({ navigationProps }) => {
       <nav style={{ 
         background: '#0057FF', 
         color: '#fff', 
-        padding: '1.2rem 0', 
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+        padding: '1rem 0', 
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        position: 'relative'
       }}>
-        <div style={{ 
+        <div className="container navbar-container" style={{ 
           maxWidth: 1300, 
           margin: '0 auto', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          padding: '0 2rem'
+          padding: '0 20px'
         }}>
           {/* Logo */}
           <span
             style={{
               fontWeight: 'bold',
-              fontSize: 28,
+              fontSize: 'clamp(20px, 4vw, 28px)',
               letterSpacing: 1,
               cursor: 'pointer',
               transition: 'opacity 0.2s'
@@ -76,122 +84,369 @@ const RegisterPage = ({ navigationProps }) => {
             Empathica
           </span>
 
-          {/* Enlaces de navegación */}
-          <ul style={{ 
+          {/* Desktop Navigation */}
+          <div style={{ 
             display: 'flex', 
-            gap: '2.5rem', 
-            listStyle: 'none', 
-            margin: 0, 
-            padding: 0, 
-            fontSize: 18, 
-            fontWeight: 500 
+            alignItems: 'center',
+            gap: '1.5rem'
           }}>
-            <li>
-              <button
-                onClick={() => handleNavigation('individuals')}
-                style={{
-                  color: '#fff',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 'inherit',
-                  fontFamily: 'inherit',
-                  fontWeight: 'inherit'
-                }}
-              >
-                Psicólogos
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => handleNavigation('business')}
-                style={{
-                  color: '#fff',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 'inherit',
-                  fontFamily: 'inherit',
-                  fontWeight: 'inherit'
-                }}
-              >
-                Empresas
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => handleNavigation('about')}
-                style={{
-                  color: '#fff',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 'inherit',
-                  fontFamily: 'inherit',
-                  fontWeight: 'inherit'
-                }}
-              >
-                Acerca de
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => handleNavigation('pricing')}
-                style={{
-                  color: '#fff',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 'inherit',
-                  fontFamily: 'inherit',
-                  fontWeight: 'inherit'
-                }}
-              >
-                Precios
-              </button>
-            </li>
-          </ul>
+            {/* Enlaces de navegación - Desktop */}
+            <ul style={{ 
+              display: 'none',
+              gap: '2rem', 
+              listStyle: 'none', 
+              margin: 0, 
+              padding: 0, 
+              fontSize: '16px', 
+              fontWeight: 500,
+              '@media (min-width: 768px)': {
+                display: 'flex'
+              }
+            }}>
+              <li>
+                <button
+                  onClick={() => handleNavigation('individuals')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 'inherit',
+                    fontFamily: 'inherit',
+                    fontWeight: 'inherit',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  Psicólogos
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigation('business')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 'inherit',
+                    fontFamily: 'inherit',
+                    fontWeight: 'inherit',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  Empresas
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigation('about')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 'inherit',
+                    fontFamily: 'inherit',
+                    fontWeight: 'inherit',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  Acerca de
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigation('pricing')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 'inherit',
+                    fontFamily: 'inherit',
+                    fontWeight: 'inherit',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  Precios
+                </button>
+              </li>
+            </ul>
 
-          {/* Botones */}
-          <div style={{ display: 'flex', gap: '1.2rem' }}>
-            <button
-              onClick={() => handleNavigation('login')}
-              style={{
-                background: 'transparent',
-                color: '#0057FF',
-                border: '2px solid #fff',
-                borderRadius: 20,
-                padding: '0.7rem 1.5rem',
-                fontWeight: 500,
-                fontSize: 16,
-                cursor: 'pointer',
-                transition: 'transform 0.18s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              Iniciar sesión
-            </button>
-            <button
-              onClick={() => handleNavigation('register')}
-              style={{
-                background: '#fff',
-                color: '#0057FF',
-                border: 'none',
-                borderRadius: 20,
-                padding: '0.7rem 1.5rem',
-                fontWeight: 500,
-                fontSize: 16,
-                cursor: 'pointer',
-                transition: 'transform 0.18s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              Registrarse
-            </button>
+            {/* Botones - Desktop */}
+            <div style={{ 
+              display: 'none',
+              gap: '1rem',
+              '@media (min-width: 768px)': {
+                display: 'flex'
+              }
+            }}>
+              <button
+                onClick={() => handleNavigation('login')}
+                style={{
+                  background: '#fff',
+                  color: '#0057FF',
+                  border: '2px solid #fff',
+                  borderRadius: '20px',
+                  padding: '8px 16px',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'background 0.18s, color 0.18s, transform 0.18s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#0057FF';
+                  e.currentTarget.style.color = '#fff';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = '#fff';
+                  e.currentTarget.style.color = '#0057FF';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                Iniciar sesión
+              </button>
+              <button
+                onClick={() => handleNavigation('register')}
+                style={{
+                  background: '#fff',
+                  color: '#0057FF',
+                  border: 'none',
+                  borderRadius: '20px',
+                  padding: '8px 16px',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'transform 0.18s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                Registrarse
+              </button>
+            </div>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px',
+              '@media (min-width: 768px)': {
+                display: 'none'
+              }
+            }}
+          >
+            <div style={{
+              width: '24px',
+              height: '2px',
+              backgroundColor: '#fff',
+              margin: '2px 0',
+              transition: '0.3s',
+              transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none'
+            }} />
+            <div style={{
+              width: '24px',
+              height: '2px',
+              backgroundColor: '#fff',
+              margin: '2px 0',
+              transition: '0.3s',
+              opacity: mobileMenuOpen ? '0' : '1'
+            }} />
+            <div style={{
+              width: '24px',
+              height: '2px',
+              backgroundColor: '#fff',
+              margin: '2px 0',
+              transition: '0.3s',
+              transform: mobileMenuOpen ? 'rotate(-45deg) translate(7px, -6px)' : 'none'
+            }} />
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            background: '#0057FF',
+            padding: '20px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+            zIndex: 1000
+          }}>
+            <ul style={{
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}>
+              <li>
+                <button
+                  onClick={() => handleNavigation('individuals')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    width: '100%',
+                    textAlign: 'left',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  Psicólogos
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigation('business')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    width: '100%',
+                    textAlign: 'left',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  Empresas
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigation('about')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    width: '100%',
+                    textAlign: 'left',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  Acerca de
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigation('pricing')}
+                  style={{
+                    color: '#fff',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    width: '100%',
+                    textAlign: 'left',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  Precios
+                </button>
+              </li>
+            </ul>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              marginTop: '20px',
+              paddingTop: '20px',
+              borderTop: '1px solid rgba(255,255,255,0.2)'
+            }}>
+              <button
+                onClick={() => handleNavigation('login')}
+                style={{
+                  background: '#fff',
+                  color: '#0057FF',
+                  border: '2px solid #fff',
+                  borderRadius: '20px',
+                  padding: '12px 20px',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  transition: 'background 0.18s, color 0.18s'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#0057FF';
+                  e.currentTarget.style.color = '#fff';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = '#fff';
+                  e.currentTarget.style.color = '#0057FF';
+                }}
+              >
+                Iniciar sesión
+              </button>
+              <button
+                onClick={() => handleNavigation('register')}
+                style={{
+                  background: '#fff',
+                  color: '#0057FF',
+                  border: 'none',
+                  borderRadius: '20px',
+                  padding: '12px 20px',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  cursor: 'pointer'
+                }}
+              >
+                Registrarse
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Contenido principal */}
@@ -223,7 +478,7 @@ const RegisterPage = ({ navigationProps }) => {
             justifyContent: 'center',
             margin: '0 auto 1.5rem auto'
           }}>
-            <span role="img" aria-label="heart" style={{ fontSize: 24, color: '#0057FF' }}>❤️</span>
+            <img src={logoEmpathica} alt="Empathica Logo" style={{ width: '24px', height: '24px' }} />
           </div>
 
           {/* Título principal */}

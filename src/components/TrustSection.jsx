@@ -56,12 +56,12 @@ const logos = [
 ];
 
 const TrustSection = () => (
-  <section style={{ background: '#fcfcfd', padding: '5rem 0 4rem 0' }}>
-    <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
-      <h2 style={{ fontSize: 38, fontWeight: 800, margin: 0, marginBottom: 10, letterSpacing: -1 }}>
+  <section className="section-container" style={{ background: '#fcfcfd', padding: '5rem 0 4rem 0' }}>
+    <div className="container" style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
+      <h2 className="section-title" style={{ fontSize: 38, fontWeight: 800, margin: 0, marginBottom: 10, letterSpacing: -1 }}>
         Miles de personas ya han encontrado <span style={{ color: '#0057FF' }}>su match</span> <span style={{ background: 'linear-gradient(90deg, #0057FF 60%, #c8b6ff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>perfecto</span>
       </h2>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '5rem', margin: '3rem 0 2.5rem 0' }}>
+      <div className="cards-grid" style={{ display: 'flex', justifyContent: 'center', gap: '5rem', margin: '3rem 0 2.5rem 0' }}>
         {stats.map((stat, i) => (
           <div key={i} style={{ textAlign: 'center' }}>
             <div style={{ marginBottom: 10 }}>{stat.icon}</div>
@@ -71,9 +71,9 @@ const TrustSection = () => (
         ))}
       </div>
       <h3 style={{ fontSize: 24, fontWeight: 700, margin: '3rem 0 2rem 0', textAlign: 'center' }}>Lo que dicen nuestros usuarios</h3>
-      <div style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', alignItems: 'stretch', marginBottom: 40, flexWrap: 'nowrap' }}>
+      <div className="cards-grid" style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', alignItems: 'stretch', marginBottom: 40, flexWrap: 'nowrap' }}>
         {testimonials.map((t, i) => (
-          <div key={i} style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #e3e6f0', boxShadow: '0 4px 32px #0001', padding: '2.2rem 2rem 2rem 2rem', minWidth: 340, maxWidth: 400, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', position: 'relative', textAlign: 'left' }}>
+          <div key={i} className="card" style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #e3e6f0', boxShadow: '0 4px 32px #0001', padding: '2.2rem 2rem 2rem 2rem', minWidth: 340, maxWidth: 400, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', position: 'relative', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <img src={t.img} alt={t.name} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
               <div>

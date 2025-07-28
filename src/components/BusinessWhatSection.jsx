@@ -2,11 +2,11 @@ import React from 'react';
 
 const BusinessWhatSection = () => {
   return (
-    <section style={{ 
+    <section className="section-container" style={{ 
       background: '#fff', 
       padding: '5rem 0 4rem 0' 
     }}>
-      <div style={{ 
+      <div className="container" style={{ 
         maxWidth: 1200, 
         margin: '0 auto', 
         textAlign: 'center',
@@ -15,7 +15,7 @@ const BusinessWhatSection = () => {
         {/* Header Section */}
         <div style={{ marginBottom: '4rem' }}>
           {/* Main Title */}
-          <h2 style={{ 
+        <h2 className="section-title" style={{ 
             fontSize: 42, 
             fontWeight: 800, 
             margin: 0, 
@@ -190,7 +190,7 @@ const BusinessWhatSection = () => {
         </div>
 
         {/* Bottom Section - Benefits/Features */}
-        <div style={{ 
+        <div className="cards-grid" style={{ 
           display: 'flex', 
           gap: '2.5rem', 
           justifyContent: 'center',
@@ -198,7 +198,7 @@ const BusinessWhatSection = () => {
           flexWrap: 'wrap'
         }}>
           {/* Left Card - Sin prueba y error */}
-          <div style={{ 
+          <div className="card" style={{ 
             background: '#f0f8ff', 
             borderRadius: 20, 
             padding: '2.5rem 2rem', 
@@ -246,7 +246,7 @@ const BusinessWhatSection = () => {
           </div>
 
           {/* Right Card - Sin desperdicio de recursos */}
-          <div style={{ 
+          <div className="card" style={{ 
             background: '#fff8f0', 
             borderRadius: 20, 
             padding: '2.5rem 2rem', 

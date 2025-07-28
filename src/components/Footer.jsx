@@ -24,14 +24,14 @@ const Footer = () => (
     {/* Círculos decorativos */}
     <div style={{ position: 'absolute', left: 40, top: 40, width: 130, height: 130, borderRadius: '50%', background: '#1a2040', opacity: 0.5, zIndex: 1 }} />
     <div style={{ position: 'absolute', right: 40, bottom: 40, width: 130, height: 130, borderRadius: '50%', background: '#2a2328', opacity: 0.3, zIndex: 1 }} />
-    <div style={{ maxWidth: 1300, margin: '0 auto', position: 'relative', zIndex: 2, textAlign: 'center' }}>
+    <div className="container footer-container" style={{ maxWidth: 1300, margin: '0 auto', position: 'relative', zIndex: 2, textAlign: 'center' }}>
       <div style={{ fontSize: 36, fontWeight: 800, color: '#7c8fd6', marginBottom: 10 }}>Empathica</div>
       <div style={{ color: '#bfc3d9', fontSize: 18, marginBottom: 38 }}>
         Conectando corazones con mentes expertas. Tu bienestar emocional es nuestra prioridad.
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '5rem', marginBottom: 38, flexWrap: 'wrap' }}>
+      <div className="footer-sections" style={{ display: 'flex', justifyContent: 'center', gap: '5rem', marginBottom: 38, flexWrap: 'wrap' }}>
         {columns.map((col, i) => (
-          <div key={i} style={{ minWidth: 180 }}>
+          <div key={i} className="footer-section" style={{ minWidth: 180 }}>
             <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16, color: '#fff' }}>{col.title}</div>
             {col.links.map((link, j) => (
               <div key={j} style={{ color: '#bfc3d9', fontSize: 16, marginBottom: 10, textAlign: 'center', cursor: 'pointer' }}>{link}</div>

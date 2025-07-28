@@ -2,7 +2,7 @@ import React from 'react';
 
 const BusinessTechSection = () => {
   return (
-    <section style={{ 
+    <section className="section-container" style={{ 
       background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)', 
       padding: '5rem 0 4rem 0',
       position: 'relative',
@@ -28,7 +28,7 @@ const BusinessTechSection = () => {
         borderRadius: '50%'
       }} />
 
-      <div style={{ 
+      <div className="container" style={{ 
         maxWidth: 1200, 
         margin: '0 auto', 
         padding: '0 2rem',
@@ -59,7 +59,7 @@ const BusinessTechSection = () => {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-          <h2 style={{ 
+          <h2 className="section-title" style={{ 
             fontSize: 42, 
             fontWeight: 800, 
             margin: 0, 
@@ -94,7 +94,7 @@ const BusinessTechSection = () => {
               emociones
             </span>
           </h2>
-          <p style={{ 
+          <p className="section-subtitle" style={{ 
             color: '#fff', 
             fontSize: 18, 
             margin: 0, 
@@ -109,7 +109,7 @@ const BusinessTechSection = () => {
         </div>
 
         {/* Contenido principal - Dos columnas */}
-        <div style={{ 
+        <div className="cards-grid" style={{ 
           display: 'flex', 
           gap: '3rem', 
           alignItems: 'flex-start',
@@ -128,7 +128,7 @@ const BusinessTechSection = () => {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {/* Card 1 - Estado emocional */}
-              <div style={{ 
+              <div className="card" style={{ 
                 background: 'rgba(26, 35, 126, 0.8)', 
                 borderRadius: 16, 
                 padding: '1.5rem', 

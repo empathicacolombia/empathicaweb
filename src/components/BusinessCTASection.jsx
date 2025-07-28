@@ -1,6 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
+import brochurePdf from '../assets/brochure empathica.pdf';
 
 const BusinessCTASection = () => {
+  const [showContactModal, setShowContactModal] = useState(false);
+
+  const openContactModal = () => {
+    setShowContactModal(true);
+  };
+
+  const closeContactModal = () => {
+    setShowContactModal(false);
+  };
+
+  const handleDownloadBrochure = () => {
+    const link = document.createElement('a');
+    link.href = brochurePdf;
+    link.download = 'brochure-empathica.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <section style={{
       background: '#0057FF',
@@ -128,32 +147,38 @@ const BusinessCTASection = () => {
               gap: '1rem',
               flexWrap: 'wrap'
             }}>
-              <button style={{
-                background: '#ff9800',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 12,
-                padding: '1rem 2rem',
-                fontWeight: 700,
-                fontSize: 16,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(255, 152, 0, 0.3)'
-              }}>
+              <button 
+                onClick={openContactModal}
+                style={{
+                  background: '#ff9800',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '1rem 2rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 2px 8px rgba(255, 152, 0, 0.3)'
+                }}
+              >
                 Agendar demo ahora →
               </button>
-              <button style={{
-                background: '#fff',
-                color: '#0057FF',
-                border: '2px solid #0057FF',
-                borderRadius: 12,
-                padding: '1rem 2rem',
-                fontWeight: 700,
-                fontSize: 16,
-                cursor: 'pointer'
-              }}>
+              <button 
+                onClick={handleDownloadBrochure}
+                style={{
+                  background: '#fff',
+                  color: '#0057FF',
+                  border: '2px solid #0057FF',
+                  borderRadius: 12,
+                  padding: '1rem 2rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer'
+                }}
+              >
                 Descargar brochure
               </button>
             </div>
@@ -313,6 +338,107 @@ const BusinessCTASection = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Contacto */}
+      {showContactModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 24,
+            padding: '3rem',
+            width: '90%',
+            maxWidth: 500,
+            boxShadow: '0 4px 32px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+              <span style={{ fontSize: 48, marginRight: 16 }}>📧</span>
+              <h3 style={{ color: '#222', fontWeight: 800, fontSize: 28, margin: 0 }}>Contacto para Demo</h3>
+            </div>
+            
+            <p style={{ color: '#7a8bbd', fontSize: 18, marginBottom: 32, lineHeight: 1.6 }}>
+              Para agendar tu demo personalizada, contáctanos directamente a través de nuestro correo electrónico:
+            </p>
+            
+            <div style={{ 
+              background: '#f8f9fa', 
+              borderRadius: 16, 
+              padding: '1.5rem', 
+              marginBottom: 32,
+              border: '2px solid #e0e7ef'
+            }}>
+              <div style={{ color: '#222', fontWeight: 700, fontSize: 20, marginBottom: 8 }}>Correo de Contacto:</div>
+              <a 
+                href="mailto:miguel@nitbit.mx"
+                style={{ 
+                  color: '#0057FF', 
+                  fontSize: 22, 
+                  fontWeight: 700, 
+                  textDecoration: 'none',
+                  display: 'block'
+                }}
+                onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
+                onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+              >
+                miguel@nitbit.mx
+              </a>
+            </div>
+            
+            <div style={{ color: '#7a8bbd', fontSize: 16, marginBottom: 32 }}>
+              <p style={{ margin: '0 0 12px 0' }}>📅 <strong>Horarios de atención:</strong></p>
+              <p style={{ margin: '0 0 8px 0' }}>Lunes a Viernes: 9:00 AM - 6:00 PM</p>
+              <p style={{ margin: 0 }}>Sábados: 9:00 AM - 2:00 PM</p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+              <button
+                onClick={() => window.open('mailto:miguel@nitbit.mx?subject=Solicitud de Demo - Empathica&body=Hola,%0D%0A%0D%0AMe interesa agendar una demo personalizada para mi empresa.%0D%0A%0D%0ASaludos', '_blank')}
+                style={{
+                  background: '#0057FF',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '1rem 2rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}
+              >
+                📧 Enviar Correo
+              </button>
+              <button
+                onClick={closeContactModal}
+                style={{
+                  background: '#fff',
+                  color: '#7a8bbd',
+                  border: '1.5px solid #e0e7ef',
+                  borderRadius: 12,
+                  padding: '1rem 2rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer'
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

@@ -114,12 +114,7 @@ const BusinessHowItWorksSection = () => {
                 justifyContent: 'center',
                 marginBottom: '1.5rem'
               }}>
-                <svg width="32" height="32" fill="none" viewBox="0 0 32 32">
-                  <path d="M16 8c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4z" fill="#fff"/>
-                  <path d="M8 20c0-2.2 1.8-4 4-4h8c2.2 0 4 1.8 4 4v2c0 2.2-1.8 4-4 4h-8c-2.2 0-4-1.8-4-4v-2z" fill="#fff"/>
-                  <path d="M24 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="#fff"/>
-                  <path d="M26 18c0-1.1-.9-2-2-2s-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2z" fill="#fff"/>
-                </svg>
+                <span style={{ fontSize: 32, color: '#fff' }}>📧</span>
               </div>
               
               <h3 style={{
@@ -187,11 +182,7 @@ const BusinessHowItWorksSection = () => {
                 justifyContent: 'center',
                 marginBottom: '1.5rem'
               }}>
-                <svg width="32" height="32" fill="none" viewBox="0 0 32 32">
-                  <path d="M16 8c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6z" fill="#fff"/>
-                  <path d="M8 20c0-2.2 1.8-4 4-4h8c2.2 0 4 1.8 4 4v2c0 2.2-1.8 4-4 4h-8c-2.2 0-4-1.8-4-4v-2z" fill="#fff"/>
-                  <path d="M12 14h8M12 18h6" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
+                <span style={{ fontSize: 32, color: '#fff' }}>📝</span>
               </div>
               
               <h3 style={{
@@ -259,15 +250,7 @@ const BusinessHowItWorksSection = () => {
                 justifyContent: 'center',
                 marginBottom: '1.5rem'
               }}>
-                <svg width="32" height="32" fill="none" viewBox="0 0 32 32">
-                  <path d="M4 28h24" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M8 20l4-4 4 4 4-4 4 4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12 16v12" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M20 16v12" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-                  <rect x="6" y="8" width="4" height="8" fill="#fff"/>
-                  <rect x="14" y="4" width="4" height="12" fill="#fff"/>
-                  <rect x="22" y="12" width="4" height="4" fill="#fff"/>
-                </svg>
+                <span style={{ fontSize: 32, color: '#fff' }}>🤖</span>
               </div>
               
               <h3 style={{
@@ -335,11 +318,7 @@ const BusinessHowItWorksSection = () => {
                 justifyContent: 'center',
                 marginBottom: '1.5rem'
               }}>
-                <svg width="32" height="32" fill="none" viewBox="0 0 32 32">
-                  <path d="M16 4l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6l2-6z" fill="#fff"/>
-                  <circle cx="16" cy="16" r="12" stroke="#fff" strokeWidth="2" fill="none"/>
-                  <path d="M12 16l2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <span style={{ fontSize: 32, color: '#fff' }}>🛠️</span>
               </div>
               
               <h3 style={{
