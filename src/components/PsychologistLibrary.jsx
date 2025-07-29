@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Video, Headphones, FileText, Upload, Filter, Download, Star } from 'lucide-react';
+import { BookOpen, FileText, Filter, Download, Star } from 'lucide-react';
 
 const categories = [
   { label: 'TCC', count: 12 },
@@ -9,12 +9,12 @@ const categories = [
   { label: 'Técnicas', count: 20 },
 ];
 
-const tabs = ['Todos', 'Artículos', 'Videos', 'Audio'];
+const tabs = ['Todos', 'Artículos', 'Manuales'];
 
 const resources = [
   {
     type: 'Artículo',
-    icon: <FileText size={32} color="#6ea8fe" />, // Artículo
+    icon: <FileText size={32} color="#6ea8fe" />,
     title: 'Técnicas de Terapia Cognitivo-Conductual',
     desc: 'Guía completa sobre técnicas avanzadas de TCC para tratamiento de ansiedad',
     author: 'Dr. María Rodríguez',
@@ -23,33 +23,53 @@ const resources = [
     badge: { text: 'Artículo', color: '#e6f0ff', textColor: '#0057FF' },
   },
   {
-    type: 'Video',
-    icon: <Video size={32} color="#6ea8fe" />, // Video
-    title: 'Mindfulness para Profesionales',
-    desc: 'Serie de videos sobre aplicación de mindfulness en consulta',
-    author: 'Dr. Carlos Mendoza',
-    rating: 4.9,
-    downloads: 856,
-    badge: { text: 'Video', color: '#ffe6e6', textColor: '#ff5e5e' },
-  },
-  {
-    type: 'Audio',
-    icon: <Headphones size={32} color="#6ea8fe" />, // Audio
-    title: 'Podcast: Casos Clínicos',
-    desc: 'Análisis de casos clínicos reales con enfoques terapéuticos',
-    author: 'Dra. Ana García',
-    rating: 4.7,
-    downloads: 2145,
-    badge: { text: 'Audio', color: '#e6ffe6', textColor: '#2ecc71' },
-  },
-  {
     type: 'Manual',
-    icon: <BookOpen size={32} color="#6ea8fe" />, // Manual
+    icon: <BookOpen size={32} color="#6ea8fe" />,
     title: 'Manual de Intervención en Crisis',
     desc: 'Protocolo completo para manejo de situaciones de crisis',
     author: 'Dr. Pedro Ruiz',
     rating: 4.6,
     downloads: 567,
+    badge: { text: 'Manual', color: '#f3e6ff', textColor: '#a259e6' },
+  },
+  {
+    type: 'Artículo',
+    icon: <FileText size={32} color="#6ea8fe" />,
+    title: 'Mindfulness en la Práctica Clínica',
+    desc: 'Aplicación práctica de técnicas de mindfulness en terapia',
+    author: 'Dra. Ana García',
+    rating: 4.7,
+    downloads: 892,
+    badge: { text: 'Artículo', color: '#e6f0ff', textColor: '#0057FF' },
+  },
+  {
+    type: 'Manual',
+    icon: <BookOpen size={32} color="#6ea8fe" />,
+    title: 'Guía de Evaluación Psicológica',
+    desc: 'Protocolos y herramientas para evaluación psicológica integral',
+    author: 'Dr. Carlos Mendoza',
+    rating: 4.9,
+    downloads: 445,
+    badge: { text: 'Manual', color: '#f3e6ff', textColor: '#a259e6' },
+  },
+  {
+    type: 'Artículo',
+    icon: <FileText size={32} color="#6ea8fe" />,
+    title: 'Terapia de Aceptación y Compromiso (ACT)',
+    desc: 'Fundamentos y aplicación práctica de ACT en consulta',
+    author: 'Dr. Luis Fernández',
+    rating: 4.5,
+    downloads: 678,
+    badge: { text: 'Artículo', color: '#e6f0ff', textColor: '#0057FF' },
+  },
+  {
+    type: 'Manual',
+    icon: <BookOpen size={32} color="#6ea8fe" />,
+    title: 'Protocolo de Intervención en Trauma',
+    desc: 'Enfoques terapéuticos para el tratamiento del trauma psicológico',
+    author: 'Dra. Patricia Morales',
+    rating: 4.8,
+    downloads: 334,
     badge: { text: 'Manual', color: '#f3e6ff', textColor: '#a259e6' },
   },
 ];

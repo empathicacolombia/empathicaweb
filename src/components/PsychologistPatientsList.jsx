@@ -24,27 +24,53 @@ const PsychologistPatientsList = () => {
       emergencyContact: 'Carlos González - +57 300 987 6543',
       startDate: '15/3/2025',
       diagnosis: ['Estrés laboral', 'Ansiedad moderada'],
+      // Información diagnóstica y de test
+      testResults: {
+        completed: true,
+        date: '10/3/2025',
+        profile: {
+          nivelAngustia: 'Moderado',
+          disposicionCambio: 'Alta',
+          orientacionTemporal: 'Presente',
+          estiloTrabajoPaciente: 'Colaborativo'
+        },
+        therapeuticApproaches: [
+          'Terapia Cognitivo-Conductual (TCC)',
+          'Mindfulness',
+          'Terapia de Aceptación y Compromiso (ACT)'
+        ]
+      },
+      currentTags: ['Estrés laboral', 'Mindfulness', 'Autoestima', 'Límites', 'Relajación'],
+      progressMetrics: {
+        anxietyLevel: 'Reducido 40%',
+        stressManagement: 'Mejorado',
+        sleepQuality: 'Estable',
+        overallWellbeing: 'Progreso significativo'
+      },
       notes: [
         {
           sessionNumber: 8,
           date: '21/7/2025',
           summary: 'Excelente progreso en manejo de estrés laboral. Técnicas de relajación implementadas exitosamente.',
           duration: '50 min',
-          status: 'Completada'
+          status: 'Completada',
+          tags: ['Progreso', 'Relajación', 'Estrés laboral']
         },
         {
           sessionNumber: 7,
           date: '14/7/2025',
           summary: 'Trabajo en establecimiento de límites laborales y técnicas de mindfulness.',
           duration: '45 min',
-          status: 'Completada'
+          status: 'Completada',
+          tags: ['Mindfulness', 'Límites', 'Estrés laboral']
         },
         {
           sessionNumber: 6,
           date: '7/7/2025',
           summary: 'Evaluación de progreso. Paciente reporta mejoría significativa en síntomas de ansiedad.',
           duration: '50 min',
-          status: 'Completada'
+          status: 'Completada',
+          tags: ['Evaluación', 'Progreso', 'Ansiedad']
         }
       ]
     },
@@ -63,20 +89,45 @@ const PsychologistPatientsList = () => {
       emergencyContact: 'Ana Rodríguez - +57 300 876 5432',
       startDate: '20/5/2025',
       diagnosis: ['Depresión leve', 'Problemas de autoestima'],
+      // Información diagnóstica y de test
+      testResults: {
+        completed: true,
+        date: '15/5/2025',
+        profile: {
+          nivelAngustia: 'Bajo',
+          disposicionCambio: 'Media',
+          orientacionTemporal: 'Pasado',
+          estiloTrabajoPaciente: 'Directivo'
+        },
+        therapeuticApproaches: [
+          'Terapia Cognitivo-Conductual (TCC)',
+          'Terapia de Activación Conductual',
+          'Técnicas de Autoestima'
+        ]
+      },
+      currentTags: ['Depresión', 'Autoestima', 'Comunicación', 'Progreso'],
+      progressMetrics: {
+        depressionLevel: 'Reducido 25%',
+        selfEsteem: 'Mejorando gradualmente',
+        socialInteraction: 'Incrementada',
+        motivation: 'En desarrollo'
+      },
       notes: [
         {
           sessionNumber: 5,
           date: '19/7/2025',
           summary: 'Continuación de trabajo en autoestima. Paciente muestra mayor confianza.',
           duration: '45 min',
-          status: 'Completada'
+          status: 'Completada',
+          tags: ['Autoestima', 'Progreso', 'Confianza']
         },
         {
           sessionNumber: 4,
           date: '12/7/2025',
           summary: 'Primera sesión de terapia cognitivo-conductual para depresión.',
           duration: '50 min',
-          status: 'Completada'
+          status: 'Completada',
+          tags: ['TCC', 'Depresión', 'Evaluación']
         }
       ]
     },
@@ -95,84 +146,45 @@ const PsychologistPatientsList = () => {
       emergencyContact: 'Miguel López - +57 300 765 4321',
       startDate: '10/1/2025',
       diagnosis: ['TOC', 'Ansiedad generalizada'],
+      // Información diagnóstica y de test
+      testResults: {
+        completed: true,
+        date: '5/1/2025',
+        profile: {
+          nivelAngustia: 'Alto',
+          disposicionCambio: 'Alta',
+          orientacionTemporal: 'Futuro',
+          estiloTrabajoPaciente: 'Estructurado'
+        },
+        therapeuticApproaches: [
+          'Terapia de Exposición y Prevención de Respuesta (ERP)',
+          'Terapia Cognitivo-Conductual (TCC)',
+          'Mindfulness'
+        ]
+      },
+      currentTags: ['TOC', 'Ansiedad', 'Mindfulness', 'Exposición', 'Progreso'],
+      progressMetrics: {
+        ocdSymptoms: 'Reducidos 60%',
+        anxietyLevel: 'Controlada',
+        dailyFunctioning: 'Mejorada significativamente',
+        qualityOfLife: 'Excelente progreso'
+      },
       notes: [
         {
           sessionNumber: 12,
           date: '17/7/2025',
-          summary: 'Seguimiento de técnicas de mindfulness. Reducción significativa en síntomas de TOC.',
+          summary: 'Continuación exitosa de técnicas de exposición. Paciente maneja mejor los síntomas de TOC.',
           duration: '60 min',
-          status: 'Completada'
+          status: 'Completada',
+          tags: ['TOC', 'Exposición', 'Progreso']
         },
         {
           sessionNumber: 11,
           date: '10/7/2025',
-          summary: 'Trabajo en exposición y prevención de respuesta para TOC.',
-          duration: '60 min',
-          status: 'Completada'
-        }
-      ]
-    },
-    {
-      id: 4,
-      name: 'Jorge Martínez',
-      status: 'Inactivo',
-      lastSession: '14/7/2025',
-      totalSessions: '6',
-      nextSession: 'No programada',
-      email: 'jorge.martinez@email.com',
-      phone: '+57 300 456 7890',
-      age: 41,
-      gender: 'Masculino',
-      address: 'Calle 89 #67-89, Barranquilla',
-      emergencyContact: 'Laura Martínez - +57 300 654 3210',
-      startDate: '25/4/2025',
-      diagnosis: ['Burnout', 'Estrés laboral'],
-      notes: [
-        {
-          sessionNumber: 6,
-          date: '14/7/2025',
-          summary: 'Última sesión. Paciente decidió pausar tratamiento temporalmente.',
+          summary: 'Implementación de técnicas de mindfulness para manejo de ansiedad.',
           duration: '50 min',
-          status: 'Completada'
-        },
-        {
-          sessionNumber: 5,
-          date: '7/7/2025',
-          summary: 'Trabajo en estrategias de manejo de estrés laboral.',
-          duration: '45 min',
-          status: 'Completada'
-        }
-      ]
-    },
-    {
-      id: 5,
-      name: 'Laura Sánchez',
-      status: 'Activo',
-      lastSession: '11/7/2025',
-      totalSessions: '9',
-      nextSession: '25/7/2025',
-      email: 'laura.sanchez@email.com',
-      phone: '+57 300 567 8901',
-      age: 29,
-      gender: 'Femenino',
-      address: 'Carrera 45 #12-78, Bucaramanga',
-      emergencyContact: 'Roberto Sánchez - +57 300 543 2109',
-      startDate: '5/2/2025',
-      diagnosis: ['Fobia social', 'Ansiedad social'],
-      notes: [
-        {
-          sessionNumber: 9,
-          date: '11/7/2025',
-          summary: 'Evaluación de progreso en fobia social. Mejoras significativas en interacciones sociales.',
-          duration: '50 min',
-          status: 'Completada'
-        },
-        {
-          sessionNumber: 8,
-          date: '4/7/2025',
-          summary: 'Técnicas de exposición gradual para fobia social.',
-          duration: '45 min',
-          status: 'Completada'
+          status: 'Completada',
+          tags: ['Mindfulness', 'Ansiedad', 'Técnicas']
         }
       ]
     }
@@ -529,133 +541,142 @@ const PsychologistPatientsList = () => {
               </button>
             </div>
 
-            {/* Información personal */}
+            {/* Información diagnóstica y de test */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
               gap: '1.5rem',
               marginBottom: '2rem'
             }}>
+              {/* Resultados del Test */}
               <div style={{
-                background: '#f8f9fa',
+                background: '#f0f9ff',
                 borderRadius: 8,
-                padding: '1.5rem'
+                padding: '1.5rem',
+                border: '1px solid #bae6fd'
               }}>
                 <h3 style={{
                   fontSize: 18,
                   fontWeight: 600,
-                  color: '#333',
-                  margin: '0 0 1rem 0'
-                }}>
-                  Información Personal
-                </h3>
-                <div style={{
+                  color: '#0057FF',
+                  margin: '0 0 1rem 0',
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem'
+                  alignItems: 'center',
+                  gap: '8px'
                 }}>
+                  <FileText size={20} />
+                  Resultados del Test
+                </h3>
+                {selectedPatient.testResults.completed ? (
                   <div style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
+                    flexDirection: 'column',
+                    gap: '0.75rem'
                   }}>
-                    <Users size={16} color="#666" />
-                    <span style={{ fontSize: 14, color: '#333' }}>
-                      <strong>Nombre:</strong> {selectedPatient.name}
-                    </span>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Calendar size={16} color="#0057FF" />
+                      <span style={{ fontSize: 14, color: '#333' }}>
+                        <strong>Fecha del test:</strong> {selectedPatient.testResults.date}
+                      </span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Tag size={16} color="#0057FF" />
+                      <span style={{ fontSize: 14, color: '#333' }}>
+                        <strong>Nivel de angustia:</strong> {selectedPatient.testResults.profile.nivelAngustia}
+                      </span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Users size={16} color="#0057FF" />
+                      <span style={{ fontSize: 14, color: '#333' }}>
+                        <strong>Disposición al cambio:</strong> {selectedPatient.testResults.profile.disposicionCambio}
+                      </span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Clock size={16} color="#0057FF" />
+                      <span style={{ fontSize: 14, color: '#333' }}>
+                        <strong>Orientación temporal:</strong> {selectedPatient.testResults.profile.orientacionTemporal}
+                      </span>
+                    </div>
                   </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <Mail size={16} color="#666" />
-                    <span style={{ fontSize: 14, color: '#333' }}>
-                      <strong>Email:</strong> {selectedPatient.email}
-                    </span>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <Phone size={16} color="#666" />
-                    <span style={{ fontSize: 14, color: '#333' }}>
-                      <strong>Teléfono:</strong> {selectedPatient.phone}
-                    </span>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <MapPin size={16} color="#666" />
-                    <span style={{ fontSize: 14, color: '#333' }}>
-                      <strong>Dirección:</strong> {selectedPatient.address}
-                    </span>
-                  </div>
-                </div>
+                ) : (
+                  <p style={{ fontSize: 14, color: '#666', fontStyle: 'italic' }}>
+                    No se ha completado el test de match perfecto
+                  </p>
+                )}
               </div>
 
+              {/* Métricas de Progreso */}
               <div style={{
-                background: '#f8f9fa',
+                background: '#f0fdf4',
                 borderRadius: 8,
-                padding: '1.5rem'
+                padding: '1.5rem',
+                border: '1px solid #bbf7d0'
               }}>
                 <h3 style={{
                   fontSize: 18,
                   fontWeight: 600,
-                  color: '#333',
-                  margin: '0 0 1rem 0'
+                  color: '#16a34a',
+                  margin: '0 0 1rem 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}>
-                  Información Clínica
+                  <Tag size={20} />
+                  Métricas de Progreso
                 </h3>
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.75rem'
                 }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <CalendarDays size={16} color="#666" />
-                    <span style={{ fontSize: 14, color: '#333' }}>
-                      <strong>Fecha de inicio:</strong> {selectedPatient.startDate}
-                    </span>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <Clock size={16} color="#666" />
-                    <span style={{ fontSize: 14, color: '#333' }}>
-                      <strong>Total sesiones:</strong> {selectedPatient.totalSessions}
-                    </span>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <span style={{
-                      background: selectedPatient.status === 'Activo' ? '#22C55E' : '#6B7280',
-                      color: '#fff',
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '20px',
-                      fontSize: 12,
-                      fontWeight: 600
+                  {Object.entries(selectedPatient.progressMetrics).map(([key, value]) => (
+                    <div key={key} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px 12px',
+                      background: '#fff',
+                      borderRadius: '6px',
+                      border: '1px solid #dcfce7'
                     }}>
-                      {selectedPatient.status}
-                    </span>
-                  </div>
+                      <span style={{ 
+                        fontSize: 14, 
+                        color: '#333',
+                        textTransform: 'capitalize',
+                        fontWeight: '500'
+                      }}>
+                        {key.replace(/([A-Z])/g, ' $1').trim()}:
+                      </span>
+                      <span style={{ 
+                        fontSize: 14, 
+                        color: '#16a34a',
+                        fontWeight: '600'
+                      }}>
+                        {value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Diagnósticos */}
+            {/* Tags Actuales */}
             <div style={{
               background: '#f8f9fa',
               borderRadius: 8,
@@ -666,16 +687,20 @@ const PsychologistPatientsList = () => {
                 fontSize: 18,
                 fontWeight: 600,
                 color: '#333',
-                margin: '0 0 1rem 0'
+                margin: '0 0 1rem 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                Diagnósticos
+                <Tag size={20} />
+                Tags Actuales
               </h3>
               <div style={{
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: '0.5rem'
               }}>
-                {selectedPatient.diagnosis.map((diagnosis, index) => (
+                {selectedPatient.currentTags.map((tag, index) => (
                   <span
                     key={index}
                     style={{
@@ -687,8 +712,55 @@ const PsychologistPatientsList = () => {
                       fontWeight: 600
                     }}
                   >
-                    {diagnosis}
+                    {tag}
                   </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Enfoques Terapéuticos Recomendados */}
+            <div style={{
+              background: '#fef3c7',
+              borderRadius: 8,
+              padding: '1.5rem',
+              marginBottom: '2rem',
+              border: '1px solid #fde68a'
+            }}>
+              <h3 style={{
+                fontSize: 18,
+                fontWeight: 600,
+                color: '#92400e',
+                margin: '0 0 1rem 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <FileText size={20} />
+                Enfoques Terapéuticos Recomendados
+              </h3>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem'
+              }}>
+                {selectedPatient.testResults.therapeuticApproaches.map((approach, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      background: '#fff',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      fontSize: 14,
+                      color: '#92400e',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      border: '1px solid #fde68a'
+                    }}
+                  >
+                    <Tag size={14} />
+                    {approach}
+                  </div>
                 ))}
               </div>
             </div>

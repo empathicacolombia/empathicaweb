@@ -158,7 +158,79 @@ const ClientDashboard = ({ navigationProps }) => {
               Es un nuevo día para cuidar tu bienestar emocional
             </p>
             {/* Botones de acción */}
-            {/* Botones removidos - se accede desde el menú lateral */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              '@media (min-width: 768px)': {
+                flexDirection: 'row',
+                gap: '16px'
+              }
+            }}>
+              {/* Botón para hacer el test */}
+              <button
+                onClick={() => handleNavigation('questionnaire-match')}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  color: '#fff',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backdropFilter: 'blur(10px)',
+                  flex: 1
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <TrendingUp size={20} />
+                Realizar Test de Match Perfecto
+              </button>
+
+              {/* Botón para solicitar orientación */}
+              <button
+                onClick={() => handleNavigation('free-orientation')}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  color: '#fff',
+                  border: '2px solid rgba(255, 255, 255, 0.25)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backdropFilter: 'blur(10px)',
+                  flex: 1
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <Heart size={20} />
+                Solicitar Orientación
+              </button>
+            </div>
           </div>
 
           {/* Métricas */}

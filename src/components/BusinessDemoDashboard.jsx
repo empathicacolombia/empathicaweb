@@ -321,7 +321,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
         {activeSection === 'Dashboard' && (
           <div style={{ marginTop: 24, marginBottom: 24 }}>
             {/* Tarjetas de métricas principales */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, marginBottom: 18 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginBottom: 18 }}>
               <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <Smile size={26} color="#2ecc71" />
                 <div style={{ color: '#2ecc71', fontWeight: 700, fontSize: 17 }}>78%</div>
@@ -343,28 +343,14 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 <div style={{ color: '#7a8bbd', fontSize: 12 }}>de 520 empleados</div>
                 <span style={{ color: '#7a8bbd', fontSize: 10, marginTop: 6 }}>Live</span>
               </div>
-              <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <TrendingUp size={26} color="#a259e6" />
-                <div style={{ color: '#a259e6', fontWeight: 800, fontSize: 17 }}>$2.4M</div>
-                <div style={{ color: '#222', fontWeight: 700, fontSize: 13 }}>Ventas del Equipo</div>
-                <div style={{ color: '#7a8bbd', fontSize: 12 }}>+18% este mes</div>
-                <span style={{ color: '#7a8bbd', fontSize: 10, marginTop: 6 }}>Live</span>
-              </div>
             </div>
             {/* Segunda fila de métricas */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18, marginBottom: 18 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: 18, marginBottom: 18 }}>
               <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <AlertTriangle size={26} color="#ffb3b3" />
                 <div style={{ color: '#ff5e5e', fontWeight: 800, fontSize: 17 }}>156</div>
                 <div style={{ color: '#222', fontWeight: 700, fontSize: 13 }}>Reportan Estrés</div>
                 <div style={{ color: '#7a8bbd', fontSize: 12 }}>30% de empleados activos</div>
-                <span style={{ color: '#7a8bbd', fontSize: 10, marginTop: 6 }}>Live</span>
-              </div>
-              <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <Megaphone size={26} color="#ffb3e6" />
-                <div style={{ color: '#ff5e5e', fontWeight: 800, fontSize: 17 }}>92%</div>
-                <div style={{ color: '#222', fontWeight: 700, fontSize: 13 }}>Engagement Marketing</div>
-                <div style={{ color: '#7a8bbd', fontSize: 12 }}>Participación en campañas</div>
                 <span style={{ color: '#7a8bbd', fontSize: 10, marginTop: 6 }}>Live</span>
               </div>
             </div>
@@ -973,7 +959,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                   onClick={openAssignSessionsModal}
                   style={{ background: '#0057ff', color: '#fff', border: 'none', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                 >
-                  <span style={{ fontSize: 20 }}>👥</span> Asignar Sesiones
+                  <span style={{ fontSize: 20 }}>👥</span> Editar Sesiones
                 </button>
                 <button 
                   onClick={openNotificationModal}
@@ -1908,7 +1894,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             boxShadow: '0 4px 32px rgba(0, 0, 0, 0.1)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-              <h3 style={{ color: '#222', fontWeight: 800, fontSize: 24, margin: 0 }}>Asignar Sesiones</h3>
+              <h3 style={{ color: '#222', fontWeight: 800, fontSize: 24, margin: 0 }}>Editar Sesiones</h3>
               <button 
                 onClick={() => setShowAssignSessionsModal(false)}
                 style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#7a8bbd' }}
@@ -1942,7 +1928,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
               </div>
               
               <div>
-                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#222' }}>Número de Sesiones</label>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#222' }}>Nuevo Número de Sesiones</label>
                 <input
                   type="number"
                   min="0"
@@ -1972,7 +1958,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                         <div><strong>Nombre:</strong> {selectedEmp.name}</div>
                         <div><strong>Departamento:</strong> {selectedEmp.department}</div>
                         <div><strong>Sesiones actuales:</strong> {selectedEmp.sessions}</div>
-                        <div><strong>Sesiones nuevas:</strong> {assignSessionsForm.sessions}</div>
+                        <div><strong>Sesiones después del cambio:</strong> {assignSessionsForm.sessions}</div>
                       </div>
                     ) : null;
                   })()}
@@ -1997,7 +1983,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                   opacity: (!assignSessionsForm.employeeId || assignSessionsForm.sessions < 0) ? 0.5 : 1
                 }}
               >
-                👥 Asignar Sesiones
+                👥 Guardar Cambios
               </button>
               <button
                 onClick={() => setShowAssignSessionsModal(false)}

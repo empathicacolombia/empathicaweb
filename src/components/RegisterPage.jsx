@@ -42,7 +42,8 @@ const RegisterPage = ({ navigationProps }) => {
     if (userType === 'psychologist') {
       handleNavigation('psychologist-profile-form');
     } else {
-      handleNavigation('questionnaire-match');
+      // Cliente va directo al dashboard
+      handleNavigation('client-dashboard');
     }
   };
 

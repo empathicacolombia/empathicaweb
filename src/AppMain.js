@@ -19,6 +19,7 @@ import TestResults from './components/TestResults';
 import PsychologistProfileForm from './components/PsychologistProfileForm';
 import FreeOrientationPage from './components/FreeOrientationPage';
 import BusinessDemoSection from './components/BusinessDemoSection';
+import ClientProfilePage from './components/ClientProfilePage';
 
 function AppMain() {
   const [currentPage, setCurrentPage] = useState('individuals');
@@ -93,6 +94,8 @@ function AppMain() {
         <FreeOrientationPage navigationProps={navigationProps} />
       ) : currentPage === 'business-demo' ? (
         <BusinessDemoSection navigationProps={navigationProps} />
+      ) : currentPage === 'client-profile' ? (
+        <ClientProfilePage navigationProps={navigationProps} testAnswers={testAnswers} />
       ) : (
         <App navigationProps={navigationProps} />
       )}

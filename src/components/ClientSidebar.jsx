@@ -16,7 +16,7 @@ const sidebarItems = [
   { key: 'for-you', label: 'For You', icon: <Heart size={20} /> },
   { key: 'my-specialist', label: 'Mi Especialista', icon: <Users size={20} /> },
   { key: 'support', label: 'Soporte', icon: <LifeBuoy size={20} /> },
-  { key: 'profile', label: 'Mi Perfil', icon: <User size={20} /> },
+  { key: 'client-profile', label: 'Mi Perfil', icon: <User size={20} /> },
 ];
 
 const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {

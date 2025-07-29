@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
-import { Plus, Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, XCircle, AlertCircle, Edit, Trash, Save, CheckSquare, Square } from 'lucide-react';
+import { Plus, Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, XCircle, AlertCircle, Edit, Trash, Save, CheckSquare, Square, Play, Check } from 'lucide-react';
 
 const tabs = ['Próximas', 'Hoy'];
 
 const PsychologistAppointments = () => {
   const [activeTab, setActiveTab] = useState('Próximas');
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [editForm, setEditForm] = useState({
-    status: '',
-    attendance: false,
+  const [notesForm, setNotesForm] = useState({
     notes: '',
     tags: []
   });
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelForm, setCancelForm] = useState({
     reason: '',
@@ -41,7 +38,7 @@ const PsychologistAppointments = () => {
   ];
 
   // Datos en duro para trabajar en el diseño
-  const upcomingAppointments = [
+  const [appointments, setAppointments] = useState([
     {
       id: 1,
       patientName: 'María González',
@@ -81,7 +78,7 @@ const PsychologistAppointments = () => {
       time: '16:00',
       duration: '60 min',
       type: 'Sesión Individual',
-      status: 'Confirmada',
+      status: 'En Proceso',
       location: 'Presencial - Consultorio 1',
       notes: 'Seguimiento de técnicas de mindfulness',
       avatar: 'AL',
@@ -100,11 +97,8 @@ const PsychologistAppointments = () => {
       location: 'Virtual - Teams',
       notes: 'Evaluación de progreso en terapia',
       avatar: 'ER',
-      tags: ['Depresión', 'Autoestima']
-    }
-  ];
-
-  const todayAppointments = [
+      tags: ['Evaluación', 'Progreso']
+    },
     {
       id: 5,
       patientName: 'Laura Sánchez',
@@ -114,160 +108,112 @@ const PsychologistAppointments = () => {
       time: '09:00',
       duration: '45 min',
       type: 'Sesión Individual',
-      status: 'En curso',
+      status: 'Completada',
       location: 'Presencial - Consultorio 2',
-      notes: 'Sesión de terapia cognitivo-conductual',
+      notes: 'Sesión de terapia cognitivo-conductual completada exitosamente',
       avatar: 'LS',
-      tags: ['TOC', 'Ansiedad']
-    },
-    {
-      id: 6,
-      patientName: 'Diego Fernández',
-      patientEmail: 'diego.fernandez@email.com',
-      patientPhone: '+57 300 012 3456',
-      date: '24/7/2025',
-      time: '11:00',
-      duration: '50 min',
-      type: 'Sesión Individual',
-      status: 'Confirmada',
-      location: 'Virtual - Zoom',
-      notes: 'Continuar trabajo en autoestima',
-      avatar: 'DF',
-      tags: ['Autoestima', 'Comunicación']
-    },
-    {
-      id: 7,
-      patientName: 'Patricia Morales',
-      patientEmail: 'patricia.morales@email.com',
-      patientPhone: '+57 300 789 0123',
-      date: '24/7/2025',
-      time: '16:30',
-      duration: '60 min',
-      type: 'Sesión Individual',
-      status: 'Confirmada',
-      location: 'Presencial - Consultorio 3',
-      notes: 'Evaluación de ansiedad social',
-      avatar: 'PM',
-      tags: ['Fobia social', 'Ansiedad']
+      tags: ['TOC', 'Ansiedad', 'Progreso']
     }
-  ];
+  ]);
 
   const getAppointmentsByTab = () => {
-    switch (activeTab) {
-      case 'Próximas':
-        return upcomingAppointments;
-      case 'Hoy':
-        return todayAppointments;
-      default:
-        return [];
+    if (activeTab === 'Próximas') {
+      return appointments.filter(apt => apt.status === 'Confirmada' || apt.status === 'Pendiente');
+    } else if (activeTab === 'Hoy') {
+      return appointments.filter(apt => apt.status === 'En Proceso' || apt.status === 'Completada');
     }
+    return [];
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
       case 'Confirmada':
-        return <CheckCircle size={16} color="#22C55E" />;
+        return <CheckCircle size={16} color="#10B981" />;
       case 'Pendiente':
-        return <AlertCircle size={16} color="#F97316" />;
-      case 'En curso':
-        return <Clock size={16} color="#0057FF" />;
+        return <AlertCircle size={16} color="#F59E0B" />;
+      case 'En Proceso':
+        return <Play size={16} color="#3B82F6" />;
       case 'Completada':
-        return <CheckCircle size={16} color="#22C55E" />;
+        return <Check size={16} color="#10B981" />;
       case 'Cancelada':
         return <XCircle size={16} color="#EF4444" />;
-      case 'No asistió':
-        return <XCircle size={16} color="#6B7280" />;
       default:
-        return <AlertCircle size={16} color="#F97316" />;
+        return <AlertCircle size={16} color="#6B7280" />;
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'Confirmada':
-        return '#22C55E';
+        return '#10B981';
       case 'Pendiente':
-        return '#F97316';
-      case 'En curso':
-        return '#0057FF';
+        return '#F59E0B';
+      case 'En Proceso':
+        return '#3B82F6';
       case 'Completada':
-        return '#22C55E';
+        return '#10B981';
       case 'Cancelada':
         return '#EF4444';
-      case 'No asistió':
-        return '#6B7280';
       default:
-        return '#F97316';
+        return '#6B7280';
     }
   };
 
-  // Función para abrir modal de edición
-  const openEditModal = (appointment) => {
+  const startAppointment = (appointment) => {
+    setAppointments(prev => prev.map(apt => 
+      apt.id === appointment.id 
+        ? { ...apt, status: 'En Proceso' }
+        : apt
+    ));
+  };
+
+  const openNotesModal = (appointment) => {
     setSelectedAppointment(appointment);
-    setEditForm({
-      status: appointment.status,
-      attendance: appointment.attendance || false,
+    setNotesForm({
       notes: appointment.notes || '',
       tags: appointment.tags || []
     });
-    setShowEditModal(true);
+    setShowNotesModal(true);
   };
 
-  // Función para cerrar modal de edición
-  const closeEditModal = () => {
-    setShowEditModal(false);
+  const closeNotesModal = () => {
+    setShowNotesModal(false);
     setSelectedAppointment(null);
-    setEditForm({
-      status: '',
-      attendance: false,
-      notes: '',
-      tags: []
-    });
+    setNotesForm({ notes: '', tags: [] });
   };
 
-  // Función para manejar cambios en el formulario
-  const handleFormChange = (field, value) => {
-    setEditForm(prev => ({
+  const handleNotesFormChange = (field, value) => {
+    setNotesForm(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  // Función para manejar tags
   const handleTagToggle = (tag) => {
-    const currentTags = editForm.tags;
-    if (currentTags.includes(tag)) {
-      handleFormChange('tags', currentTags.filter(t => t !== tag));
-    } else {
-      handleFormChange('tags', [...currentTags, tag]);
+    setNotesForm(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter(t => t !== tag)
+        : [...prev.tags, tag]
+    }));
+  };
+
+  const saveNotesAndComplete = () => {
+    if (selectedAppointment) {
+      setAppointments(prev => prev.map(apt => 
+        apt.id === selectedAppointment.id 
+          ? { 
+              ...apt, 
+              status: 'Completada',
+              notes: notesForm.notes,
+              tags: notesForm.tags
+            }
+          : apt
+      ));
     }
+    closeNotesModal();
   };
 
-  // Función para guardar cambios
-  const saveChanges = () => {
-    // Aquí se guardarían los cambios en la base de datos
-    console.log('Guardando cambios para:', selectedAppointment.patientName, editForm);
-    closeEditModal();
-  };
-
-  // Función para abrir modal de confirmación
-  const openConfirmModal = () => {
-    setShowConfirmModal(true);
-  };
-
-  // Función para cerrar modal de confirmación
-  const closeConfirmModal = () => {
-    setShowConfirmModal(false);
-  };
-
-  // Función para confirmar terminación de cita
-  const confirmFinishAppointment = () => {
-    console.log('Terminando cita:', selectedAppointment.patientName);
-    closeConfirmModal();
-    closeEditModal();
-  };
-
-  // Función para abrir modal de cancelación
   const openCancelModal = (appointment) => {
     setSelectedAppointment(appointment);
     setCancelForm({
@@ -279,7 +225,6 @@ const PsychologistAppointments = () => {
     setShowCancelModal(true);
   };
 
-  // Función para cerrar modal de cancelación
   const closeCancelModal = () => {
     setShowCancelModal(false);
     setSelectedAppointment(null);
@@ -291,7 +236,6 @@ const PsychologistAppointments = () => {
     });
   };
 
-  // Función para manejar cambios en el formulario de cancelación
   const handleCancelFormChange = (field, value) => {
     setCancelForm(prev => ({
       ...prev,
@@ -299,13 +243,84 @@ const PsychologistAppointments = () => {
     }));
   };
 
-  // Función para confirmar cancelación
   const confirmCancelAppointment = () => {
-    console.log('Cancelando cita:', selectedAppointment.patientName, cancelForm);
+    if (selectedAppointment) {
+      setAppointments(prev => prev.map(apt => 
+        apt.id === selectedAppointment.id 
+          ? { ...apt, status: 'Cancelada' }
+          : apt
+      ));
+    }
     closeCancelModal();
   };
 
-  const appointments = getAppointmentsByTab();
+  const getActionButton = (appointment) => {
+    switch (appointment.status) {
+      case 'Confirmada':
+      case 'Pendiente':
+        return (
+          <button 
+            onClick={() => startAppointment(appointment)}
+            style={{
+              background: '#3B82F6',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              padding: '0.5rem 1rem',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#2563EB'}
+            onMouseLeave={e => e.currentTarget.style.background = '#3B82F6'}
+          >
+            <Play size={14} />
+            Comenzar
+          </button>
+        );
+      case 'En Proceso':
+        return (
+          <button 
+            onClick={() => openNotesModal(appointment)}
+            style={{
+              background: '#10B981',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              padding: '0.5rem 1rem',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#059669'}
+            onMouseLeave={e => e.currentTarget.style.background = '#10B981'}
+          >
+            <Check size={14} />
+            Finalizar
+          </button>
+        );
+      case 'Completada':
+        return (
+          <span style={{
+            color: '#10B981',
+            fontSize: 12,
+            fontWeight: 600
+          }}>
+            Completada
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -567,47 +582,32 @@ const PsychologistAppointments = () => {
               {/* Acciones */}
               <div style={{
                 display: 'flex',
+                alignItems: 'center',
                 gap: '0.5rem',
                 justifyContent: 'flex-end'
               }}>
-                <button 
-                  onClick={() => openEditModal(appointment)}
-                  style={{
-                    background: '#fff',
-                    color: '#666',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 6,
-                    padding: '0.5rem 1rem',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <Edit size={14} />
-                  Editar
-                </button>
-                <button 
-                  onClick={() => openCancelModal(appointment)}
-                  style={{
-                    background: '#fff',
-                    color: '#EF4444',
-                    border: '1px solid #EF4444',
-                    borderRadius: 6,
-                    padding: '0.5rem 1rem',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <Trash size={14} />
-                  Cancelar
-                </button>
+                {getActionButton(appointment)}
+                {appointment.status !== 'Completada' && (
+                  <button 
+                    onClick={() => openCancelModal(appointment)}
+                    style={{
+                      background: '#fff',
+                      color: '#EF4444',
+                      border: '1px solid #EF4444',
+                      borderRadius: 6,
+                      padding: '0.5rem 1rem',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Trash size={14} />
+                    Cancelar
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -649,7 +649,7 @@ const PsychologistAppointments = () => {
       </div>
 
       {/* Modal de Edición */}
-      {showEditModal && selectedAppointment && (
+      {showNotesModal && selectedAppointment && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -688,10 +688,10 @@ const PsychologistAppointments = () => {
                 color: '#333',
                 margin: 0
               }}>
-                Editar Cita - {selectedAppointment.patientName}
+                Notas de la Sesión - {selectedAppointment.patientName}
               </h2>
               <button
-                onClick={closeEditModal}
+                onClick={closeNotesModal}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -704,95 +704,12 @@ const PsychologistAppointments = () => {
               </button>
             </div>
 
-            {/* Formulario de edición */}
+            {/* Formulario de notas */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
               gap: '1.5rem'
             }}>
-              {/* Estado de la cita */}
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#333',
-                  marginBottom: '0.5rem'
-                }}>
-                  Estado de la Cita
-                </label>
-                <select
-                  value={editForm.status}
-                  onChange={(e) => handleFormChange('status', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 8,
-                    fontSize: 14,
-                    outline: 'none'
-                  }}
-                >
-                  <option value="Confirmada">Confirmada</option>
-                  <option value="Pendiente">Pendiente</option>
-                  <option value="En curso">En curso</option>
-                  <option value="Completada">Completada</option>
-                  <option value="Cancelada">Cancelada</option>
-                  <option value="No asistió">No asistió</option>
-                </select>
-              </div>
-
-              {/* Asistencia del paciente */}
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#333',
-                  marginBottom: '0.5rem'
-                }}>
-                  Asistencia del Paciente
-                </label>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem'
-                }}>
-                  <label style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    fontSize: 14
-                  }}>
-                    <input
-                      type="radio"
-                      name="attendance"
-                      checked={editForm.attendance === true}
-                      onChange={() => handleFormChange('attendance', true)}
-                      style={{ margin: 0 }}
-                    />
-                    Asistió
-                  </label>
-                  <label style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    fontSize: 14
-                  }}>
-                    <input
-                      type="radio"
-                      name="attendance"
-                      checked={editForm.attendance === false}
-                      onChange={() => handleFormChange('attendance', false)}
-                      style={{ margin: 0 }}
-                    />
-                    No asistió
-                  </label>
-                </div>
-              </div>
-
               {/* Notas */}
               <div>
                 <label style={{
@@ -805,8 +722,8 @@ const PsychologistAppointments = () => {
                   Notas de la Sesión
                 </label>
                 <textarea
-                  value={editForm.notes}
-                  onChange={(e) => handleFormChange('notes', e.target.value)}
+                  value={notesForm.notes}
+                  onChange={(e) => handleNotesFormChange('notes', e.target.value)}
                   placeholder="Agregar notas sobre la sesión..."
                   style={{
                     width: '100%',
@@ -849,8 +766,8 @@ const PsychologistAppointments = () => {
                       key={tag}
                       onClick={() => handleTagToggle(tag)}
                       style={{
-                        background: editForm.tags.includes(tag) ? '#0057FF' : '#fff',
-                        color: editForm.tags.includes(tag) ? '#fff' : '#0057FF',
+                        background: notesForm.tags.includes(tag) ? '#0057FF' : '#fff',
+                        color: notesForm.tags.includes(tag) ? '#fff' : '#0057FF',
                         border: '1px solid #0057FF',
                         borderRadius: '20px',
                         padding: '0.5rem 1rem',
@@ -876,7 +793,7 @@ const PsychologistAppointments = () => {
                 borderTop: '1px solid #e0e0e0'
               }}>
                 <button
-                  onClick={closeEditModal}
+                  onClick={closeNotesModal}
                   style={{
                     background: '#fff',
                     color: '#666',
@@ -891,133 +808,23 @@ const PsychologistAppointments = () => {
                   Cancelar
                 </button>
                 <button
-                  onClick={openConfirmModal}
+                  onClick={saveNotesAndComplete}
+                  disabled={!notesForm.notes}
                   style={{
-                    background: '#22C55E',
+                    background: notesForm.notes ? '#10B981' : '#ccc',
                     color: '#fff',
                     border: 'none',
                     borderRadius: 8,
                     padding: '0.75rem 1.5rem',
                     fontWeight: 600,
-                    cursor: 'pointer',
+                    cursor: notesForm.notes ? 'pointer' : 'not-allowed',
                     fontSize: 14
                   }}
                 >
-                  Terminar Cita
-                </button>
-                <button
-                  onClick={saveChanges}
-                  style={{
-                    background: '#0057FF',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '0.75rem 1.5rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontSize: 14
-                  }}
-                >
-                  <Save size={16} style={{ marginRight: '8px' }} />
-                  Guardar Cambios
+                  <Check size={16} style={{ marginRight: '8px' }} />
+                  Guardar y Completar
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Confirmación */}
-      {showConfirmModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1001,
-          padding: '2rem'
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: 12,
-            padding: '2rem',
-            maxWidth: '400px',
-            width: '100%',
-            textAlign: 'center',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
-          }}>
-            <div style={{
-              width: 60,
-              height: 60,
-              borderRadius: '50%',
-              background: '#FEF3C7',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 1rem auto'
-            }}>
-              <AlertCircle size={32} color="#F59E0B" />
-            </div>
-            
-            <h3 style={{
-              fontSize: 20,
-              fontWeight: 700,
-              color: '#333',
-              margin: '0 0 1rem 0'
-            }}>
-              ¿Terminar la cita?
-            </h3>
-            
-            <p style={{
-              fontSize: 14,
-              color: '#666',
-              margin: '0 0 2rem 0',
-              lineHeight: 1.5
-            }}>
-              ¿Estás seguro de que deseas terminar la cita con {selectedAppointment?.patientName}? 
-              Esta acción no se puede deshacer.
-            </p>
-            
-            <div style={{
-              display: 'flex',
-              gap: '1rem',
-              justifyContent: 'center'
-            }}>
-              <button
-                onClick={closeConfirmModal}
-                style={{
-                  background: '#fff',
-                  color: '#666',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontSize: 14
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmFinishAppointment}
-                style={{
-                  background: '#EF4444',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontSize: 14
-                }}
-              >
-                Sí, Terminar
-              </button>
             </div>
           </div>
         </div>
