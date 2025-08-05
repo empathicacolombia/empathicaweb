@@ -1035,7 +1035,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 <div style={{ color: '#e74c3c', fontSize: 14, marginBottom: 10, fontWeight: 600 }}>
                   Error: No se pudo generar el análisis debido a la insuficiencia de datos históricos. 
                   Se requieren al menos 3 meses de información para realizar el procesamiento estadístico.
-                </div>
+              </div>
                 <button 
                   disabled
                   style={{ 
@@ -1202,15 +1202,15 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 <div style={{ maxHeight: 400, overflowY: 'auto' }}>
                   {filteredActiveEmployees.length > 0 ? (
                     filteredActiveEmployees.map((employee) => (
-                      <div key={employee.id} style={{ 
-                        padding: '1.2rem 2rem', 
-                        borderBottom: '1px solid #f0f0f0',
-                        display: 'grid', 
+                    <div key={employee.id} style={{ 
+                      padding: '1.2rem 2rem', 
+                      borderBottom: '1px solid #f0f0f0',
+                      display: 'grid', 
                         gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr 1fr 1fr 1.5fr', 
-                        gap: 16, 
-                        alignItems: 'center',
-                        minHeight: '60px'
-                      }}>
+                      gap: 16, 
+                      alignItems: 'center',
+                      minHeight: '60px'
+                    }}>
                         <div style={{ 
                           fontWeight: 600, 
                           color: '#222', 
@@ -1269,21 +1269,21 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                         >
                           {truncateText(employee.position, 15).displayText}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ 
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ 
                             background: '#eaffea', 
                             color: '#2ecc71', 
-                            fontWeight: 700, 
-                            fontSize: 14, 
-                            borderRadius: 8, 
-                            padding: '6px 12px',
-                            textAlign: 'center',
-                            display: 'inline-block',
-                            minWidth: '80px'
-                          }}>
+                          fontWeight: 700, 
+                          fontSize: 14, 
+                          borderRadius: 8, 
+                          padding: '6px 12px',
+                          textAlign: 'center',
+                          display: 'inline-block',
+                          minWidth: '80px'
+                        }}>
                             Activo
-                          </span>
-                        </div>
+                        </span>
+                      </div>
                         <div style={{ 
                           color: '#7a8bbd', 
                           display: 'flex', 
@@ -1293,51 +1293,51 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                           fontSize: 16,
                           textAlign: 'center'
                         }}>
-                          {employee.sessions}
-                        </div>
-                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
-                          <button 
-                            onClick={() => openEditModal(employee)}
-                            style={{ 
-                              background: '#fff3e0', 
-                              color: '#ff9800', 
-                              border: 'none', 
-                              borderRadius: 8, 
-                              padding: '8px 16px', 
-                              fontSize: 14, 
-                              cursor: 'pointer',
-                              fontWeight: 600,
-                              minWidth: '60px'
-                            }}
-                          >
-                            Editar
-                          </button>
-                          <button 
-                            onClick={() => openDeleteModal(employee)}
-                            style={{ 
-                              background: '#ffeaea', 
-                              color: '#ff5e5e', 
-                              border: 'none', 
-                              borderRadius: 8, 
-                              padding: '8px 16px', 
-                              fontSize: 14, 
-                              cursor: 'pointer',
-                              fontWeight: 600,
-                              minWidth: '60px'
-                            }}
-                          >
-                            Desactivar
-                          </button>
-                        </div>
+                        {employee.sessions}
                       </div>
+                      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
+                        <button 
+                          onClick={() => openEditModal(employee)}
+                          style={{ 
+                            background: '#fff3e0', 
+                            color: '#ff9800', 
+                            border: 'none', 
+                            borderRadius: 8, 
+                            padding: '8px 16px', 
+                            fontSize: 14, 
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            minWidth: '60px'
+                          }}
+                        >
+                          Editar
+                        </button>
+                        <button 
+                          onClick={() => openDeleteModal(employee)}
+                          style={{ 
+                            background: '#ffeaea', 
+                            color: '#ff5e5e', 
+                            border: 'none', 
+                            borderRadius: 8, 
+                            padding: '8px 16px', 
+                            fontSize: 14, 
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            minWidth: '60px'
+                          }}
+                        >
+                            Desactivar
+                        </button>
+                      </div>
+                    </div>
                     ))
                   ) : (
                     <div style={{ padding: '2rem', textAlign: 'center', color: '#7a8bbd', fontSize: 16 }}>
                       No hay empleados activos que coincidan con los filtros
-                    </div>
-                  )}
                 </div>
+                  )}
               </div>
+            </div>
 
               {/* Tabla de Empleados Inactivos */}
               <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', border: '1.5px solid #f2f2f2' }}>
@@ -1345,7 +1345,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                     <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5e5e' }}></div>
                     <span style={{ color: '#222', fontWeight: 800, fontSize: 20 }}>Empleados Inactivos ({filteredInactiveEmployees.length})</span>
-                  </div>
+                </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr 1fr 1fr 1.5fr', gap: 16, fontWeight: 700, color: '#222', fontSize: 16 }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>Nombre</div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>Email</div>
@@ -1354,7 +1354,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Estado</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Sesiones</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Acciones</div>
-                  </div>
+                </div>
                 </div>
                 
                 <div style={{ maxHeight: 300, overflowY: 'auto' }}>
@@ -1384,7 +1384,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                         title={truncateText(employee.name, 15).title}
                         >
                           {truncateText(employee.name, 15).displayText}
-                        </div>
+                </div>
                         <div style={{ 
                           color: '#999', 
                           display: 'flex', 
@@ -1398,7 +1398,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                         title={truncateText(employee.email, 20).title}
                         >
                           {truncateText(employee.email, 20).displayText}
-                        </div>
+                  </div>
                         <div style={{ 
                           color: '#666', 
                           display: 'flex', 
@@ -1413,7 +1413,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                         title={truncateText(employee.department, 12).title}
                         >
                           {truncateText(employee.department, 12).displayText}
-                        </div>
+                </div>
                         <div style={{ 
                           color: '#999', 
                           display: 'flex', 
@@ -1427,7 +1427,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                         title={truncateText(employee.position, 15).title}
                         >
                           {truncateText(employee.position, 15).displayText}
-                        </div>
+              </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <span style={{ 
                             background: '#ffeaea', 
@@ -1455,7 +1455,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                           {employee.sessions}
                         </div>
                         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
-                          <button 
+                <button 
                             onClick={() => handleReactivateEmployee(employee)}
                             style={{ 
                               background: '#eaffea', 
@@ -1470,15 +1470,15 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                             }}
                           >
                             Reactivar
-                          </button>
-                        </div>
-                      </div>
+                </button>
+              </div>
+            </div>
                     ))
                   ) : (
                     <div style={{ padding: '2rem', textAlign: 'center', color: '#7a8bbd', fontSize: 16 }}>
                       No hay empleados inactivos
-                    </div>
-                  )}
+          </div>
+        )}
                 </div>
               </div>
             </div>
@@ -1570,7 +1570,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                     onChange={(e) => setNotificationSettings({...notificationSettings, sessionAlerts: e.target.checked})}
                     style={{ width: 20, height: 20, accentColor: '#0057ff', marginLeft: 'auto' }} 
                   />
-                </div>
+                  </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 17, color: '#222', fontWeight: 600 }}>
                   <span>Reportes semanales</span>
                   <input 
@@ -1579,9 +1579,9 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                     onChange={(e) => setNotificationSettings({...notificationSettings, weeklyReports: e.target.checked})}
                     style={{ width: 20, height: 20, accentColor: '#0057ff', marginLeft: 'auto' }} 
                   />
-                </div>
               </div>
             </div>
+                </div>
             {/* Botón Guardar Cambios */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
               <button 
@@ -1643,14 +1643,14 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                       <div style={{ color: '#7a8bbd', fontSize: 16 }}>{notification.message}</div>
                     </div>
                     <div style={{ color: '#7a8bbd', fontSize: 16, minWidth: 90, textAlign: 'right' }}>{notification.time}</div>
-                    <button
+                          <button 
                       onClick={() => handleDeleteNotification(notification.id)}
-                      style={{
+                            style={{
                         background: 'none',
                         border: 'none',
                         color: '#ff5e5e',
                         fontSize: 18,
-                        cursor: 'pointer',
+                              cursor: 'pointer',
                         padding: '4px',
                         borderRadius: '50%',
                         width: 32,
@@ -1662,16 +1662,16 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                         marginLeft: 8
                       }}
                       title="Eliminar notificación"
-                      onMouseOver={(e) => {
+                            onMouseOver={(e) => {
                         e.target.style.background = '#ffeaea';
-                      }}
-                      onMouseOut={(e) => {
+                            }}
+                            onMouseOut={(e) => {
                         e.target.style.background = 'none';
-                      }}
-                    >
+                            }}
+                          >
                       ×
-                    </button>
-                  </div>
+                          </button>
+              </div>
                 ))
               ) : (
                 <div style={{ 
@@ -1684,8 +1684,8 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                   border: '1.5px solid #e0e7ef'
                 }}>
                   No hay notificaciones para mostrar
-                </div>
-              )}
+          </div>
+        )}
             </div>
           </div>
         )}

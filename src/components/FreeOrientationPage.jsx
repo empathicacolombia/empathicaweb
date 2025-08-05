@@ -311,53 +311,63 @@ const FreeOrientationPage = ({ navigationProps }) => {
             borderRadius: 12, 
             padding: '2rem',
             border: '1px solid #e0e7ef',
-            minHeight: 400,
+            minHeight: 600,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             flexDirection: 'column',
             gap: '1rem'
           }}>
-            {/* Icono del calendario */}
-            <div style={{ fontSize: 48, color: '#0057FF' }}>📅</div>
-            
-            {/* Título del calendario */}
-            <h3 style={{ 
-              fontSize: 24, 
-              fontWeight: 700, 
-              color: '#0057FF', 
-              margin: 0,
-              textAlign: 'center'
+            {/* Header del calendario */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1rem',
+              marginBottom: '1rem'
             }}>
-              Calendario de Google
-            </h3>
+              <div style={{ fontSize: 32, color: '#0057FF' }}>📅</div>
+              <h3 style={{ 
+                fontSize: 24, 
+                fontWeight: 700, 
+                color: '#0057FF', 
+                margin: 0,
+                textAlign: 'center'
+              }}>
+                Agenda tu Orientación Gratuita
+              </h3>
+            </div>
             
             {/* Descripción de la integración */}
             <p style={{ 
               color: '#666', 
               fontSize: 16, 
               textAlign: 'center',
-              maxWidth: 400,
-              margin: 0
+              maxWidth: 500,
+              margin: '0 0 1rem 0'
             }}>
-              Aquí se integrará el calendario de Google para agendar tu sesión de orientación gratuita
+              Selecciona una fecha y hora que te resulte conveniente para tu sesión de orientación gratuita
             </p>
             
-            {/* Placeholder de integración */}
-            <div style={{ 
-              background: '#e3f2fd', 
-              border: '1px solid #0057FF', 
-              borderRadius: 8, 
-              padding: '1rem',
-              marginTop: '1rem',
-              textAlign: 'center'
+            {/* Iframe del Calendario de Google */}
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              height: '500px',
+              border: '1px solid #e0e0e0',
+              borderRadius: 8,
+              overflow: 'hidden',
+              background: '#fff'
             }}>
-              <p style={{ margin: 0, color: '#0057FF', fontWeight: 600 }}>
-                🔗 Integración con Google Calendar
-              </p>
-              <p style={{ margin: '0.5rem 0 0 0', color: '#666', fontSize: 14 }}>
-                El calendario se cargará automáticamente aquí
-              </p>
+              <iframe
+                src="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2QAqgF2FMUtIc7MW1YbMAE7X49dL2I1zCBUYBndAy0w9cFRgmsIAb9tMSgAhNpBQRJnz-J840L"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  borderRadius: 8
+                }}
+                title="Calendario de Orientación Gratuita"
+                allowFullScreen
+              />
             </div>
           </div>
 
