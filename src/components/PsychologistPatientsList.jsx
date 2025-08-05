@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { Search, Filter, Eye, Calendar, Clock, Users, Mail, Phone, MapPin, CalendarDays, FileText, Tag } from 'lucide-react';
 
+/**
+ * Componente de Lista Completa de Pacientes del Psicólogo
+ * Muestra todos los pacientes asignados con información detallada
+ * Permite buscar, filtrar y ver perfiles completos de pacientes
+ */
 const PsychologistPatientsList = () => {
+  // Estados para controlar la interfaz y filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
   const [showPatientModal, setShowPatientModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
 
-  // Lista completa de pacientes
+  /**
+   * Datos de ejemplo de la lista completa de pacientes
+   * Incluye información personal, diagnósticos, resultados de tests y progreso
+   * TODO: Reemplazar con datos dinámicos del backend
+   */
   const allPatients = [
     {
       id: 1,
@@ -190,7 +200,12 @@ const PsychologistPatientsList = () => {
     }
   ];
 
-  // Filtrar pacientes por búsqueda y estado
+  /**
+   * Filtra pacientes según término de búsqueda y estado seleccionado
+   * Permite buscar por nombre o email y filtrar por estado activo/inactivo
+   * 
+   * @returns {Array} Lista filtrada de pacientes
+   */
   const filteredPatients = allPatients.filter(patient => {
     const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          patient.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -198,15 +213,25 @@ const PsychologistPatientsList = () => {
     return matchesSearch && matchesStatus;
   });
 
+  /**
+   * Opciones de estado disponibles para filtrar pacientes
+   */
   const statusOptions = ['Todos', 'Activo', 'Inactivo'];
 
-  // Función para abrir modal del paciente
+  /**
+   * Abre el modal de detalles del paciente
+   * Permite ver información completa del perfil del paciente
+   * 
+   * @param {Object} patient - Paciente seleccionado para ver detalles
+   */
   const openPatientModal = (patient) => {
     setSelectedPatient(patient);
     setShowPatientModal(true);
   };
 
-  // Función para cerrar modal
+  /**
+   * Cierra el modal de detalles del paciente y limpia los estados
+   */
   const closePatientModal = () => {
     setShowPatientModal(false);
     setSelectedPatient(null);

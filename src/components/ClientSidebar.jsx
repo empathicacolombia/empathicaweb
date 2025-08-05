@@ -10,6 +10,10 @@ import {
 } from 'lucide-react';
 import logoEmpathica from '../assets/Logoempathica.png';
 
+/**
+ * Configuración de elementos de navegación del sidebar
+ * Define todos los enlaces y sus iconos correspondientes
+ */
 const sidebarItems = [
   { key: 'client-dashboard', label: 'Inicio', icon: <Home size={20} /> },
   { key: 'appointments', label: 'Citas', icon: <CalendarDays size={20} /> },
@@ -19,7 +23,21 @@ const sidebarItems = [
   { key: 'client-profile', label: 'Mi Perfil', icon: <User size={20} /> },
 ];
 
+/**
+ * Componente de Sidebar para el Dashboard del Cliente
+ * Proporciona navegación principal entre las diferentes secciones del dashboard
+ * Incluye logo, menú de navegación y botón de cerrar sesión
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ * @param {string} activePage - Página actualmente activa
+ * @param {boolean} sidebarOpen - Estado de apertura del sidebar
+ */
 const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
+  /**
+   * Maneja la navegación entre diferentes páginas de la aplicación
+   * @param {string} page - Nombre de la página a la que navegar
+   */
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
@@ -35,7 +53,9 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
       overflow: 'hidden',
       boxShadow: sidebarOpen ? '2px 0 12px #0057ff0a' : 'none'
     }}>
-      {/* Logo y título */}
+      {/* ========================================
+           SECCIÓN DEL LOGO Y TÍTULO
+           ======================================== */}
       <div style={{
         padding: '2rem 1.5rem',
         borderBottom: '1px solid #e0e7ef',
@@ -46,6 +66,7 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
           alignItems: 'center',
           gap: '12px'
         }}>
+          {/* Logo circular de Empathica */}
           <div style={{
             width: 40,
             height: 40,
@@ -58,6 +79,8 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
           }}>
             <img src={logoEmpathica} alt="Logo Empathica" style={{ width: 32, height: 32, objectFit: 'contain', display: 'block' }} />
           </div>
+          
+          {/* Título y subtítulo - Solo visible cuando sidebar está abierto */}
           {sidebarOpen && (
             <div>
               <div style={{
@@ -79,8 +102,11 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
         </div>
       </div>
 
-      {/* Navegación */}
+      {/* ========================================
+           SECCIÓN DE NAVEGACIÓN PRINCIPAL
+           ======================================== */}
       <div style={{ padding: '1.5rem' }}>
+        {/* Título de la sección de navegación */}
         {sidebarOpen && (
           <div style={{
             fontSize: 12,
@@ -93,6 +119,8 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
             Navegación
           </div>
         )}
+        
+        {/* Lista de elementos de navegación */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {sidebarItems.map(item => (
             <button
@@ -113,14 +141,19 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
                 transition: 'background 0.2s'
               }}
             >
+              {/* Icono del elemento de navegación */}
               {item.icon}
+              
+              {/* Etiqueta del elemento - Solo visible cuando sidebar está abierto */}
               {sidebarOpen && <span>{item.label}</span>}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Cerrar sesión */}
+      {/* ========================================
+           SECCIÓN DE CERRAR SESIÓN
+           ======================================== */}
       <div style={{ marginTop: 'auto', padding: '1.5rem' }}>
         <button
           onClick={() => handleNavigation('individuals')}
@@ -141,7 +174,10 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
           onMouseEnter={e => e.currentTarget.style.background = '#ffe6e6'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
+          {/* Icono de cerrar sesión */}
           <LogOut size={20} />
+          
+          {/* Etiqueta de cerrar sesión - Solo visible cuando sidebar está abierto */}
           {sidebarOpen && <span>Cerrar sesión</span>}
         </button>
       </div>

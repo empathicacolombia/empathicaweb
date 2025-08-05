@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { BookOpen, FileText, Filter, Download, Star } from 'lucide-react';
 
+/**
+ * Categorías de recursos disponibles en la biblioteca
+ * Permite organizar y filtrar recursos por tipo de contenido
+ */
 const categories = [
   { label: 'TCC', count: 12 },
   { label: 'Mindfulness', count: 8 },
@@ -9,8 +13,17 @@ const categories = [
   { label: 'Técnicas', count: 20 },
 ];
 
+/**
+ * Pestañas disponibles para filtrar recursos
+ * Permite ver todos los recursos o filtrar por tipo específico
+ */
 const tabs = ['Todos', 'Artículos', 'Manuales'];
 
+/**
+ * Datos de ejemplo de recursos de la biblioteca
+ * Incluye artículos, manuales y materiales profesionales para psicólogos
+ * TODO: Reemplazar con datos dinámicos del backend
+ */
 const resources = [
   {
     type: 'Artículo',
@@ -74,22 +87,34 @@ const resources = [
   },
 ];
 
+/**
+ * Componente de Biblioteca del Psicólogo
+ * Proporciona acceso a recursos profesionales, artículos y manuales
+ * Permite buscar, filtrar y descargar materiales para la práctica clínica
+ */
 const PsychologistLibrary = () => {
+  // Estados para controlar filtros y búsqueda
   const [activeTab, setActiveTab] = useState('Todos');
   const [search, setSearch] = useState('');
 
   return (
     <div>
-      {/* Título y subtítulo */}
+      {/* ========================================
+           ENCABEZADO DE LA BIBLIOTECA
+           ======================================== */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ color: '#222', fontWeight: 800, fontSize: 32 }}>Biblioteca</div>
         <div style={{ color: '#7a8bbd', fontSize: 16, marginTop: 2 }}>Recursos y materiales profesionales</div>
       </div>
       <div style={{ display: 'flex', gap: 24 }}>
-        {/* Categorías */}
+        {/* ========================================
+             PANEL DE CATEGORÍAS
+             ======================================== */}
         <div style={{ minWidth: 220, maxWidth: 260 }}>
           <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '2rem 1.5rem' }}>
+            {/* Título de la sección de categorías */}
             <div style={{ fontWeight: 700, fontSize: 18, color: '#222', marginBottom: 18 }}>Categorías</div>
+            {/* Lista de categorías con contadores */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {categories.map(cat => (
                 <div key={cat.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 16, color: '#222', fontWeight: 600 }}>

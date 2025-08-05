@@ -21,6 +21,10 @@ import {
 } from 'lucide-react';
 import logoEmpathica from '../assets/Logoempathica.png';
 
+/**
+ * Elementos de navegación del sidebar del dashboard empresarial
+ * Define las secciones principales disponibles en el panel de control
+ */
 const sidebarItems = [
   { icon: <Home size={22} />, label: 'Dashboard', section: 'Dashboard' },
   { icon: <FileText size={22} />, label: 'Reportes', section: 'Reportes' },
@@ -31,6 +35,10 @@ const sidebarItems = [
   { icon: <HelpCircle size={22} />, label: 'Soporte', section: 'Soporte' },
 ];
 
+/**
+ * Datos de ejemplo de empleados activos para mostrar en tiempo real
+ * TODO: Reemplazar con datos dinámicos del backend
+ */
 const activeEmployees = [
   { name: 'Ana García', sessions: 8, time: '2h' },
   { name: 'Carlos López', sessions: 5, time: '4h' },
@@ -38,6 +46,10 @@ const activeEmployees = [
   { name: 'Juan Pérez', sessions: 3, time: '3d' },
 ];
 
+/**
+ * Métricas en tiempo real para mostrar en el dashboard
+ * TODO: Reemplazar con datos dinámicos del backend
+ */
 const realTimeMetrics = [
   { label: 'Sesiones Hoy', value: 23, change: '+', color: '#2ecc71' },
   { label: 'Ventas Mes', value: '+18%', change: '+', color: '#0057FF' },
@@ -48,6 +60,15 @@ const MAX_METRICS_DISPLAY = 1;
 
 const SIDEBAR_WIDTH = 220;
 
+/**
+ * Componente de la barra de encabezado del dashboard empresarial
+ * Muestra el título de la sección actual y el nombre de la empresa
+ * 
+ * @param {string} sectionTitle - Título de la sección activa
+ * @param {Object} navigationProps - Propiedades de navegación
+ * @param {boolean} sidebarOpen - Estado del sidebar (abierto/cerrado)
+ * @param {Function} toggleSidebar - Función para alternar el sidebar
+ */
 function BusinessHeaderBar({ sectionTitle, navigationProps, sidebarOpen, toggleSidebar }) {
   return (
     <div style={{
@@ -87,9 +108,19 @@ function BusinessHeaderBar({ sectionTitle, navigationProps, sidebarOpen, toggleS
   );
 }
 
+/**
+ * Componente principal del Dashboard Empresarial
+ * Proporciona la interfaz completa para la gestión empresarial de bienestar
+ * Incluye todas las secciones: Dashboard, Reportes, Colaboradores, Configuración, etc.
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ */
 const BusinessDemoDashboard = ({ navigationProps }) => {
+  // Estados para controlar la navegación y visualización
   const [activeSection, setActiveSection] = useState('Dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  
   // Estado para la pestaña activa de reportes
   const [reportTab, setReportTab] = useState('Comunicación');
   
@@ -106,6 +137,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // Estados para gestión de empleados (CRUD)
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -125,6 +157,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     sessions: 0
   });
   
+  // Estado para crear nuevo empleado
   const [newEmployee, setNewEmployee] = useState({
     name: '',
     email: '',
@@ -134,6 +167,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     sessions: 0
   });
   
+  // Estado para editar empleado existente
   const [editEmployee, setEditEmployee] = useState({
     name: '',
     email: '',
@@ -142,16 +176,29 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     status: ''
   });
 
+  // Opciones disponibles para departamentos y posiciones
   const departments = ['Todos', 'Marketing', 'Ventas', 'RRHH', 'Tecnología', 'Finanzas', 'Operaciones'];
   const positions = ['Manager', 'Specialist', 'Representative', 'Developer', 'Analyst', 'Coordinator'];
 
+  /**
+   * Maneja el cierre de sesión del dashboard empresarial
+   * Redirige al usuario a la página principal de empresas
+   */
   const handleLogout = () => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate('business');
     }
   };
 
-  // Funciones CRUD
+  // ========================================
+  // FUNCIONES CRUD PARA GESTIÓN DE EMPLEADOS
+  // ========================================
+  
+  /**
+   * Crea un nuevo empleado en el sistema
+   * Genera un ID único y agrega el empleado a la lista
+   * TODO: Implementar creación en backend
+   */
   const handleCreateEmployee = () => {
     const newId = Math.max(...employees.map(emp => emp.id)) + 1;
     const employee = { ...newEmployee, id: newId, lastSession: 'Nunca' };
@@ -160,6 +207,11 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     setShowCreateModal(false);
   };
 
+  /**
+   * Actualiza la información de un empleado existente
+   * Mantiene los datos de sesiones y última sesión
+   * TODO: Implementar actualización en backend
+   */
   const handleEditEmployee = () => {
     setEmployees(employees.map(emp => 
       emp.id === selectedEmployee.id ? { ...editEmployee, id: emp.id, sessions: emp.sessions, lastSession: emp.lastSession } : emp
@@ -168,33 +220,62 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     setSelectedEmployee(null);
   };
 
+  /**
+   * Elimina un empleado del sistema
+   * TODO: Implementar eliminación en backend
+   */
   const handleDeleteEmployee = () => {
     setEmployees(employees.filter(emp => emp.id !== selectedEmployee.id));
     setShowDeleteModal(false);
     setSelectedEmployee(null);
   };
 
+  /**
+   * Abre el modal de edición para un empleado específico
+   * 
+   * @param {Object} employee - Empleado a editar
+   */
   const openEditModal = (employee) => {
     setSelectedEmployee(employee);
     setEditEmployee({ ...employee });
     setShowEditModal(true);
   };
 
+  /**
+   * Abre el modal de confirmación de eliminación
+   * 
+   * @param {Object} employee - Empleado a eliminar
+   */
   const openDeleteModal = (employee) => {
     setSelectedEmployee(employee);
     setShowDeleteModal(true);
   };
 
+  /**
+   * Abre el modal de visualización de detalles del empleado
+   * 
+   * @param {Object} employee - Empleado a visualizar
+   */
   const openViewModal = (employee) => {
     setSelectedEmployee(employee);
     setShowViewModal(true);
   };
 
-  // Funciones para el modal de notificación
+  // ========================================
+  // FUNCIONES PARA SISTEMA DE NOTIFICACIONES
+  // ========================================
+  
+  /**
+   * Abre el modal para enviar notificaciones a empleados
+   */
   const openNotificationModal = () => {
     setShowNotificationModal(true);
   };
 
+  /**
+   * Procesa el envío de notificaciones a empleados
+   * TODO: Implementar envío real de notificaciones en backend
+   */
   const handleNotificationSubmit = () => {
     // Aquí se procesaría el envío de la notificación
     console.log('Enviando notificación:', notificationForm);
@@ -202,11 +283,21 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     setShowNotificationModal(false);
   };
 
-  // Funciones para el modal de asignar sesiones
+  // ========================================
+  // FUNCIONES PARA GESTIÓN DE SESIONES
+  // ========================================
+  
+  /**
+   * Abre el modal para asignar sesiones a empleados
+   */
   const openAssignSessionsModal = () => {
     setShowAssignSessionsModal(true);
   };
 
+  /**
+   * Asigna un número específico de sesiones a un empleado
+   * TODO: Implementar asignación en backend
+   */
   const handleAssignSessions = () => {
     if (assignSessionsForm.employeeId && assignSessionsForm.sessions >= 0) {
       setEmployees(employees.map(emp => 
@@ -219,7 +310,13 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     }
   };
 
-  // Función para restablecer contraseña
+  /**
+   * Restablece la contraseña de un empleado específico
+   * Envía un correo de restablecimiento al empleado
+   * TODO: Implementar restablecimiento real en backend
+   * 
+   * @param {number} employeeId - ID del empleado
+   */
   const handleResetPassword = (employeeId) => {
     const employee = employees.find(emp => emp.id === employeeId);
     if (employee) {
@@ -229,7 +326,12 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     }
   };
 
-  // Filtrar empleados
+  /**
+   * Filtra empleados según término de búsqueda y departamento seleccionado
+   * Permite buscar por nombre o email y filtrar por departamento
+   * 
+   * @returns {Array} Lista filtrada de empleados
+   */
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          emp.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -239,7 +341,9 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#f8f9fb', overflow: 'hidden' }}>
-      {/* Sidebar */}
+      {/* ========================================
+           SIDEBAR DE NAVEGACIÓN
+           ======================================== */}
       <aside style={{
         width: sidebarOpen ? 260 : 0,
         minWidth: sidebarOpen ? 260 : 0,
@@ -253,7 +357,9 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
         transition: 'width 0.3s cubic-bezier(.4,2,.6,1), min-width 0.3s cubic-bezier(.4,2,.6,1)',
         overflow: 'hidden',
       }}>
-        {/* Logo y usuario */}
+        {/* ========================================
+             LOGO Y INFORMACIÓN DE LA EMPRESA
+             ======================================== */}
         <div style={{ width: '100%', marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 2rem' }}>
             <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#4a7cff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -280,7 +386,9 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             </div>
           </div>
         </div>
-        {/* Navegación */}
+        {/* ========================================
+             MENÚ DE NAVEGACIÓN PRINCIPAL
+             ======================================== */}
         <div style={{ width: '100%', flex: 1 }}>
           <div style={{ color: '#7a8bbd', fontWeight: 700, fontSize: 13, margin: '1.5rem 0 0.5rem 2rem', letterSpacing: 1 }}>NAVEGACIÓN</div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -295,7 +403,9 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             ))}
           </nav>
         </div>
-        {/* Cerrar sesión */}
+        {/* ========================================
+             BOTÓN DE CERRAR SESIÓN
+             ======================================== */}
         <button onClick={handleLogout} style={{
           marginTop: 'auto',
           color: '#e74c3c',
@@ -313,11 +423,25 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
           <LogOut size={22} color="#e74c3c" style={{marginRight: 2}} /> Cerrar sesión
         </button>
       </aside>
-      {/* Main */}
+      {/* ========================================
+           CONTENIDO PRINCIPAL
+           ======================================== */}
       <main style={{ flex: 1, padding: '0 3.5rem', transition: 'margin-left 0.3s cubic-bezier(.4,2,.6,1)', height: '100vh', overflowY: 'auto' }}>
-        {/* Cabecera compacta */}
+        {/* ========================================
+             BARRA DE ENCABEZADO
+             ======================================== */}
         <BusinessHeaderBar sectionTitle={activeSection} navigationProps={navigationProps} sidebarOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen((open) => !open)} />
-        {/* Renderizado de secciones internas */}
+        
+        {/* ========================================
+             RENDERIZADO CONDICIONAL DE SECCIONES
+             ======================================== */}
+        
+        {/* ========================================
+             SECCIÓN DASHBOARD - VISTA PRINCIPAL
+             ======================================== 
+             Muestra métricas en tiempo real, estado emocional general,
+             sesiones utilizadas, colaboradores activos y mapeo emocional por áreas
+        */}
         {activeSection === 'Dashboard' && (
           <div style={{ marginTop: 24, marginBottom: 24 }}>
             {/* Tarjetas de métricas principales */}
@@ -556,6 +680,13 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             </div>
           </div>
         )}
+        
+        {/* ========================================
+             SECCIÓN REPORTES - ANÁLISIS Y ESTADÍSTICAS
+             ======================================== 
+             Genera reportes detallados por categorías: Comunicación, Estrés, Liderazgo y General
+             Muestra métricas de mejora, beneficios observados e impacto en la organización
+        */}
         {activeSection === 'Reportes' && (
           <div style={{ marginTop: 32, marginBottom: 24 }}>
             <span style={{ color: '#222', fontWeight: 800, fontSize: 32, display: 'block', marginBottom: 24 }}>Reportes y Análisis</span>
@@ -759,6 +890,13 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             </div>
           </div>
         )}
+        
+        {/* ========================================
+             SECCIÓN COLABORADORES - GESTIÓN DE EMPLEADOS
+             ======================================== 
+             Permite gestionar empleados: crear, editar, eliminar, ver detalles
+             Incluye búsqueda, filtros por departamento y asignación de sesiones
+        */}
         {activeSection === 'Colaboradores' && (
           <div style={{ marginTop: 32, marginBottom: 24, display: 'flex', gap: 32 }}>
             {/* Columna principal: CRUD de Empleados */}
@@ -971,6 +1109,13 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             </div>
           </div>
         )}
+        
+        {/* ========================================
+             SECCIÓN CONFIGURACIÓN - AJUSTES DE LA EMPRESA
+             ======================================== 
+             Permite configurar información de la empresa, departamentos,
+             políticas de bienestar y configuración general del sistema
+        */}
         {activeSection === 'Configuración' && (
           <div style={{ marginTop: 32, marginBottom: 24 }}>
             <span style={{ color: '#222', fontWeight: 800, fontSize: 32, display: 'block', marginBottom: 24 }}>Configuración</span>
@@ -1031,6 +1176,13 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             </div>
           </div>
         )}
+        
+        {/* ========================================
+             SECCIÓN SEGURIDAD - CONFIGURACIÓN DE SEGURIDAD
+             ======================================== 
+             Gestiona configuraciones de seguridad: contraseñas, accesos,
+             autenticación de dos factores y políticas de seguridad
+        */}
         {activeSection === 'Seguridad' && (
           <div style={{ marginTop: 32, marginBottom: 24 }}>
             <span style={{ color: '#222', fontWeight: 800, fontSize: 32, display: 'block', marginBottom: 24 }}>Seguridad y Privacidad</span>
@@ -1138,6 +1290,13 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             </div>
           </div>
         )}
+        
+        {/* ========================================
+             SECCIÓN NOTIFICACIONES - SISTEMA DE COMUNICACIÓN
+             ======================================== 
+             Permite enviar notificaciones a empleados, configurar mensajes
+             y gestionar la comunicación interna de la empresa
+        */}
         {activeSection === 'Notificaciones' && (
           <div style={{ marginTop: 32, marginBottom: 24 }}>
             <div style={{ fontWeight: 800, fontSize: 32, marginBottom: 24, color: '#222' }}>
@@ -1165,6 +1324,13 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             </div>
           </div>
         )}
+        
+        {/* ========================================
+             SECCIÓN SOPORTE - AYUDA Y CONTACTO
+             ======================================== 
+             Proporciona acceso al soporte técnico, documentación,
+             FAQ y canales de contacto para asistencia
+        */}
         {activeSection === 'Soporte' && (
           <div style={{ marginTop: 32, marginBottom: 24 }}>
             <span style={{ color: '#222', fontWeight: 800, fontSize: 32, display: 'block', marginBottom: 24 }}>Centro de Soporte</span>
@@ -1195,9 +1361,21 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
             </div>
           </div>
         )}
-        {/* Puedes agregar renderizado para otras secciones aquí */}
+        {/* ========================================
+             FIN DE SECCIONES CONDICIONALES
+             ======================================== */}
       </main>
 
+      {/* ========================================
+           MODALES DEL DASHBOARD EMPRESARIAL
+           ======================================== */}
+      
+      {/* ========================================
+           MODAL CREAR EMPLEADO
+           ======================================== 
+           Permite agregar nuevos empleados al sistema
+           Incluye formulario completo con validación
+      */}
       {/* Modal Crear Empleado */}
       {showCreateModal && (
         <div style={{
@@ -1387,6 +1565,12 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
         </div>
       )}
 
+      {/* ========================================
+           MODAL VER EMPLEADO
+           ======================================== 
+           Muestra información detallada de un empleado
+           Incluye datos personales, departamento y estadísticas de sesiones
+      */}
       {/* Modal Ver Empleado */}
       {showViewModal && selectedEmployee && (
         <div style={{
@@ -1494,6 +1678,12 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
         </div>
       )}
 
+      {/* ========================================
+           MODAL EDITAR EMPLEADO
+           ======================================== 
+           Permite modificar información de empleados existentes
+           Mantiene datos de sesiones y última sesión
+      */}
       {/* Modal Editar Empleado */}
       {showEditModal && selectedEmployee && (
         <div style={{
@@ -1661,6 +1851,12 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
         </div>
       )}
 
+      {/* ========================================
+           MODAL ELIMINAR EMPLEADO
+           ======================================== 
+           Confirma la eliminación de un empleado del sistema
+           Incluye advertencia sobre pérdida de datos
+      */}
       {/* Modal Eliminar Empleado */}
       {showDeleteModal && selectedEmployee && (
         <div style={{
@@ -1733,6 +1929,12 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
         </div>
       )}
 
+      {/* ========================================
+           MODAL ENVIAR NOTIFICACIÓN
+           ======================================== 
+           Permite enviar notificaciones a empleados específicos
+           Incluye selección de destinatarios y vista previa del envío
+      */}
       {/* Modal Enviar Notificación */}
       {showNotificationModal && (
         <div style={{
@@ -1871,6 +2073,12 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
         </div>
       )}
 
+      {/* ========================================
+           MODAL ASIGNAR SESIONES
+           ======================================== 
+           Permite asignar un número específico de sesiones a empleados
+           Incluye selección de empleado y configuración de sesiones
+      */}
       {/* Modal Asignar Sesiones */}
       {showAssignSessionsModal && (
         <div style={{
@@ -2008,5 +2216,41 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     </div>
   );
 };
+
+/**
+ * ========================================
+ * RESUMEN DEL COMPONENTE BUSINESSDEMODASHBOARD
+ * ========================================
+ * 
+ * Este componente es el dashboard principal para empresas que utilizan Empathica.
+ * Es un componente monolítico que contiene todas las funcionalidades del panel empresarial.
+ * 
+ * SECCIONES PRINCIPALES:
+ * 1. Dashboard - Métricas en tiempo real y mapeo emocional por áreas
+ * 2. Reportes - Análisis detallado por categorías (Comunicación, Estrés, Liderazgo, General)
+ * 3. Colaboradores - Gestión completa de empleados (CRUD)
+ * 4. Configuración - Ajustes de la empresa y políticas
+ * 5. Seguridad - Configuración de seguridad y accesos
+ * 6. Notificaciones - Sistema de comunicación interna
+ * 7. Soporte - Acceso a ayuda y documentación
+ * 
+ * FUNCIONALIDADES PRINCIPALES:
+ * - Gestión completa de empleados (crear, editar, eliminar, ver)
+ * - Sistema de notificaciones a empleados
+ * - Asignación de sesiones de terapia
+ * - Métricas en tiempo real de bienestar
+ * - Reportes detallados de mejora organizacional
+ * - Configuración de seguridad empresarial
+ * 
+ * NECESIDADES DE BACKEND:
+ * - Autenticación y autorización empresarial
+ * - API para gestión de empleados
+ * - Sistema de notificaciones
+ * - Base de datos para métricas y reportes
+ * - Integración con sistema de sesiones
+ * - Configuración de seguridad
+ * 
+ * TODO: Separar en componentes más pequeños para mejor mantenibilidad
+ */
 
 export default BusinessDemoDashboard; 

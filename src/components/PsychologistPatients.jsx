@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Calendar, BarChart3, Users, Clock, TrendingUp, Eye, Building, Search, Filter } from 'lucide-react';
 
+/**
+ * Componente de Vista Principal de Pacientes del Psicólogo
+ * Muestra el dashboard principal con métricas, lista de pacientes y funcionalidades de gestión
+ * Incluye filtros, búsqueda, notas clínicas y estadísticas de sesiones
+ */
 const PsychologistPatients = () => {
+  // Estados para controlar la interfaz y datos
   const [selectedPeriod, setSelectedPeriod] = useState('Total');
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -10,15 +16,21 @@ const PsychologistPatients = () => {
   const [selectedNote, setSelectedNote] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  /**
+   * Opciones de períodos para filtrar métricas y estadísticas
+   * Permite ver datos de diferentes rangos de tiempo
+   */
   const periods = [
     { label: 'Última semana', icon: <Calendar size={16} /> },
     { label: 'Último mes', icon: <Calendar size={16} /> },
     { label: 'Total', icon: <BarChart3 size={16} /> }
   ];
 
-
-
-  // Todos los pacientes disponibles
+  /**
+   * Datos de ejemplo de pacientes del psicólogo
+   * Incluye información personal, sesiones, notas clínicas y estado de asistencia
+   * TODO: Reemplazar con datos dinámicos del backend
+   */
   const allPatients = [
     {
       name: 'María González',
@@ -269,7 +281,13 @@ const PsychologistPatients = () => {
     }
   ];
 
-  // Función para filtrar pacientes según el período seleccionado
+  /**
+   * Filtra pacientes según el período de tiempo seleccionado
+   * Permite ver pacientes activos en diferentes rangos: semana, mes o total
+   * TODO: Implementar filtrado dinámico con backend
+   * 
+   * @returns {Array} Lista filtrada de pacientes según el período
+   */
   const getFilteredPatients = () => {
     switch (selectedPeriod) {
       case 'Última semana':
@@ -295,7 +313,13 @@ const PsychologistPatients = () => {
     }
   };
 
-  // Función para obtener métricas según el período seleccionado
+  /**
+   * Calcula métricas y estadísticas según el período seleccionado
+   * Genera datos de pacientes activos, sesiones, horas de terapia y tasa de asistencia
+   * TODO: Implementar cálculo dinámico con backend
+   * 
+   * @returns {Array} Array de objetos con métricas calculadas
+   */
   const getMetricsForPeriod = () => {
     const filteredPatients = getFilteredPatients();
     const activePatients = filteredPatients.filter(p => p.status === 'Activo');
@@ -415,28 +439,44 @@ const PsychologistPatients = () => {
 
   const metrics = getMetricsForPeriod();
 
-  // Tags disponibles para diagnóstico
+  /**
+   * Tags disponibles para diagnóstico y categorización de pacientes
+   * Permite etiquetar pacientes con condiciones específicas para mejor organización
+   * TODO: Cargar tags dinámicamente desde backend
+   */
   const availableTags = [
     'Ansiedad', 'Depresión', 'Estrés laboral', 'Mindfulness', 'TOC', 
     'Fobia social', 'Trastorno de pánico', 'Insomnio', 'Burnout', 
     'Problemas de pareja', 'Duelo', 'Trauma', 'Adicciones', 'TDAH'
   ];
 
-  // Función para abrir modal de notas
+  /**
+   * Abre el modal de notas para un paciente específico
+   * Permite ver y editar notas clínicas y tags de diagnóstico
+   * 
+   * @param {Object} patient - Paciente seleccionado para editar
+   */
   const openNotesModal = (patient) => {
     setSelectedPatient(patient);
     setSelectedTags(patient.tags || []);
     setShowNotesModal(true);
   };
 
-  // Función para cerrar modal
+  /**
+   * Cierra el modal de notas y limpia los estados
+   */
   const closeNotesModal = () => {
     setShowNotesModal(false);
     setSelectedPatient(null);
     setSelectedTags([]);
   };
 
-  // Función para manejar tags
+  /**
+   * Maneja la selección/deselección de tags de diagnóstico
+   * Permite agregar o remover etiquetas de un paciente
+   * 
+   * @param {string} tag - Tag a agregar o remover
+   */
   const handleTagToggle = (tag) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter(t => t !== tag));
@@ -445,14 +485,21 @@ const PsychologistPatients = () => {
     }
   };
 
-  // Función para guardar cambios
+  /**
+   * Guarda los cambios realizados en las notas del paciente
+   * TODO: Implementar guardado en backend
+   */
   const saveChanges = () => {
     // Aquí se guardarían los cambios en la base de datos
     console.log('Guardando cambios para:', selectedPatient.name, 'Tags:', selectedTags);
     closeNotesModal();
   };
 
-  // Función para abrir nota clínica completa
+  /**
+   * Abre una nota clínica específica en modo detalle
+   * 
+   * @param {Object} note - Nota clínica a mostrar
+   */
   const openClinicalNote = (note) => {
     setSelectedNote(note);
     setShowClinicalNote(true);

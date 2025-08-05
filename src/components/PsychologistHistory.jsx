@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, User, FileText, Filter, Download, CheckCircle, AlertCircle, XCircle, Eye, Edit, Trash, Save, CheckSquare, Square, MapPin, Phone, Mail } from 'lucide-react';
 
+/**
+ * Componente de Historial de Sesiones del Psicólogo
+ * Muestra el historial completo de citas y sesiones realizadas
+ * Permite ver detalles de sesiones pasadas, notas clínicas y estadísticas de asistencia
+ */
 const PsychologistHistory = () => {
+  // Estados para controlar la interfaz y filtros
   const [activeTab, setActiveTab] = useState('Recientes');
   const [search, setSearch] = useState('');
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
-  // Datos de historial de citas (movidos desde PsychologistAppointments)
+  /**
+   * Datos de ejemplo del historial de citas del psicólogo
+   * Incluye información completa de sesiones pasadas, estado de asistencia y notas
+   * TODO: Reemplazar con datos dinámicos del backend
+   */
   const historyAppointments = [
     {
       id: 8,
@@ -107,7 +117,13 @@ const PsychologistHistory = () => {
     }
   ];
 
-  // Función para obtener icono de estado
+  /**
+   * Retorna el icono correspondiente al estado de la cita en el historial
+   * Proporciona indicadores visuales para diferentes estados de sesiones pasadas
+   * 
+   * @param {string} status - Estado de la cita
+   * @returns {JSX.Element} Icono correspondiente al estado
+   */
   const getStatusIcon = (status) => {
     switch (status) {
       case 'Confirmada':
@@ -127,7 +143,13 @@ const PsychologistHistory = () => {
     }
   };
 
-  // Función para obtener color de estado
+  /**
+   * Retorna el color correspondiente al estado de la cita en el historial
+   * Proporciona esquema de colores consistente para estados de sesiones pasadas
+   * 
+   * @param {string} status - Estado de la cita
+   * @returns {string} Color hexadecimal correspondiente al estado
+   */
   const getStatusColor = (status) => {
     switch (status) {
       case 'Confirmada':
@@ -147,20 +169,32 @@ const PsychologistHistory = () => {
     }
   };
 
-  // Filtrar citas por búsqueda
+  /**
+   * Filtra citas del historial según el término de búsqueda
+   * Busca en nombre del paciente, email y notas clínicas
+   * 
+   * @returns {Array} Lista filtrada de citas del historial
+   */
   const filteredAppointments = historyAppointments.filter(appointment => 
     appointment.patientName.toLowerCase().includes(search.toLowerCase()) ||
     appointment.patientEmail.toLowerCase().includes(search.toLowerCase()) ||
     appointment.notes.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Función para abrir modal de visualización
+  /**
+   * Abre el modal de visualización para una cita específica
+   * Permite ver detalles completos de una sesión pasada
+   * 
+   * @param {Object} appointment - Cita del historial a visualizar
+   */
   const openViewModal = (appointment) => {
     setSelectedAppointment(appointment);
     setShowViewModal(true);
   };
 
-  // Función para cerrar modal de visualización
+  /**
+   * Cierra el modal de visualización y limpia los estados
+   */
   const closeViewModal = () => {
     setShowViewModal(false);
     setSelectedAppointment(null);

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { FileText, Calendar, TrendingUp, Download, Eye, DollarSign, Clock, User } from 'lucide-react';
 
+/**
+ * Métricas financieras del psicólogo
+ * Muestra estadísticas clave de ingresos, consultas y rendimiento
+ */
 const metrics = [
   { label: 'Consultas este mes', value: '25', icon: <Calendar size={22} />, change: '+8 vs mes anterior', color: '#0057FF' },
   { label: 'Ingresos totales', value: '$12,500', icon: <DollarSign size={22} />, change: '+15% vs mes anterior', color: '#2ecc71' },
@@ -8,9 +12,17 @@ const metrics = [
   { label: 'Horas de terapia', value: '20.8h', icon: <Clock size={22} />, change: '+12% vs mes anterior', color: '#6ea8fe' },
 ];
 
+/**
+ * Pestañas disponibles para la sección de facturación
+ * Permite alternar entre historial y estadísticas
+ */
 const tabs = ['Historial', 'Estadísticas'];
 
-// Precios fijos por tipo de consulta
+/**
+ * Precios fijos por tipo de consulta
+ * Define las tarifas estándar para diferentes servicios
+ * TODO: Hacer configurable desde el backend
+ */
 const consultationPrices = {
   'Virtual': 450,
   'Evaluación': 600,
@@ -18,6 +30,11 @@ const consultationPrices = {
   'Crisis': 700
 };
 
+/**
+ * Datos de ejemplo del historial de consultas facturadas
+ * Incluye información completa de sesiones, precios y estado de pago
+ * TODO: Reemplazar con datos dinámicos del backend
+ */
 const consultationHistory = [
   {
     id: 'CONS-001',
@@ -109,19 +126,39 @@ const consultationHistory = [
   }
 ];
 
+/**
+ * Componente de Facturación del Psicólogo
+ * Gestiona el historial de consultas, ingresos y estadísticas financieras
+ * Permite descargar reportes y analizar el rendimiento económico
+ */
 const PsychologistBilling = () => {
+  // Estado para controlar la pestaña activa
   const [activeTab, setActiveTab] = useState('Historial');
 
+  /**
+   * Maneja la descarga del historial de consultas
+   * TODO: Implementar generación de reportes PDF/CSV
+   */
   const handleDownloadHistory = () => {
     // Función para descargar el historial como CSV o PDF
     console.log('Descargando historial de consultas...');
     // Aquí se implementaría la lógica de descarga
   };
 
+  /**
+   * Calcula el ingreso total de todas las consultas
+   * 
+   * @returns {number} Ingreso total en pesos
+   */
   const getTotalIncome = () => {
     return consultationHistory.reduce((total, consultation) => total + consultation.price, 0);
   };
 
+  /**
+   * Agrupa las consultas por tipo para análisis estadístico
+   * 
+   * @returns {Object} Objeto con conteo de consultas por tipo
+   */
   const getConsultationsByType = () => {
     const types = {};
     consultationHistory.forEach(consultation => {

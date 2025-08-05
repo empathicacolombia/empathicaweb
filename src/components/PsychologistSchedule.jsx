@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { CalendarDays, Settings, Plus, RefreshCw, Clock, Calendar, Check, X, CheckCircle } from 'lucide-react';
 
+/**
+ * Componente de Gestión de Horarios del Psicólogo
+ * Permite configurar disponibilidad semanal, horarios de trabajo y sincronización con calendarios externos
+ * Incluye gestión de franjas horarias, días laborables y configuración de disponibilidad
+ */
 const PsychologistSchedule = () => {
+  // Estados para controlar la configuración de horarios
   const [isConnected, setIsConnected] = useState(false);
   const [selectedDays, setSelectedDays] = useState(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']);
   const [timeSlots, setTimeSlots] = useState([
@@ -12,13 +18,26 @@ const PsychologistSchedule = () => {
     { day: 'Viernes', slots: ['09:00-10:00', '10:00-11:00', '15:00-16:00', '16:00-17:00'] }
   ]);
 
+  /**
+   * Días de la semana disponibles para configuración
+   */
   const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  
+  /**
+   * Opciones de horarios disponibles para selección
+   * Franjas horarias estándar de 1 hora
+   */
   const timeOptions = [
     '08:00-09:00', '09:00-10:00', '10:00-11:00', '11:00-12:00',
     '14:00-15:00', '15:00-16:00', '16:00-17:00', '17:00-18:00', '18:00-19:00'
   ];
 
-  // Función para agregar un nuevo horario
+  /**
+   * Agrega un nuevo horario a un día específico
+   * Permite expandir la disponibilidad del psicólogo
+   * 
+   * @param {string} day - Día de la semana para agregar horario
+   */
   const addTimeSlot = (day) => {
     setTimeSlots(prev => 
       prev.map(slot => 
@@ -29,7 +48,13 @@ const PsychologistSchedule = () => {
     );
   };
 
-  // Función para eliminar un horario
+  /**
+   * Elimina un horario específico de un día
+   * Permite reducir la disponibilidad del psicólogo
+   * 
+   * @param {string} day - Día de la semana
+   * @param {number} index - Índice del horario a eliminar
+   */
   const removeTimeSlot = (day, index) => {
     setTimeSlots(prev => 
       prev.map(slot => 
@@ -40,7 +65,14 @@ const PsychologistSchedule = () => {
     );
   };
 
-  // Función para cambiar un horario
+  /**
+   * Cambia un horario específico por uno nuevo
+   * Permite modificar horarios existentes
+   * 
+   * @param {string} day - Día de la semana
+   * @param {number} index - Índice del horario a cambiar
+   * @param {string} newTime - Nuevo horario en formato "HH:MM-HH:MM"
+   */
   const changeTimeSlot = (day, index, newTime) => {
     setTimeSlots(prev => 
       prev.map(slot => 
@@ -54,7 +86,10 @@ const PsychologistSchedule = () => {
     );
   };
 
-  // Función para guardar configuración
+  /**
+   * Guarda la configuración de disponibilidad
+   * TODO: Implementar guardado en backend y sincronización con calendarios
+   */
   const saveConfiguration = () => {
     console.log('Guardando configuración de disponibilidad:', { selectedDays, timeSlots });
     // Aquí se guardaría en la base de datos
@@ -62,7 +97,9 @@ const PsychologistSchedule = () => {
 
   return (
     <div style={{ padding: '2rem' }}>
-      {/* Sección de Configuración de Disponibilidad */}
+      {/* ========================================
+           SECCIÓN DE CONFIGURACIÓN DE DISPONIBILIDAD
+           ======================================== */}
       <div style={{
         background: '#fff',
         borderRadius: 12,
@@ -70,6 +107,9 @@ const PsychologistSchedule = () => {
         marginBottom: '2rem',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
       }}>
+        {/* ========================================
+             ENCABEZADO DE LA SECCIÓN
+             ======================================== */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -84,6 +124,7 @@ const PsychologistSchedule = () => {
           }}>
             Configuración de Disponibilidad
           </h2>
+          {/* Botón para guardar configuración */}
           <button 
             onClick={saveConfiguration}
             style={{

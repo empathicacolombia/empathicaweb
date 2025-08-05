@@ -1,9 +1,31 @@
 import React, { useState } from 'react';
 import logoEmpathica from '../assets/Logoempathica.png';
 
+/**
+ * Componente de página de Registro
+ * Permite a los usuarios registrarse como pacientes o psicólogos en la plataforma Empathica
+ * Incluye formulario dinámico que cambia según el tipo de usuario seleccionado
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación entre páginas
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ * @param {Function} navigationProps.onUserRegistration - Función para manejar registro exitoso
+ */
 const RegisterPage = ({ navigationProps }) => {
+  /**
+   * Estado para controlar el tipo de usuario seleccionado
+   * 'patient' = Paciente, 'psychologist' = Psicólogo
+   */
   const [userType, setUserType] = useState('patient'); // 'patient' o 'psychologist'
+  
+  /**
+   * Estado para controlar el menú móvil
+   */
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  /**
+   * Estado para almacenar todos los datos del formulario
+   * Incluye campos comunes y específicos según el tipo de usuario
+   */
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -12,9 +34,13 @@ const RegisterPage = ({ navigationProps }) => {
     confirmPassword: '',
     phone: '',
     gender: '',
-    professionalLicense: '' // Nuevo campo para psicólogos
+    professionalLicense: '' // Campo específico para psicólogos
   });
 
+  /**
+   * Maneja la navegación entre diferentes páginas de la aplicación
+   * @param {string} page - Nombre de la página a la que navegar
+   */
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
@@ -22,6 +48,11 @@ const RegisterPage = ({ navigationProps }) => {
     setMobileMenuOpen(false);
   };
 
+  /**
+   * Actualiza el estado del formulario cuando el usuario cambia un campo
+   * @param {string} field - Nombre del campo a actualizar
+   * @param {string} value - Nuevo valor del campo
+   */
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -29,6 +60,11 @@ const RegisterPage = ({ navigationProps }) => {
     }));
   };
 
+  /**
+   * Maneja el envío del formulario de registro
+   * Redirige según el tipo de usuario registrado
+   * @param {Event} e - Evento del formulario
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Register attempt:', { userType, formData });
@@ -53,7 +89,9 @@ const RegisterPage = ({ navigationProps }) => {
       background: 'linear-gradient(135deg, #fff 0%, #fff3e0 100%)',
       position: 'relative'
     }}>
-      {/* Header */}
+      {/* ========================================
+           HEADER / BARRA DE NAVEGACIÓN
+           ======================================== */}
       <nav style={{ 
         background: '#0057FF', 
         color: '#fff', 
@@ -69,7 +107,7 @@ const RegisterPage = ({ navigationProps }) => {
           justifyContent: 'space-between',
           padding: '0 20px'
         }}>
-          {/* Logo */}
+          {/* Logo de la empresa */}
           <span
             style={{
               fontWeight: 'bold',
@@ -85,13 +123,13 @@ const RegisterPage = ({ navigationProps }) => {
             Empathica
           </span>
 
-          {/* Desktop Navigation */}
+          {/* Navegación de escritorio */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center',
             gap: '1.5rem'
           }}>
-            {/* Enlaces de navegación - Desktop */}
+            {/* Enlaces de navegación - Solo visible en desktop */}
             <ul style={{ 
               display: 'none',
               gap: '2rem', 
@@ -104,6 +142,7 @@ const RegisterPage = ({ navigationProps }) => {
                 display: 'flex'
               }
             }}>
+              {/* Enlace a página de psicólogos */}
               <li>
                 <button
                   onClick={() => handleNavigation('individuals')}
@@ -125,6 +164,8 @@ const RegisterPage = ({ navigationProps }) => {
                   Psicólogos
                 </button>
               </li>
+              
+              {/* Enlace a página de empresas */}
               <li>
                 <button
                   onClick={() => handleNavigation('business')}
@@ -146,6 +187,8 @@ const RegisterPage = ({ navigationProps }) => {
                   Empresas
                 </button>
               </li>
+              
+              {/* Enlace a página "Acerca de" */}
               <li>
                 <button
                   onClick={() => handleNavigation('about')}
@@ -167,6 +210,8 @@ const RegisterPage = ({ navigationProps }) => {
                   Acerca de
                 </button>
               </li>
+              
+              {/* Enlace a página de precios */}
               <li>
                 <button
                   onClick={() => handleNavigation('pricing')}
@@ -190,7 +235,7 @@ const RegisterPage = ({ navigationProps }) => {
               </li>
             </ul>
 
-            {/* Botones - Desktop */}
+            {/* Botones de autenticación - Solo visible en desktop */}
             <div style={{ 
               display: 'none',
               gap: '1rem',
@@ -198,6 +243,7 @@ const RegisterPage = ({ navigationProps }) => {
                 display: 'flex'
               }
             }}>
+              {/* Botón de inicio de sesión */}
               <button
                 onClick={() => handleNavigation('login')}
                 style={{
@@ -224,6 +270,8 @@ const RegisterPage = ({ navigationProps }) => {
               >
                 Iniciar sesión
               </button>
+              
+              {/* Botón de registro */}
               <button
                 onClick={() => handleNavigation('register')}
                 style={{
@@ -245,7 +293,9 @@ const RegisterPage = ({ navigationProps }) => {
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* ========================================
+               BOTÓN DE MENÚ HAMBURGUESA MÓVIL
+               ======================================== */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
@@ -262,6 +312,7 @@ const RegisterPage = ({ navigationProps }) => {
               }
             }}
           >
+            {/* Línea superior del menú hamburguesa */}
             <div style={{
               width: '24px',
               height: '2px',
@@ -270,6 +321,7 @@ const RegisterPage = ({ navigationProps }) => {
               transition: '0.3s',
               transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none'
             }} />
+            {/* Línea central del menú hamburguesa */}
             <div style={{
               width: '24px',
               height: '2px',
@@ -278,6 +330,7 @@ const RegisterPage = ({ navigationProps }) => {
               transition: '0.3s',
               opacity: mobileMenuOpen ? '0' : '1'
             }} />
+            {/* Línea inferior del menú hamburguesa */}
             <div style={{
               width: '24px',
               height: '2px',
@@ -289,7 +342,9 @@ const RegisterPage = ({ navigationProps }) => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* ========================================
+             MENÚ MÓVIL DESPLEGABLE
+             ======================================== */}
         {mobileMenuOpen && (
           <div style={{
             position: 'absolute',
@@ -301,6 +356,7 @@ const RegisterPage = ({ navigationProps }) => {
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
             zIndex: 1000
           }}>
+            {/* Enlaces de navegación móvil */}
             <ul style={{
               listStyle: 'none',
               margin: 0,
@@ -309,6 +365,7 @@ const RegisterPage = ({ navigationProps }) => {
               flexDirection: 'column',
               gap: '16px'
             }}>
+              {/* Enlace a página de psicólogos */}
               <li>
                 <button
                   onClick={() => handleNavigation('individuals')}
@@ -331,6 +388,8 @@ const RegisterPage = ({ navigationProps }) => {
                   Psicólogos
                 </button>
               </li>
+              
+              {/* Enlace a página de empresas */}
               <li>
                 <button
                   onClick={() => handleNavigation('business')}
@@ -353,6 +412,8 @@ const RegisterPage = ({ navigationProps }) => {
                   Empresas
                 </button>
               </li>
+              
+              {/* Enlace a página "Acerca de" */}
               <li>
                 <button
                   onClick={() => handleNavigation('about')}
@@ -375,6 +436,8 @@ const RegisterPage = ({ navigationProps }) => {
                   Acerca de
                 </button>
               </li>
+              
+              {/* Enlace a página de precios */}
               <li>
                 <button
                   onClick={() => handleNavigation('pricing')}
@@ -398,6 +461,8 @@ const RegisterPage = ({ navigationProps }) => {
                 </button>
               </li>
             </ul>
+            
+            {/* Botones de autenticación móvil */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -406,6 +471,7 @@ const RegisterPage = ({ navigationProps }) => {
               paddingTop: '20px',
               borderTop: '1px solid rgba(255,255,255,0.2)'
             }}>
+              {/* Botón de inicio de sesión móvil */}
               <button
                 onClick={() => handleNavigation('login')}
                 style={{
@@ -430,6 +496,8 @@ const RegisterPage = ({ navigationProps }) => {
               >
                 Iniciar sesión
               </button>
+              
+              {/* Botón de registro móvil */}
               <button
                 onClick={() => handleNavigation('register')}
                 style={{
@@ -450,7 +518,9 @@ const RegisterPage = ({ navigationProps }) => {
         )}
       </nav>
 
-      {/* Contenido principal */}
+      {/* ========================================
+           CONTENIDO PRINCIPAL - FORMULARIO DE REGISTRO
+           ======================================== */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
@@ -458,7 +528,9 @@ const RegisterPage = ({ navigationProps }) => {
         minHeight: 'calc(100vh - 80px)',
         padding: '2rem'
       }}>
-        {/* Tarjeta principal */}
+        {/* ========================================
+             TARJETA PRINCIPAL DEL FORMULARIO
+             ======================================== */}
         <div style={{
           background: '#fff',
           borderRadius: 20,
@@ -468,7 +540,9 @@ const RegisterPage = ({ navigationProps }) => {
           maxWidth: 600,
           position: 'relative'
         }}>
-          {/* Logo superior */}
+          {/* ========================================
+               LOGO SUPERIOR
+               ======================================== */}
           <div style={{
             width: 48,
             height: 48,
@@ -482,7 +556,9 @@ const RegisterPage = ({ navigationProps }) => {
             <img src={logoEmpathica} alt="Empathica Logo" style={{ width: '24px', height: '24px' }} />
           </div>
 
-          {/* Título principal */}
+          {/* ========================================
+               TÍTULO PRINCIPAL
+               ======================================== */}
           <h1 style={{
             fontSize: 32,
             fontWeight: 800,
@@ -494,7 +570,9 @@ const RegisterPage = ({ navigationProps }) => {
             Únete a Empathica
           </h1>
 
-          {/* Subtítulo */}
+          {/* ========================================
+               SUBTÍTULO DESCRIPTIVO
+               ======================================== */}
           <p style={{
             color: '#666',
             fontSize: 16,
@@ -504,7 +582,9 @@ const RegisterPage = ({ navigationProps }) => {
             Escoge cómo quieres ser parte de nuestra comunidad
           </p>
 
-          {/* Selector de tipo de usuario */}
+          {/* ========================================
+               SELECTOR DE TIPO DE USUARIO
+               ======================================== */}
           <div style={{
             display: 'flex',
             background: '#f5f5f5',
@@ -512,6 +592,7 @@ const RegisterPage = ({ navigationProps }) => {
             padding: '0.25rem',
             marginBottom: '2rem'
           }}>
+            {/* Botón para seleccionar registro como paciente */}
             <button
               onClick={() => setUserType('patient')}
               style={{
@@ -529,6 +610,8 @@ const RegisterPage = ({ navigationProps }) => {
             >
               Quiero hacer parte
             </button>
+            
+            {/* Botón para seleccionar registro como psicólogo */}
             <button
               onClick={() => setUserType('psychologist')}
               style={{
@@ -548,7 +631,9 @@ const RegisterPage = ({ navigationProps }) => {
             </button>
           </div>
 
-          {/* Título del formulario */}
+          {/* ========================================
+               TÍTULO DINÁMICO DEL FORMULARIO
+               ======================================== */}
           <h2 style={{
             fontSize: 24,
             fontWeight: 700,
@@ -558,7 +643,9 @@ const RegisterPage = ({ navigationProps }) => {
             Registro como {userType === 'patient' ? 'Paciente' : 'Psicólogo'}
           </h2>
 
-          {/* Subtítulo del formulario */}
+          {/* ========================================
+               SUBTÍTULO DINÁMICO DEL FORMULARIO
+               ======================================== */}
           <p style={{
             color: '#666',
             fontSize: 14,
@@ -570,14 +657,19 @@ const RegisterPage = ({ navigationProps }) => {
             }
           </p>
 
-          {/* Formulario */}
+          {/* ========================================
+               FORMULARIO DE REGISTRO
+               ======================================== */}
           <form onSubmit={handleSubmit}>
-            {/* Primera fila - Nombre y Apellido */}
+            {/* ========================================
+                 PRIMERA FILA - NOMBRE Y APELLIDO
+                 ======================================== */}
             <div style={{
               display: 'flex',
               gap: '1rem',
               marginBottom: '1.5rem'
             }}>
+              {/* Campo de nombre */}
               <div style={{ flex: 1 }}>
                 <label style={{
                   display: 'block',
@@ -607,6 +699,8 @@ const RegisterPage = ({ navigationProps }) => {
                   onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                 />
               </div>
+              
+              {/* Campo de apellido */}
               <div style={{ flex: 1 }}>
                 <label style={{
                   display: 'block',
@@ -638,7 +732,9 @@ const RegisterPage = ({ navigationProps }) => {
               </div>
             </div>
 
-            {/* Email - Ancho completo */}
+            {/* ========================================
+                 CAMPO DE CORREO ELECTRÓNICO
+                 ======================================== */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
                 display: 'block',
@@ -669,7 +765,9 @@ const RegisterPage = ({ navigationProps }) => {
               />
             </div>
 
-            {/* Cédula profesional - Solo para psicólogos */}
+            {/* ========================================
+                 CAMPO DE CÉDULA PROFESIONAL (SOLO PSICÓLOGOS)
+                 ======================================== */}
             {userType === 'psychologist' && (
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{
@@ -702,12 +800,15 @@ const RegisterPage = ({ navigationProps }) => {
               </div>
             )}
 
-            {/* Contraseñas - Dos columnas */}
+            {/* ========================================
+                 CAMPOS DE CONTRASEÑA - DOS COLUMNAS
+                 ======================================== */}
             <div style={{
               display: 'flex',
               gap: '1rem',
               marginBottom: '1.5rem'
             }}>
+              {/* Campo de contraseña */}
               <div style={{ flex: 1 }}>
                 <label style={{
                   display: 'block',
@@ -737,6 +838,8 @@ const RegisterPage = ({ navigationProps }) => {
                   onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                 />
               </div>
+              
+              {/* Campo de confirmación de contraseña */}
               <div style={{ flex: 1 }}>
                 <label style={{
                   display: 'block',
@@ -768,7 +871,9 @@ const RegisterPage = ({ navigationProps }) => {
               </div>
             </div>
 
-            {/* Teléfono - Dos partes */}
+            {/* ========================================
+                 CAMPO DE TELÉFONO CON CÓDIGO DE PAÍS
+                 ======================================== */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
                 display: 'block',
@@ -783,6 +888,7 @@ const RegisterPage = ({ navigationProps }) => {
                 display: 'flex',
                 gap: '0.5rem'
               }}>
+                {/* Selector de código de país */}
                 <select
                   style={{
                     padding: '0.75rem',
@@ -799,6 +905,8 @@ const RegisterPage = ({ navigationProps }) => {
                   <option value="+34">+34</option>
                   <option value="+52">+52</option>
                 </select>
+                
+                {/* Campo de número de teléfono */}
                 <input
                   type="tel"
                   value={formData.phone}
@@ -820,7 +928,9 @@ const RegisterPage = ({ navigationProps }) => {
               </div>
             </div>
 
-            {/* Género - Ancho completo */}
+            {/* ========================================
+                 CAMPO DE GÉNERO
+                 ======================================== */}
             <div style={{ marginBottom: '2rem' }}>
               <label style={{
                 display: 'block',
@@ -853,7 +963,9 @@ const RegisterPage = ({ navigationProps }) => {
               </select>
             </div>
 
-            {/* Botón de registro */}
+            {/* ========================================
+                 BOTÓN DE REGISTRO
+                 ======================================== */}
             <button
               type="submit"
               style={{
@@ -881,7 +993,9 @@ const RegisterPage = ({ navigationProps }) => {
               Registrarse como {userType === 'patient' ? 'Paciente' : 'Psicólogo'}
             </button>
 
-            {/* Link de login */}
+            {/* ========================================
+                 ENLACE DE LOGIN
+                 ======================================== */}
             <div style={{
               textAlign: 'center',
               fontSize: 14,

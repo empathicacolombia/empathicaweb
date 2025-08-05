@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
 import { Plus, Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, XCircle, AlertCircle, Edit, Trash, Save, CheckSquare, Square, Play, Check } from 'lucide-react';
 
+/**
+ * Pestañas disponibles para filtrar citas
+ * Permite ver citas próximas o del día actual
+ */
 const tabs = ['Próximas', 'Hoy'];
 
+/**
+ * Componente de Gestión de Citas del Psicólogo
+ * Permite gestionar citas programadas, ver detalles de pacientes, tomar notas y cancelar sesiones
+ * Incluye funcionalidades de confirmación, notas clínicas y gestión de estado de citas
+ */
 const PsychologistAppointments = () => {
+  // Estados para controlar la interfaz y datos de citas
   const [activeTab, setActiveTab] = useState('Próximas');
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -19,7 +29,10 @@ const PsychologistAppointments = () => {
     newTime: ''
   });
 
-  // Tags disponibles para pacientes
+  /**
+   * Tags disponibles para categorizar pacientes y sesiones
+   * Permite etiquetar condiciones específicas y enfoques terapéuticos
+   */
   const availableTags = [
     'Ansiedad', 'Depresión', 'Estrés laboral', 'Mindfulness', 'TOC', 
     'Fobia social', 'Trastorno de pánico', 'Insomnio', 'Burnout', 
@@ -27,7 +40,10 @@ const PsychologistAppointments = () => {
     'Autoestima', 'Comunicación', 'Límites', 'Relajación'
   ];
 
-  // Motivos de cancelación
+  /**
+   * Motivos predefinidos para cancelación de citas
+   * Facilita el registro de razones de cancelación
+   */
   const cancelReasons = [
     'Paciente solicitó cancelación',
     'Emergencia médica',
@@ -37,7 +53,11 @@ const PsychologistAppointments = () => {
     'Otro motivo'
   ];
 
-  // Datos en duro para trabajar en el diseño
+  /**
+   * Datos de ejemplo de citas del psicólogo
+   * Incluye información completa de pacientes, horarios y estado de citas
+   * TODO: Reemplazar con datos dinámicos del backend
+   */
   const [appointments, setAppointments] = useState([
     {
       id: 1,
@@ -116,6 +136,13 @@ const PsychologistAppointments = () => {
     }
   ]);
 
+  /**
+   * Filtra citas según la pestaña activa
+   * Próximas: Muestra citas confirmadas y pendientes
+   * Hoy: Muestra citas en proceso y completadas
+   * 
+   * @returns {Array} Lista filtrada de citas según la pestaña
+   */
   const getAppointmentsByTab = () => {
     if (activeTab === 'Próximas') {
       return appointments.filter(apt => apt.status === 'Confirmada' || apt.status === 'Pendiente');
@@ -125,6 +152,13 @@ const PsychologistAppointments = () => {
     return [];
   };
 
+  /**
+   * Retorna el icono correspondiente al estado de la cita
+   * Proporciona indicadores visuales para diferentes estados
+   * 
+   * @param {string} status - Estado de la cita
+   * @returns {JSX.Element} Icono correspondiente al estado
+   */
   const getStatusIcon = (status) => {
     switch (status) {
       case 'Confirmada':
@@ -142,6 +176,13 @@ const PsychologistAppointments = () => {
     }
   };
 
+  /**
+   * Retorna el color correspondiente al estado de la cita
+   * Proporciona esquema de colores consistente para estados
+   * 
+   * @param {string} status - Estado de la cita
+   * @returns {string} Color hexadecimal correspondiente al estado
+   */
   const getStatusColor = (status) => {
     switch (status) {
       case 'Confirmada':
@@ -159,6 +200,12 @@ const PsychologistAppointments = () => {
     }
   };
 
+  /**
+   * Inicia una cita cambiando su estado a "En Proceso"
+   * Permite al psicólogo marcar el inicio de una sesión
+   * 
+   * @param {Object} appointment - Cita a iniciar
+   */
   const startAppointment = (appointment) => {
     setAppointments(prev => prev.map(apt => 
       apt.id === appointment.id 
@@ -167,6 +214,12 @@ const PsychologistAppointments = () => {
     ));
   };
 
+  /**
+   * Abre el modal de notas para una cita específica
+   * Permite ver y editar notas clínicas y tags de la sesión
+   * 
+   * @param {Object} appointment - Cita para la cual abrir notas
+   */
   const openNotesModal = (appointment) => {
     setSelectedAppointment(appointment);
     setNotesForm({
@@ -176,12 +229,21 @@ const PsychologistAppointments = () => {
     setShowNotesModal(true);
   };
 
+  /**
+   * Cierra el modal de notas y limpia los estados
+   */
   const closeNotesModal = () => {
     setShowNotesModal(false);
     setSelectedAppointment(null);
     setNotesForm({ notes: '', tags: [] });
   };
 
+  /**
+   * Maneja cambios en el formulario de notas
+   * 
+   * @param {string} field - Campo a modificar
+   * @param {string} value - Nuevo valor
+   */
   const handleNotesFormChange = (field, value) => {
     setNotesForm(prev => ({
       ...prev,
@@ -189,6 +251,11 @@ const PsychologistAppointments = () => {
     }));
   };
 
+  /**
+   * Maneja la selección/deselección de tags en las notas
+   * 
+   * @param {string} tag - Tag a agregar o remover
+   */
   const handleTagToggle = (tag) => {
     setNotesForm(prev => ({
       ...prev,
@@ -198,6 +265,10 @@ const PsychologistAppointments = () => {
     }));
   };
 
+  /**
+   * Guarda las notas y marca la cita como completada
+   * TODO: Implementar guardado en backend
+   */
   const saveNotesAndComplete = () => {
     if (selectedAppointment) {
       setAppointments(prev => prev.map(apt => 

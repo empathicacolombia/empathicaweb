@@ -5,16 +5,40 @@ import ClientSidebar from './ClientSidebar';
 import AppointmentCalendarModal from './AppointmentCalendarModal';
 import MobileDashboardNav from './MobileDashboardNav';
 
+/**
+ * Componente de página de Citas del Cliente
+ * Permite gestionar citas próximas, ver historial y agendar nuevas citas
+ * Incluye pestañas para próximas citas e historial, y modal para agendar
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación y control del sidebar
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ * @param {Function} navigationProps.toggleSidebar - Función para mostrar/ocultar sidebar
+ * @param {boolean} navigationProps.sidebarOpen - Estado de apertura del sidebar
+ */
 const AppointmentsPage = ({ navigationProps }) => {
+  /**
+   * Estado para controlar la pestaña activa (próximas citas o historial)
+   */
   const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming' o 'history'
+  
+  /**
+   * Estado para controlar la apertura del modal de agendar cita
+   */
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  /**
+   * Maneja la navegación entre diferentes páginas de la aplicación
+   * @param {string} page - Nombre de la página a la que navegar
+   */
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
     }
   };
 
+  /**
+   * Alterna la visibilidad del sidebar (colapsar/expandir)
+   */
   const toggleSidebar = () => {
     if (navigationProps && navigationProps.toggleSidebar) {
       navigationProps.toggleSidebar();
@@ -24,6 +48,10 @@ const AppointmentsPage = ({ navigationProps }) => {
   // Usar el estado global del sidebar
   const sidebarOpen = navigationProps?.sidebarOpen ?? true;
 
+  /**
+   * Datos de ejemplo de citas del usuario
+   * En una implementación real, estos datos vendrían del backend
+   */
   const appointments = [
     {
       id: 1,
@@ -53,16 +81,22 @@ const AppointmentsPage = ({ navigationProps }) => {
       minHeight: '100vh',
       background: '#f8f9fa'
     }}>
-      {/* Sidebar */}
+      {/* ========================================
+           SIDEBAR DE NAVEGACIÓN
+           ======================================== */}
       <ClientSidebar navigationProps={navigationProps} activePage="appointments" sidebarOpen={sidebarOpen} />
 
-      {/* Contenido principal */}
+      {/* ========================================
+           CONTENIDO PRINCIPAL
+           ======================================== */}
       <div style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column'
       }}>
-        {/* Header superior */}
+        {/* ========================================
+             HEADER SUPERIOR
+             ======================================== */}
         <div style={{
           background: '#fff',
           padding: '1rem 2rem',
@@ -71,11 +105,13 @@ const AppointmentsPage = ({ navigationProps }) => {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
+          {/* Lado izquierdo - Botón de menú y título */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '1rem'
           }}>
+            {/* Botón para alternar sidebar */}
             <button
               onClick={toggleSidebar}
               style={{
@@ -88,6 +124,8 @@ const AppointmentsPage = ({ navigationProps }) => {
             >
               ☰
             </button>
+            
+            {/* Título del dashboard */}
             <span style={{
               fontSize: 18,
               fontWeight: 600,
@@ -97,6 +135,7 @@ const AppointmentsPage = ({ navigationProps }) => {
             </span>
           </div>
           
+          {/* Lado derecho - Avatar del usuario */}
           <div style={{
             width: 40,
             height: 40,
@@ -115,13 +154,17 @@ const AppointmentsPage = ({ navigationProps }) => {
           </div>
         </div>
 
-        {/* Contenido de citas */}
+        {/* ========================================
+             CONTENIDO DE CITAS
+             ======================================== */}
         <div style={{
           flex: 1,
           padding: '2rem',
           overflow: 'auto'
         }}>
-          {/* Navegación móvil */}
+          {/* ========================================
+               NAVEGACIÓN MÓVIL
+               ======================================== */}
           <MobileDashboardNav 
             items={[
               { icon: <Home size={20} />, label: 'Inicio', section: 'Dashboard' },
@@ -138,13 +181,17 @@ const AppointmentsPage = ({ navigationProps }) => {
               else if (section === 'Support') handleNavigation('support');
             }}
           />
-          {/* Header de la página */}
+          
+          {/* ========================================
+               HEADER DE LA PÁGINA
+               ======================================== */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
             marginBottom: '2rem'
           }}>
+            {/* Título y descripción */}
             <div>
               <h1 style={{
                 fontSize: 32,
@@ -163,6 +210,7 @@ const AppointmentsPage = ({ navigationProps }) => {
               </p>
             </div>
             
+            {/* Botón para agendar nueva cita */}
             <button 
               onClick={() => setIsModalOpen(true)}
               style={{
@@ -184,12 +232,15 @@ const AppointmentsPage = ({ navigationProps }) => {
             </button>
           </div>
 
-          {/* Pestañas */}
+          {/* ========================================
+               PESTAÑAS DE NAVEGACIÓN
+               ======================================== */}
           <div style={{
             display: 'flex',
             borderBottom: '2px solid #e0e0e0',
             marginBottom: '2rem'
           }}>
+            {/* Pestaña de próximas citas */}
             <button
               onClick={() => setActiveTab('upcoming')}
               style={{
@@ -205,6 +256,8 @@ const AppointmentsPage = ({ navigationProps }) => {
             >
               Próximas Citas
             </button>
+            
+            {/* Pestaña de historial */}
             <button
               onClick={() => setActiveTab('history')}
               style={{
@@ -222,7 +275,9 @@ const AppointmentsPage = ({ navigationProps }) => {
             </button>
           </div>
 
-          {/* Lista de citas */}
+          {/* ========================================
+               LISTA DE CITAS
+               ======================================== */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -242,8 +297,11 @@ const AppointmentsPage = ({ navigationProps }) => {
                   justifyContent: 'space-between'
                 }}
               >
-                {/* Información de la cita */}
+                {/* ========================================
+                     INFORMACIÓN DE LA CITA
+                     ======================================== */}
                 <div className="appointment-info" style={{ flex: 1 }}>
+                  {/* Tipo de cita */}
                   <div style={{
                     fontSize: 18,
                     fontWeight: 700,
@@ -253,11 +311,13 @@ const AppointmentsPage = ({ navigationProps }) => {
                     {appointment.type}
                   </div>
                   
+                  {/* Detalles de la cita */}
                   <div style={{
                     display: 'flex',
                     gap: '2rem',
                     flexWrap: 'wrap'
                   }}>
+                    {/* Fecha de la cita */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -269,6 +329,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                       {appointment.date}
                     </div>
                     
+                    {/* Hora de la cita */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -280,6 +341,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                       {appointment.time}
                     </div>
                     
+                    {/* Especialista */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -293,13 +355,15 @@ const AppointmentsPage = ({ navigationProps }) => {
                   </div>
                 </div>
 
-                {/* Estado y acciones */}
+                {/* ========================================
+                     ESTADO Y ACCIONES
+                     ======================================== */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '1rem'
                 }}>
-                  {/* Estado */}
+                  {/* Estado de la cita */}
                   <div style={{
                     background: appointment.statusColor,
                     color: appointment.statusTextColor,
@@ -312,11 +376,14 @@ const AppointmentsPage = ({ navigationProps }) => {
                     {appointment.status}
                   </div>
 
-                  {/* Botones de acción */}
+                  {/* ========================================
+                       BOTONES DE ACCIÓN
+                       ======================================== */}
                   <div className="appointment-actions" style={{
                     display: 'flex',
                     gap: '0.5rem'
                   }}>
+                    {/* Botón de reagendar */}
                     <button style={{
                       background: 'transparent',
                       color: '#0057FF',
@@ -329,6 +396,8 @@ const AppointmentsPage = ({ navigationProps }) => {
                     }}>
                       Reagendar
                     </button>
+                    
+                    {/* Botón de cancelar */}
                     <button style={{
                       background: 'transparent',
                       color: '#ff4444',
@@ -343,7 +412,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                     </button>
                   </div>
 
-                  {/* Menú de opciones */}
+                  {/* Menú de opciones adicionales */}
                   <button style={{
                     background: 'transparent',
                     border: 'none',
@@ -360,6 +429,10 @@ const AppointmentsPage = ({ navigationProps }) => {
           </div>
         </div>
       </div>
+      
+      {/* ========================================
+           MODAL DE CALENDARIO PARA AGENDAR CITA
+           ======================================== */}
       <AppointmentCalendarModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );

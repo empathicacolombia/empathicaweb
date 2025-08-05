@@ -4,16 +4,40 @@ import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
 import MobileDashboardNav from './MobileDashboardNav';
 
+/**
+ * Componente de página "For You" - Contenido Personalizado
+ * Muestra contenido personalizado para el bienestar emocional del usuario
+ * Incluye actividades mensuales, podcasts, artículos y tests recomendados
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación y control del sidebar
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ * @param {Function} navigationProps.toggleSidebar - Función para mostrar/ocultar sidebar
+ * @param {boolean} navigationProps.sidebarOpen - Estado de apertura del sidebar
+ */
 const ForYouPage = ({ navigationProps }) => {
+  /**
+   * Estado para controlar la pestaña activa de contenido
+   */
   const [activeTab, setActiveTab] = useState('podcasts'); // 'podcasts', 'articles', 'tests'
+  
+  /**
+   * Estado para el estado de ánimo seleccionado (funcionalidad futura)
+   */
   const [selectedMood, setSelectedMood] = useState(null);
 
+  /**
+   * Maneja la navegación entre diferentes páginas de la aplicación
+   * @param {string} page - Nombre de la página a la que navegar
+   */
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
     }
   };
 
+  /**
+   * Alterna la visibilidad del sidebar (colapsar/expandir)
+   */
   const toggleSidebar = () => {
     if (navigationProps && navigationProps.toggleSidebar) {
       navigationProps.toggleSidebar();
@@ -23,7 +47,10 @@ const ForYouPage = ({ navigationProps }) => {
   // Usar el estado global del sidebar
   const sidebarOpen = navigationProps?.sidebarOpen ?? true;
 
-  // Datos de actividades mensuales
+  /**
+   * Datos de actividades mensuales del usuario
+   * En una implementación real, estos datos vendrían del backend
+   */
   const monthlyActivities = {
     sessions: { completed: 8, total: 12, percentage: 67 },
     exercises: { completed: 15, total: 20, percentage: 75 },
@@ -32,6 +59,9 @@ const ForYouPage = ({ navigationProps }) => {
     goals: { completed: 3, total: 5, percentage: 60 }
   };
 
+  /**
+   * Etiquetas en español para las actividades
+   */
   const activityLabels = {
     sessions: 'Sesiones',
     exercises: 'Ejercicios',
@@ -40,6 +70,10 @@ const ForYouPage = ({ navigationProps }) => {
     goals: 'Metas'
   };
 
+  /**
+   * Contenido personalizado organizado por categorías
+   * En una implementación real, este contenido se generaría dinámicamente
+   */
   const content = {
     podcasts: [
       {
@@ -127,7 +161,10 @@ const ForYouPage = ({ navigationProps }) => {
     ]
   };
 
-  // Función para abrir URLs externas
+  /**
+   * Función para abrir URLs externas en una nueva pestaña
+   * @param {string} url - URL a abrir
+   */
   const openExternalUrl = (url) => {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -138,16 +175,22 @@ const ForYouPage = ({ navigationProps }) => {
       minHeight: '100vh',
       background: '#f8f9fa'
     }}>
-      {/* Sidebar */}
+      {/* ========================================
+           SIDEBAR DE NAVEGACIÓN
+           ======================================== */}
       <ClientSidebar navigationProps={navigationProps} activePage="for-you" sidebarOpen={sidebarOpen} />
 
-      {/* Contenido principal */}
+      {/* ========================================
+           CONTENIDO PRINCIPAL
+           ======================================== */}
       <div style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column'
       }}>
-        {/* Header superior */}
+        {/* ========================================
+             HEADER SUPERIOR
+             ======================================== */}
         <div style={{
           background: '#fff',
           padding: '1rem 2rem',
@@ -156,11 +199,13 @@ const ForYouPage = ({ navigationProps }) => {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
+          {/* Lado izquierdo - Botón de menú y título */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '1rem'
           }}>
+            {/* Botón para alternar sidebar */}
             <button
               onClick={toggleSidebar}
               style={{
@@ -173,6 +218,8 @@ const ForYouPage = ({ navigationProps }) => {
             >
               ☰
             </button>
+            
+            {/* Título del dashboard */}
             <span style={{
               fontSize: 18,
               fontWeight: 600,
@@ -182,6 +229,7 @@ const ForYouPage = ({ navigationProps }) => {
             </span>
           </div>
           
+          {/* Lado derecho - Avatar del usuario */}
           <div style={{
             width: 40,
             height: 40,
@@ -200,13 +248,17 @@ const ForYouPage = ({ navigationProps }) => {
           </div>
         </div>
 
-        {/* Contenido de For You */}
+        {/* ========================================
+             CONTENIDO DE FOR YOU
+             ======================================== */}
         <div style={{
           flex: 1,
           padding: '2rem',
           overflow: 'auto'
         }}>
-          {/* Navegación móvil */}
+          {/* ========================================
+               NAVEGACIÓN MÓVIL
+               ======================================== */}
           <MobileDashboardNav 
             items={[
               { icon: <Home size={20} />, label: 'Inicio', section: 'Dashboard' },
@@ -223,7 +275,10 @@ const ForYouPage = ({ navigationProps }) => {
               else if (section === 'Support') handleNavigation('support');
             }}
           />
-          {/* Header de la página */}
+          
+          {/* ========================================
+               HEADER DE LA PÁGINA
+               ======================================== */}
           <div style={{
             textAlign: 'center',
             marginBottom: '2rem'
@@ -245,13 +300,16 @@ const ForYouPage = ({ navigationProps }) => {
             </p>
           </div>
 
-          {/* Sección de emociones */}
+          {/* ========================================
+               SECCIÓN DE ACTIVIDADES MENSUALES
+               ======================================== */}
           <div style={{
             background: 'linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%)',
             borderRadius: 16,
             padding: '2rem',
             marginBottom: '2rem'
           }}>
+            {/* Encabezado de la sección */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -269,6 +327,7 @@ const ForYouPage = ({ navigationProps }) => {
               </h2>
             </div>
             
+            {/* Descripción */}
             <p style={{
               color: '#666',
               margin: '0 0 1.5rem 0',
@@ -277,6 +336,7 @@ const ForYouPage = ({ navigationProps }) => {
               Tu progreso en las actividades de bienestar este mes
             </p>
             
+            {/* Lista de actividades con barras de progreso */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -289,6 +349,7 @@ const ForYouPage = ({ navigationProps }) => {
                   padding: '1rem',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                 }}>
+                  {/* Encabezado de la actividad */}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -311,6 +372,7 @@ const ForYouPage = ({ navigationProps }) => {
                     </span>
                   </div>
                   
+                  {/* Barra de progreso */}
                   <div style={{
                     width: '100%',
                     height: 8,
@@ -328,6 +390,7 @@ const ForYouPage = ({ navigationProps }) => {
                     }} />
                   </div>
                   
+                  {/* Detalles de completado */}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -342,12 +405,15 @@ const ForYouPage = ({ navigationProps }) => {
             </div>
           </div>
 
-          {/* Pestañas de contenido */}
+          {/* ========================================
+               PESTAÑAS DE CONTENIDO
+               ======================================== */}
           <div style={{
             display: 'flex',
             borderBottom: '2px solid #e0e0e0',
             marginBottom: '2rem'
           }}>
+            {/* Pestaña de podcasts */}
             <button
               onClick={() => setActiveTab('podcasts')}
               style={{
@@ -363,6 +429,8 @@ const ForYouPage = ({ navigationProps }) => {
             >
               Podcasts
             </button>
+            
+            {/* Pestaña de artículos */}
             <button
               onClick={() => setActiveTab('articles')}
               style={{
@@ -378,6 +446,8 @@ const ForYouPage = ({ navigationProps }) => {
             >
               Artículos
             </button>
+            
+            {/* Pestaña de tests */}
             <button
               onClick={() => setActiveTab('tests')}
               style={{
@@ -395,7 +465,9 @@ const ForYouPage = ({ navigationProps }) => {
             </button>
           </div>
 
-          {/* Contenido de las pestañas */}
+          {/* ========================================
+               CONTENIDO DE LAS PESTAÑAS
+               ======================================== */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
@@ -412,7 +484,7 @@ const ForYouPage = ({ navigationProps }) => {
                   position: 'relative'
                 }}
               >
-                {/* Bookmark */}
+                {/* Botón de bookmark */}
                 <button style={{
                   position: 'absolute',
                   top: '1rem',
@@ -426,7 +498,7 @@ const ForYouPage = ({ navigationProps }) => {
                   🔖
                 </button>
 
-                {/* Tag */}
+                {/* Etiqueta del tipo de contenido */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -446,7 +518,7 @@ const ForYouPage = ({ navigationProps }) => {
                   </span>
                 </div>
 
-                {/* Título */}
+                {/* Título del contenido */}
                 <h3 style={{
                   fontSize: 18,
                   fontWeight: 700,
@@ -456,7 +528,7 @@ const ForYouPage = ({ navigationProps }) => {
                   {item.title}
                 </h3>
 
-                {/* Descripción */}
+                {/* Descripción del contenido */}
                 <p style={{
                   color: '#666',
                   fontSize: 14,
@@ -466,8 +538,9 @@ const ForYouPage = ({ navigationProps }) => {
                   {item.description}
                 </p>
 
-                {/* Detalles específicos para tests */}
+                {/* Detalles específicos según el tipo de contenido */}
                 {activeTab === 'tests' ? (
+                  /* Detalles para tests */
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -512,7 +585,7 @@ const ForYouPage = ({ navigationProps }) => {
                   </div>
                 )}
 
-                {/* Botón de acción */}
+                {/* Botón de acción principal */}
                 <button 
                   onClick={() => {
                     if (activeTab === 'tests') {

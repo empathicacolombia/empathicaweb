@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import App from './App';
 import AppBusiness from './AppBusiness';
 import LoginPage from './components/LoginPage';
@@ -22,18 +23,24 @@ import BusinessDemoSection from './components/BusinessDemoSection';
 import ClientProfilePage from './components/ClientProfilePage';
 
 function AppMain() {
-  const [currentPage, setCurrentPage] = useState('individuals');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isUserRegistered, setIsUserRegistered] = useState(false);
   const [testAnswers, setTestAnswers] = useState(null);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleNavigation = (page, additionalProps = {}) => {
-    setCurrentPage(page);
-    
     // Si hay respuestas del test, guardarlas
     if (additionalProps.testAnswers) {
       setTestAnswers(additionalProps.testAnswers);
     }
+    
+    // Usar React Router para navegación
+    navigate(`/${page}`, { 
+      state: additionalProps,
+      replace: false // Esto permite que el botón de retroceso funcione
+    });
   };
 
   const toggleSidebar = () => {
@@ -54,51 +61,44 @@ function AppMain() {
 
   return (
     <div className="AppMain">
-      {currentPage === 'individuals' ? (
-        <App navigationProps={navigationProps} />
-      ) : currentPage === 'business' ? (
-        <AppBusiness navigationProps={navigationProps} />
-      ) : currentPage === 'login' ? (
-        <LoginPage navigationProps={navigationProps} />
-      ) : currentPage === 'register' ? (
-        <RegisterPage navigationProps={navigationProps} />
-      ) : currentPage === 'quick-register' ? (
-        <QuickRegisterPage navigationProps={navigationProps} />
-      ) : currentPage === 'client-dashboard' ? (
-        <ClientDashboard navigationProps={navigationProps} />
-      ) : currentPage === 'psychologist-dashboard' ? (
-        <PsychologistDashboard navigationProps={navigationProps} />
-      ) : currentPage === 'appointments' ? (
-        <AppointmentsPage navigationProps={navigationProps} />
-      ) : currentPage === 'for-you' ? (
-        <ForYouPage navigationProps={navigationProps} />
-      ) : currentPage === 'my-specialist' ? (
-        <MySpecialistPage navigationProps={navigationProps} />
-      ) : currentPage === 'support' ? (
-        <SupportPage navigationProps={navigationProps} />
-      ) : currentPage === 'psychologists' ? (
-        <PsychologistsPage navigationProps={navigationProps} />
-      ) : currentPage === 'about-us' ? (
-        <AboutUsPage navigationProps={navigationProps} />
-      ) : currentPage === 'pricing' ? (
-        <PricingPage navigationProps={navigationProps} />
-      ) : currentPage === 'business-demo-dashboard' ? (
-        <BusinessDemoDashboard navigationProps={navigationProps} />
-      ) : currentPage === 'questionnaire-match' ? (
-        <QuestionnaireMatch navigationProps={navigationProps} />
-      ) : currentPage === 'test-results' ? (
-        <TestResults navigationProps={navigationProps} testAnswers={testAnswers} />
-      ) : currentPage === 'psychologist-profile-form' ? (
-        <PsychologistProfileForm navigationProps={navigationProps} />
-      ) : currentPage === 'free-orientation' ? (
-        <FreeOrientationPage navigationProps={navigationProps} />
-      ) : currentPage === 'business-demo' ? (
-        <BusinessDemoSection navigationProps={navigationProps} />
-      ) : currentPage === 'client-profile' ? (
-        <ClientProfilePage navigationProps={navigationProps} testAnswers={testAnswers} />
-      ) : (
-        <App navigationProps={navigationProps} />
-      )}
+      <Routes>
+        {/* Rutas principales */}
+        <Route path="/" element={<App navigationProps={navigationProps} />} />
+        <Route path="/individuals" element={<App navigationProps={navigationProps} />} />
+        <Route path="/business" element={<AppBusiness navigationProps={navigationProps} />} />
+        
+        {/* Rutas de autenticación */}
+        <Route path="/login" element={<LoginPage navigationProps={navigationProps} />} />
+        <Route path="/register" element={<RegisterPage navigationProps={navigationProps} />} />
+        <Route path="/quick-register" element={<QuickRegisterPage navigationProps={navigationProps} />} />
+        
+        {/* Rutas del dashboard de clientes */}
+        <Route path="/client-dashboard" element={<ClientDashboard navigationProps={navigationProps} />} />
+        <Route path="/appointments" element={<AppointmentsPage navigationProps={navigationProps} />} />
+        <Route path="/for-you" element={<ForYouPage navigationProps={navigationProps} />} />
+        <Route path="/my-specialist" element={<MySpecialistPage navigationProps={navigationProps} />} />
+        <Route path="/support" element={<SupportPage navigationProps={navigationProps} />} />
+        <Route path="/client-profile" element={<ClientProfilePage navigationProps={navigationProps} testAnswers={testAnswers} />} />
+        
+        {/* Rutas del dashboard de psicólogos */}
+        <Route path="/psychologist-dashboard" element={<PsychologistDashboard navigationProps={navigationProps} />} />
+        <Route path="/psychologist-profile-form" element={<PsychologistProfileForm navigationProps={navigationProps} />} />
+        
+        {/* Rutas del dashboard empresarial */}
+        <Route path="/business-demo-dashboard" element={<BusinessDemoDashboard navigationProps={navigationProps} />} />
+        <Route path="/business-demo" element={<BusinessDemoSection navigationProps={navigationProps} />} />
+        
+        {/* Otras rutas */}
+        <Route path="/psychologists" element={<PsychologistsPage navigationProps={navigationProps} />} />
+        <Route path="/about-us" element={<AboutUsPage navigationProps={navigationProps} />} />
+        <Route path="/pricing" element={<PricingPage navigationProps={navigationProps} />} />
+        <Route path="/free-orientation" element={<FreeOrientationPage navigationProps={navigationProps} />} />
+        <Route path="/questionnaire-match" element={<QuestionnaireMatch navigationProps={navigationProps} />} />
+        <Route path="/test-results" element={<TestResults navigationProps={navigationProps} testAnswers={testAnswers} />} />
+        
+        {/* Ruta por defecto - redirige a la página principal */}
+        <Route path="*" element={<App navigationProps={navigationProps} />} />
+      </Routes>
     </div>
   );
 }

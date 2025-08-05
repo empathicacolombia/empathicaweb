@@ -17,13 +17,30 @@ import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
 import MobileDashboardNav from './MobileDashboardNav';
 
+/**
+ * Componente principal del Dashboard del Cliente/Paciente
+ * Muestra la interfaz principal del usuario con métricas, información del especialista
+ * y próximas citas. Incluye navegación responsive y funcionalidades de bienestar emocional.
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación y control del sidebar
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ * @param {Function} navigationProps.toggleSidebar - Función para mostrar/ocultar sidebar
+ * @param {boolean} navigationProps.sidebarOpen - Estado de apertura del sidebar
+ */
 const ClientDashboard = ({ navigationProps }) => {
+  /**
+   * Maneja la navegación entre diferentes páginas de la aplicación
+   * @param {string} page - Nombre de la página a la que navegar
+   */
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
     }
   };
 
+  /**
+   * Alterna la visibilidad del sidebar (colapsar/expandir)
+   */
   const toggleSidebar = () => {
     if (navigationProps && navigationProps.toggleSidebar) {
       navigationProps.toggleSidebar();
@@ -39,16 +56,22 @@ const ClientDashboard = ({ navigationProps }) => {
       minHeight: '100vh',
       background: '#f8f9fa'
     }}>
-      {/* Sidebar */}
+      {/* ========================================
+           SIDEBAR DE NAVEGACIÓN
+           ======================================== */}
       <ClientSidebar navigationProps={navigationProps} activePage="client-dashboard" sidebarOpen={sidebarOpen} />
 
-      {/* Contenido principal */}
+      {/* ========================================
+           CONTENIDO PRINCIPAL DEL DASHBOARD
+           ======================================== */}
       <div className="main-content" style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column'
       }}>
-        {/* Header superior */}
+        {/* ========================================
+             HEADER SUPERIOR
+             ======================================== */}
         <div style={{
           background: '#fff',
           padding: '1rem 2rem',
@@ -58,11 +81,13 @@ const ClientDashboard = ({ navigationProps }) => {
           justifyContent: 'space-between',
           boxShadow: '0 2px 8px #0057ff0a'
         }}>
+          {/* Lado izquierdo - Botón de menú y título */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '1rem'
           }}>
+            {/* Botón para alternar sidebar */}
             <button
               onClick={toggleSidebar}
               style={{
@@ -76,6 +101,8 @@ const ClientDashboard = ({ navigationProps }) => {
             >
               <Menu size={28} />
             </button>
+            
+            {/* Título del dashboard */}
             <span style={{
               fontSize: 18,
               fontWeight: 700,
@@ -85,6 +112,8 @@ const ClientDashboard = ({ navigationProps }) => {
               Tu espacio de bienestar
             </span>
           </div>
+          
+          {/* Lado derecho - Icono de usuario */}
           <div style={{
             width: 40,
             height: 40,
@@ -99,13 +128,17 @@ const ClientDashboard = ({ navigationProps }) => {
           </div>
         </div>
 
-        {/* Contenido del dashboard */}
+        {/* ========================================
+             CONTENIDO DEL DASHBOARD
+             ======================================== */}
         <div className="main-content" style={{
           flex: 1,
           padding: '2rem',
           overflow: 'auto'
         }}>
-          {/* Navegación móvil */}
+          {/* ========================================
+               NAVEGACIÓN MÓVIL
+               ======================================== */}
           <MobileDashboardNav 
             items={[
               { icon: <Home size={20} />, label: 'Inicio', section: 'Dashboard' },
@@ -123,7 +156,9 @@ const ClientDashboard = ({ navigationProps }) => {
             }}
           />
           
-          {/* Botón de cerrar sesión móvil */}
+          {/* ========================================
+               BOTÓN DE CERRAR SESIÓN MÓVIL
+               ======================================== */}
           <div className="visible-mobile mobile-logout-container">
             <button 
               className="mobile-logout-button"
@@ -134,7 +169,9 @@ const ClientDashboard = ({ navigationProps }) => {
             </button>
           </div>
           
-          {/* Banner de bienvenida */}
+          {/* ========================================
+               BANNER DE BIENVENIDA
+               ======================================== */}
           <div className="dashboard-banner" style={{
             background: 'linear-gradient(135deg, #0057FF 0%, #1a237e 100%)',
             borderRadius: 16,
@@ -143,6 +180,7 @@ const ClientDashboard = ({ navigationProps }) => {
             marginBottom: '2rem',
             boxShadow: '0 4px 24px #0057ff22'
           }}>
+            {/* Saludo personalizado */}
             <h1 style={{
               fontSize: 32,
               fontWeight: 800,
@@ -150,6 +188,8 @@ const ClientDashboard = ({ navigationProps }) => {
             }}>
               Hola Chris, ¿cómo estás hoy?
             </h1>
+            
+            {/* Mensaje motivacional */}
             <p style={{
               fontSize: 16,
               margin: '0 0 2rem 0',
@@ -157,7 +197,10 @@ const ClientDashboard = ({ navigationProps }) => {
             }}>
               Es un nuevo día para cuidar tu bienestar emocional
             </p>
-            {/* Botones de acción */}
+            
+            {/* ========================================
+                 BOTONES DE ACCIÓN PRINCIPALES
+                 ======================================== */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -167,7 +210,7 @@ const ClientDashboard = ({ navigationProps }) => {
                 gap: '16px'
               }
             }}>
-              {/* Botón para hacer el test */}
+              {/* Botón para realizar test de match */}
               <button
                 onClick={() => handleNavigation('questionnaire-match')}
                 style={{
@@ -233,14 +276,18 @@ const ClientDashboard = ({ navigationProps }) => {
             </div>
           </div>
 
-          {/* Métricas */}
+          {/* ========================================
+               SECCIÓN DE MÉTRICAS Y ESTADÍSTICAS
+               ======================================== */}
           <div className="dashboard-metrics" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
             gap: '1.5rem',
             marginBottom: '2rem'
           }}>
-            {/* Citas realizadas */}
+            {/* ========================================
+                 TARJETA DE CITAS REALIZADAS
+                 ======================================== */}
             <div className="dashboard-metric-card" style={{
               background: '#fff',
               borderRadius: 12,
@@ -259,6 +306,7 @@ const ClientDashboard = ({ navigationProps }) => {
               e.currentTarget.style.boxShadow = '0 2px 8px #0057ff11';
             }}
             >
+              {/* Icono de calendario */}
               <div style={{
                 position: 'absolute',
                 top: '1rem',
@@ -270,6 +318,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 <CalendarDays size={20} />
               </div>
+              
+              {/* Título de la métrica */}
               <h3 style={{
                 fontSize: 14,
                 color: '#666',
@@ -278,6 +328,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 Citas realizadas
               </h3>
+              
+              {/* Valor numérico */}
               <div style={{
                 fontSize: 32,
                 fontWeight: 800,
@@ -286,6 +338,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 12
               </div>
+              
+              {/* Descripción del período */}
               <p style={{
                 fontSize: 12,
                 color: '#666',
@@ -295,7 +349,9 @@ const ClientDashboard = ({ navigationProps }) => {
               </p>
             </div>
 
-            {/* Días consecutivos */}
+            {/* ========================================
+                 TARJETA DE DÍAS CONSECUTIVOS
+                 ======================================== */}
             <div style={{
               background: '#fff',
               borderRadius: 12,
@@ -314,6 +370,7 @@ const ClientDashboard = ({ navigationProps }) => {
               e.currentTarget.style.boxShadow = '0 2px 8px #0057ff11';
             }}
             >
+              {/* Icono de tendencia ascendente */}
               <div style={{
                 position: 'absolute',
                 top: '1rem',
@@ -325,6 +382,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 <TrendingUp size={20} />
               </div>
+              
+              {/* Título de la métrica */}
               <h3 style={{
                 fontSize: 14,
                 color: '#666',
@@ -333,6 +392,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 Días consecutivos
               </h3>
+              
+              {/* Valor numérico */}
               <div style={{
                 fontSize: 32,
                 fontWeight: 800,
@@ -341,6 +402,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 15
               </div>
+              
+              {/* Descripción del progreso */}
               <p style={{
                 fontSize: 12,
                 color: '#666',
@@ -350,7 +413,9 @@ const ClientDashboard = ({ navigationProps }) => {
               </p>
             </div>
 
-            {/* Progreso emocional */}
+            {/* ========================================
+                 TARJETA DE PROGRESO EMOCIONAL
+                 ======================================== */}
             <div style={{
               background: '#fff',
               borderRadius: 12,
@@ -369,6 +434,7 @@ const ClientDashboard = ({ navigationProps }) => {
               e.currentTarget.style.boxShadow = '0 2px 8px #0057ff11';
             }}
             >
+              {/* Icono de corazón */}
               <div style={{
                 position: 'absolute',
                 top: '1rem',
@@ -380,6 +446,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 <Heart size={20} />
               </div>
+              
+              {/* Título de la métrica */}
               <h3 style={{
                 fontSize: 14,
                 color: '#666',
@@ -388,6 +456,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 Progreso emocional
               </h3>
+              
+              {/* Valor porcentual */}
               <div style={{
                 fontSize: 32,
                 fontWeight: 800,
@@ -396,6 +466,8 @@ const ClientDashboard = ({ navigationProps }) => {
               }}>
                 85%
               </div>
+              
+              {/* Descripción de la base del cálculo */}
               <p style={{
                 fontSize: 12,
                 color: '#666',
@@ -406,19 +478,24 @@ const ClientDashboard = ({ navigationProps }) => {
             </div>
           </div>
 
-          {/* Secciones inferiores */}
+          {/* ========================================
+               SECCIONES INFERIORES - ESPECIALISTA Y CITA
+               ======================================== */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
             gap: '1.5rem'
           }}>
-            {/* Mi Especialista */}
+            {/* ========================================
+                 TARJETA DE MI ESPECIALISTA
+                 ======================================== */}
             <div style={{
               background: '#fff',
               borderRadius: 12,
               padding: '1.5rem',
               boxShadow: '0 2px 8px #0057ff11'
             }}>
+              {/* Encabezado de la tarjeta */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -436,12 +513,14 @@ const ClientDashboard = ({ navigationProps }) => {
                 </h3>
               </div>
               
+              {/* Información del especialista */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1rem',
                 marginBottom: '1.5rem'
               }}>
+                {/* Avatar del especialista */}
                 <div style={{
                   width: 60,
                   height: 60,
@@ -454,6 +533,8 @@ const ClientDashboard = ({ navigationProps }) => {
                 }}>
                   <User color="#0057FF" size={32} />
                 </div>
+                
+                {/* Datos del especialista */}
                 <div>
                   <div style={{
                     fontSize: 16,
@@ -472,6 +553,7 @@ const ClientDashboard = ({ navigationProps }) => {
                 </div>
               </div>
               
+              {/* Botón para ver perfil completo */}
               <button
                 onClick={() => handleNavigation('my-specialist')}
                 style={{
@@ -489,13 +571,16 @@ const ClientDashboard = ({ navigationProps }) => {
               </button>
             </div>
 
-            {/* Próxima Cita */}
+            {/* ========================================
+                 TARJETA DE PRÓXIMA CITA
+                 ======================================== */}
             <div style={{
               background: '#fff',
               borderRadius: 12,
               padding: '1.5rem',
               boxShadow: '0 2px 8px #0057ff11'
             }}>
+              {/* Encabezado de la tarjeta */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -513,9 +598,11 @@ const ClientDashboard = ({ navigationProps }) => {
                 </h3>
               </div>
               
+              {/* Detalles de la cita */}
               <div style={{
                 marginBottom: '1.5rem'
               }}>
+                {/* Fecha de la cita */}
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -524,6 +611,8 @@ const ClientDashboard = ({ navigationProps }) => {
                   <span style={{ color: '#666', fontSize: 14 }}>Fecha:</span>
                   <span style={{ fontWeight: 600, color: '#333' }}>Viernes 19 de Julio, 2024</span>
                 </div>
+                
+                {/* Hora de la cita */}
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between'
@@ -533,6 +622,7 @@ const ClientDashboard = ({ navigationProps }) => {
                 </div>
               </div>
               
+              {/* Botón para ver todas las citas */}
               <button
                 onClick={() => handleNavigation('appointments')}
                 style={{
