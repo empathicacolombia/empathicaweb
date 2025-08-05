@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { usePageTitle } from './hooks/usePageTitle';
 import App from './App';
 import AppBusiness from './AppBusiness';
 import LoginPage from './components/LoginPage';
@@ -21,6 +22,7 @@ import PsychologistProfileForm from './components/PsychologistProfileForm';
 import FreeOrientationPage from './components/FreeOrientationPage';
 import BusinessDemoSection from './components/BusinessDemoSection';
 import ClientProfilePage from './components/ClientProfilePage';
+import FAQPage from './components/FAQPage';
 
 function AppMain() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -29,6 +31,9 @@ function AppMain() {
   
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Hook para manejar el título dinámico de la página
+  usePageTitle();
 
   const handleNavigation = (page, additionalProps = {}) => {
     // Si hay respuestas del test, guardarlas
@@ -95,6 +100,7 @@ function AppMain() {
         <Route path="/free-orientation" element={<FreeOrientationPage navigationProps={navigationProps} />} />
         <Route path="/questionnaire-match" element={<QuestionnaireMatch navigationProps={navigationProps} />} />
         <Route path="/test-results" element={<TestResults navigationProps={navigationProps} testAnswers={testAnswers} />} />
+        <Route path="/faq" element={<FAQPage navigationProps={navigationProps} />} />
         
         {/* Ruta por defecto - redirige a la página principal */}
         <Route path="*" element={<App navigationProps={navigationProps} />} />

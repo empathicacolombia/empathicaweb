@@ -30,7 +30,6 @@ const sidebarItems = [
   { icon: <FileText size={22} />, label: 'Reportes', section: 'Reportes' },
   { icon: <Users size={22} />, label: 'Colaboradores', section: 'Colaboradores' },
   { icon: <Settings size={22} />, label: 'Configuración', section: 'Configuración' },
-  { icon: <Shield size={22} />, label: 'Seguridad', section: 'Seguridad' },
   { icon: <Bell size={22} />, label: 'Notificaciones', section: 'Notificaciones' },
   { icon: <HelpCircle size={22} />, label: 'Soporte', section: 'Soporte' },
 ];
@@ -177,8 +176,39 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
   });
 
   // Opciones disponibles para departamentos y posiciones
-  const departments = ['Todos', 'Marketing', 'Ventas', 'RRHH', 'Tecnología', 'Finanzas', 'Operaciones'];
+  const [departments, setDepartments] = useState(['Todos', 'Marketing', 'Ventas', 'RRHH', 'Tecnología', 'Finanzas', 'Operaciones']);
   const positions = ['Manager', 'Specialist', 'Representative', 'Developer', 'Analyst', 'Coordinator'];
+
+  // Estados para configuración
+  const [companyEmail, setCompanyEmail] = useState('contacto@techcorp.com');
+  const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
+  const [newDepartment, setNewDepartment] = useState('');
+  const [showDeleteDepartmentModal, setShowDeleteDepartmentModal] = useState(false);
+  const [departmentToDelete, setDepartmentToDelete] = useState('');
+  const [notificationSettings, setNotificationSettings] = useState({
+    sessionAlerts: true,
+    weeklyReports: true
+  });
+
+  // Estados para notificaciones
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: 'Nueva sesión completada',
+      message: 'Juan Ramírez completó su sesión de coaching',
+      time: 'Hace 2 min',
+      type: 'success',
+      color: '#2ecc71'
+    },
+    {
+      id: 2,
+      title: 'Reporte mensual disponible',
+      message: 'El reporte de febrero ya está listo',
+      time: 'Hace 1 hora',
+      type: 'info',
+      color: '#2050c7'
+    }
+  ]);
 
   /**
    * Maneja el cierre de sesión del dashboard empresarial
@@ -224,10 +254,31 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
    * Elimina un empleado del sistema
    * TODO: Implementar eliminación en backend
    */
+  /**
+   * Cambia el estado de un empleado de activo a inactivo
+   * En lugar de eliminar, marca como inactivo para mantener historial
+   */
   const handleDeleteEmployee = () => {
-    setEmployees(employees.filter(emp => emp.id !== selectedEmployee.id));
+    setEmployees(employees.map(emp => 
+      emp.id === selectedEmployee.id 
+        ? { ...emp, status: 'Inactivo' }
+        : emp
+    ));
     setShowDeleteModal(false);
     setSelectedEmployee(null);
+  };
+
+  /**
+   * Reactiva un empleado cambiando su estado de inactivo a activo
+   * 
+   * @param {Object} employee - Empleado a reactivar
+   */
+  const handleReactivateEmployee = (employee) => {
+    setEmployees(employees.map(emp => 
+      emp.id === employee.id 
+        ? { ...emp, status: 'Activo' }
+        : emp
+    ));
   };
 
   /**
@@ -310,33 +361,140 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     }
   };
 
+
+
   /**
-   * Restablece la contraseña de un empleado específico
-   * Envía un correo de restablecimiento al empleado
-   * TODO: Implementar restablecimiento real en backend
-   * 
-   * @param {number} employeeId - ID del empleado
+   * Función para descargar el reporte mensual en PDF
+   * Descarga el archivo "Reporte mensual.pdf" desde la carpeta public
    */
-  const handleResetPassword = (employeeId) => {
-    const employee = employees.find(emp => emp.id === employeeId);
-    if (employee) {
-      // Aquí se procesaría el restablecimiento de contraseña
-      console.log(`Restableciendo contraseña para: ${employee.name} (${employee.email})`);
-      alert(`Se ha enviado un correo de restablecimiento de contraseña a ${employee.email}`);
+  const handleDownloadMonthlyReport = () => {
+    try {
+      const link = document.createElement('a');
+      link.href = '/Reporte mensual.pdf';
+      link.download = 'Reporte mensual.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error al descargar el reporte:', error);
+      alert('Error al descargar el reporte. Intente nuevamente.');
     }
   };
 
   /**
-   * Filtra empleados según término de búsqueda y departamento seleccionado
-   * Permite buscar por nombre o email y filtrar por departamento
+   * Función helper para truncar texto y mostrar tooltip
    * 
-   * @returns {Array} Lista filtrada de empleados
+   * @param {string} text - Texto a truncar
+   * @param {number} maxLength - Longitud máxima antes de truncar
+   * @returns {Object} Objeto con texto truncado y título para tooltip
    */
-  const filteredEmployees = employees.filter(emp => {
+  const truncateText = (text, maxLength) => {
+    if (text.length <= maxLength) {
+      return { displayText: text, title: '' };
+    }
+    return { 
+      displayText: text.substring(0, maxLength) + '...', 
+      title: text 
+    };
+  };
+
+  // ========================================
+  // FUNCIONES PARA GESTIÓN DE DEPARTAMENTOS
+  // ========================================
+
+  /**
+   * Agrega un nuevo departamento a la lista
+   */
+  const handleAddDepartment = () => {
+    if (newDepartment.trim() && !departments.includes(newDepartment.trim())) {
+      setDepartments([...departments, newDepartment.trim()]);
+      setNewDepartment('');
+      setShowAddDepartmentModal(false);
+    }
+  };
+
+  /**
+   * Elimina un departamento de la lista
+   */
+  const handleDeleteDepartment = () => {
+    if (departmentToDelete && departmentToDelete !== 'Todos') {
+      setDepartments(departments.filter(dept => dept !== departmentToDelete));
+      setDepartmentToDelete('');
+      setShowDeleteDepartmentModal(false);
+    }
+  };
+
+  /**
+   * Abre el modal para eliminar un departamento
+   */
+  const openDeleteDepartmentModal = (department) => {
+    setDepartmentToDelete(department);
+    setShowDeleteDepartmentModal(true);
+  };
+
+  /**
+   * Guarda los cambios de configuración
+   */
+  const handleSaveConfiguration = () => {
+    // Aquí se guardarían los cambios en el backend
+    alert('Configuración guardada exitosamente');
+  };
+
+  // ========================================
+  // FUNCIONES PARA GESTIÓN DE NOTIFICACIONES
+  // ========================================
+
+  /**
+   * Elimina una notificación específica
+   */
+  const handleDeleteNotification = (notificationId) => {
+    setNotifications(notifications.filter(notification => notification.id !== notificationId));
+  };
+
+  // ========================================
+  // FUNCIONES PARA NAVEGACIÓN DE SOPORTE
+  // ========================================
+
+  /**
+   * Navega a la página de orientación gratuita
+   */
+  const handleNavigateToFreeOrientation = () => {
+    if (navigationProps && navigationProps.onNavigate) {
+      navigationProps.onNavigate('free-orientation');
+    }
+  };
+
+  /**
+   * Navega a la página de preguntas frecuentes
+   */
+  const handleNavigateToFAQ = () => {
+    if (navigationProps && navigationProps.onNavigate) {
+      navigationProps.onNavigate('faq');
+    }
+  };
+
+  /**
+   * Filtra empleados activos según término de búsqueda y departamento seleccionado
+   * 
+   * @returns {Array} Lista filtrada de empleados activos
+   */
+  const filteredActiveEmployees = employees.filter(emp => {
     const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          emp.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment = filterDepartment === 'Todos' || emp.department === filterDepartment;
-    return matchesSearch && matchesDepartment;
+    return emp.status === 'Activo' && matchesSearch && matchesDepartment;
+  });
+
+  /**
+   * Filtra empleados inactivos según término de búsqueda y departamento seleccionado
+   * 
+   * @returns {Array} Lista filtrada de empleados inactivos
+   */
+  const filteredInactiveEmployees = employees.filter(emp => {
+    const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         emp.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDepartment = filterDepartment === 'Todos' || emp.department === filterDepartment;
+    return emp.status === 'Inactivo' && matchesSearch && matchesDepartment;
   });
 
   return (
@@ -861,30 +1019,39 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                   <span style={{ color: '#222', fontWeight: 800, fontSize: 20 }}>Reporte Mensual</span>
                 </div>
                 <div style={{ color: '#7a8bbd', fontSize: 16, marginBottom: 10 }}>Resumen completo del bienestar emocional</div>
-                <button style={{ background: '#fff', color: '#2050c7', border: '1.5px solid #e0e7ef', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginTop: 'auto' }}>
+                <button 
+                  onClick={handleDownloadMonthlyReport}
+                  style={{ background: '#fff', color: '#2050c7', border: '1.5px solid #e0e7ef', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginTop: 'auto' }}
+                >
                   Descargar PDF
                 </button>
               </div>
               {/* Análisis de Tendencias */}
               <div style={{ flex: 1, background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '1.5rem 2rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <TrendingUp size={22} color="#2ecc71" style={{marginRight: 4}} />
+                  <TrendingUp size={22} color="#e74c3c" style={{marginRight: 4}} />
                   <span style={{ color: '#222', fontWeight: 800, fontSize: 20 }}>Análisis de Tendencias</span>
                 </div>
-                <div style={{ color: '#7a8bbd', fontSize: 16, marginBottom: 10 }}>Evolución del estado emocional por departamento</div>
-                <button style={{ background: '#fff', color: '#2ecc71', border: '1.5px solid #e0e7ef', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginTop: 'auto' }}>
-                  Ver análisis
-                </button>
-              </div>
-              {/* ROI Detallado */}
-              <div style={{ flex: 1, background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '1.5rem 2rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 22, color: '#a259e6', marginRight: 4 }}>🎯</span>
-                  <span style={{ color: '#222', fontWeight: 800, fontSize: 20 }}>ROI Detallado</span>
+                <div style={{ color: '#e74c3c', fontSize: 14, marginBottom: 10, fontWeight: 600 }}>
+                  Error: No se pudo generar el análisis debido a la insuficiencia de datos históricos. 
+                  Se requieren al menos 3 meses de información para realizar el procesamiento estadístico.
                 </div>
-                <div style={{ color: '#7a8bbd', fontSize: 16, marginBottom: 10 }}>Análisis completo del retorno de inversión</div>
-                <button style={{ background: '#fff', color: '#a259e6', border: '1.5px solid #e0e7ef', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginTop: 'auto' }}>
-                  Ver ROI
+                <button 
+                  disabled
+                  style={{ 
+                    background: '#f8f9fa', 
+                    color: '#6c757d', 
+                    border: '1.5px solid #dee2e6', 
+                    borderRadius: 12, 
+                    padding: '0.8rem 0', 
+                    fontWeight: 700, 
+                    fontSize: 17, 
+                    cursor: 'not-allowed', 
+                    marginTop: 'auto',
+                    opacity: 0.6
+                  }}
+                >
+                  No disponible
                 </button>
               </div>
             </div>
@@ -898,9 +1065,65 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
              Incluye búsqueda, filtros por departamento y asignación de sesiones
         */}
         {activeSection === 'Colaboradores' && (
-          <div style={{ marginTop: 32, marginBottom: 24, display: 'flex', gap: 32 }}>
-            {/* Columna principal: CRUD de Empleados */}
-            <div style={{ flex: 2 }}>
+          <div style={{ marginTop: 32, marginBottom: 24 }}>
+            {/* ========================================
+                 SECCIÓN SUPERIOR: ESTADÍSTICAS Y ACCIONES RÁPIDAS
+                 ======================================== 
+                 Muestra estadísticas generales y acciones rápidas en la parte superior
+            */}
+            <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
+              {/* Estadísticas Generales */}
+              <div style={{ flex: 1, background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '1.5rem 2rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ color: '#222', fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Estadísticas Generales</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
+                  <span>Total empleados</span>
+                  <span style={{ color: '#0057ff', fontWeight: 800, fontSize: 20 }}>{employees.length}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
+                  <span>Activos</span>
+                  <span style={{ color: '#2ecc71', fontWeight: 800, fontSize: 20 }}>{employees.filter(emp => emp.status === 'Activo').length}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
+                  <span>Inactivos</span>
+                  <span style={{ color: '#888', fontWeight: 800, fontSize: 20 }}>{employees.filter(emp => emp.status === 'Inactivo').length}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
+                  <span>Reportan estrés</span>
+                  <span style={{ color: '#ff4444', fontWeight: 800, fontSize: 20 }}>156</span>
+                </div>
+                <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15, margin: '10px 0 2px 0' }}>Sesiones totales</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>{employees.reduce((sum, emp) => sum + emp.sessions, 0)}/106</span>
+                  <div style={{ flex: 1, height: 10, background: '#f5e3d6', borderRadius: 8, overflow: 'hidden' }}>
+                    <div style={{ width: `${(employees.reduce((sum, emp) => sum + emp.sessions, 0) / 106) * 100}%`, height: '100%', background: '#0057ff', borderRadius: 8 }}></div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Acciones Rápidas */}
+              <div style={{ flex: 1, background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '1.5rem 2rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ color: '#222', fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Acciones Rápidas</div>
+                <button 
+                  onClick={openAssignSessionsModal}
+                  style={{ background: '#0057ff', color: '#fff', border: 'none', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                >
+                  <span style={{ fontSize: 20 }}>👥</span> Editar Sesiones
+                </button>
+                <button 
+                  onClick={openNotificationModal}
+                  style={{ background: '#fff', color: '#7a8bbd', border: '1.5px solid #e0e7ef', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer' }}
+                >
+                  <span style={{ fontSize: 20, marginRight: 6 }}>📧</span> Enviar Notificación
+                </button>
+              </div>
+            </div>
+
+            {/* ========================================
+                 SECCIÓN INFERIOR: GESTOR DE EMPLEADOS
+                 ======================================== 
+                 Gestión completa de empleados que abarca toda la pantalla
+            */}
+            <div style={{ width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
                 <span style={{ color: '#222', fontWeight: 800, fontSize: 32 }}>Gestión de Empleados</span>
                 <button 
@@ -958,10 +1181,172 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 </select>
               </div>
 
-              {/* Lista de empleados */}
+              {/* Tabla de Empleados Activos */}
+              <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', border: '1.5px solid #f2f2f2', marginBottom: 32 }}>
+                <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #e0e7ef', background: '#f8fff8' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#2ecc71' }}></div>
+                    <span style={{ color: '#222', fontWeight: 800, fontSize: 20 }}>Empleados Activos ({filteredActiveEmployees.length})</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr 1fr 1fr 1.5fr', gap: 16, fontWeight: 700, color: '#222', fontSize: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>Nombre</div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>Email</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Departamento</div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>Cargo</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Estado</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Sesiones</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Acciones</div>
+                  </div>
+                </div>
+                
+                <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                  {filteredActiveEmployees.length > 0 ? (
+                    filteredActiveEmployees.map((employee) => (
+                      <div key={employee.id} style={{ 
+                        padding: '1.2rem 2rem', 
+                        borderBottom: '1px solid #f0f0f0',
+                        display: 'grid', 
+                        gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr 1fr 1fr 1.5fr', 
+                        gap: 16, 
+                        alignItems: 'center',
+                        minHeight: '60px'
+                      }}>
+                        <div style={{ 
+                          fontWeight: 600, 
+                          color: '#222', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.3',
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          cursor: 'default'
+                        }}
+                        title={truncateText(employee.name, 15).title}
+                        >
+                          {truncateText(employee.name, 15).displayText}
+                        </div>
+                        <div style={{ 
+                          color: '#7a8bbd', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.3',
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          cursor: 'default'
+                        }}
+                        title={truncateText(employee.email, 20).title}
+                        >
+                          {truncateText(employee.email, 20).displayText}
+                        </div>
+                        <div style={{ 
+                          color: '#222', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.3',
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          cursor: 'default'
+                        }}
+                        title={truncateText(employee.department, 12).title}
+                        >
+                          {truncateText(employee.department, 12).displayText}
+                        </div>
+                        <div style={{ 
+                          color: '#7a8bbd', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.3',
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          cursor: 'default'
+                        }}
+                        title={truncateText(employee.position, 15).title}
+                        >
+                          {truncateText(employee.position, 15).displayText}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ 
+                            background: '#eaffea', 
+                            color: '#2ecc71', 
+                            fontWeight: 700, 
+                            fontSize: 14, 
+                            borderRadius: 8, 
+                            padding: '6px 12px',
+                            textAlign: 'center',
+                            display: 'inline-block',
+                            minWidth: '80px'
+                          }}>
+                            Activo
+                          </span>
+                        </div>
+                        <div style={{ 
+                          color: '#7a8bbd', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontWeight: 600, 
+                          fontSize: 16,
+                          textAlign: 'center'
+                        }}>
+                          {employee.sessions}
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
+                          <button 
+                            onClick={() => openEditModal(employee)}
+                            style={{ 
+                              background: '#fff3e0', 
+                              color: '#ff9800', 
+                              border: 'none', 
+                              borderRadius: 8, 
+                              padding: '8px 16px', 
+                              fontSize: 14, 
+                              cursor: 'pointer',
+                              fontWeight: 600,
+                              minWidth: '60px'
+                            }}
+                          >
+                            Editar
+                          </button>
+                          <button 
+                            onClick={() => openDeleteModal(employee)}
+                            style={{ 
+                              background: '#ffeaea', 
+                              color: '#ff5e5e', 
+                              border: 'none', 
+                              borderRadius: 8, 
+                              padding: '8px 16px', 
+                              fontSize: 14, 
+                              cursor: 'pointer',
+                              fontWeight: 600,
+                              minWidth: '60px'
+                            }}
+                          >
+                            Desactivar
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#7a8bbd', fontSize: 16 }}>
+                      No hay empleados activos que coincidan con los filtros
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Tabla de Empleados Inactivos */}
               <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', border: '1.5px solid #f2f2f2' }}>
-                <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #e0e7ef' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr 1fr 1fr 1fr', gap: 16, fontWeight: 700, color: '#222', fontSize: 16 }}>
+                <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #e0e7ef', background: '#fff8f8' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5e5e' }}></div>
+                    <span style={{ color: '#222', fontWeight: 800, fontSize: 20 }}>Empleados Inactivos ({filteredInactiveEmployees.length})</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr 1fr 1fr 1.5fr', gap: 16, fontWeight: 700, color: '#222', fontSize: 16 }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>Nombre</div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>Email</div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>Departamento</div>
@@ -972,139 +1357,129 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                   </div>
                 </div>
                 
-                <div style={{ maxHeight: 500, overflowY: 'auto' }}>
-                  {filteredEmployees.map((employee) => (
-                    <div key={employee.id} style={{ 
-                      padding: '1.2rem 2rem', 
-                      borderBottom: '1px solid #f0f0f0',
-                      display: 'grid', 
-                      gridTemplateColumns: '2fr 2fr 1fr 1fr 1fr 1fr 1fr', 
-                      gap: 16, 
-                      alignItems: 'center',
-                      minHeight: '60px'
-                    }}>
-                      <div style={{ fontWeight: 600, color: '#222', display: 'flex', alignItems: 'center' }}>{employee.name}</div>
-                      <div style={{ color: '#7a8bbd', display: 'flex', alignItems: 'center' }}>{employee.email}</div>
-                      <div style={{ color: '#222', display: 'flex', alignItems: 'center' }}>{employee.department}</div>
-                      <div style={{ color: '#7a8bbd', display: 'flex', alignItems: 'center' }}>{employee.position}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ 
-                          background: employee.status === 'Activo' ? '#eaffea' : '#ffeaea', 
-                          color: employee.status === 'Activo' ? '#2ecc71' : '#ff5e5e', 
-                          fontWeight: 700, 
-                          fontSize: 14, 
-                          borderRadius: 8, 
-                          padding: '6px 12px',
-                          textAlign: 'center',
-                          display: 'inline-block',
-                          minWidth: '80px'
-                        }}>
-                          {employee.status}
-                        </span>
-                      </div>
-                      <div style={{ color: '#7a8bbd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 16 }}>
-                        {employee.sessions}
-                      </div>
-                      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
-                        <button 
-                          onClick={() => openViewModal(employee)}
-                          style={{ 
-                            background: '#e6f0ff', 
-                            color: '#0057ff', 
-                            border: 'none', 
-                            borderRadius: 8, 
-                            padding: '8px 16px', 
-                            fontSize: 14, 
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            minWidth: '60px'
-                          }}
+                <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+                  {filteredInactiveEmployees.length > 0 ? (
+                    filteredInactiveEmployees.map((employee) => (
+                      <div key={employee.id} style={{ 
+                        padding: '1.2rem 2rem', 
+                        borderBottom: '1px solid #f0f0f0',
+                        display: 'grid', 
+                        gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr 1fr 1fr 1.5fr', 
+                        gap: 16, 
+                        alignItems: 'center',
+                        minHeight: '60px',
+                        background: '#fafafa'
+                      }}>
+                        <div style={{ 
+                          fontWeight: 600, 
+                          color: '#666', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.3',
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          cursor: 'default'
+                        }}
+                        title={truncateText(employee.name, 15).title}
                         >
-                          Ver
-                        </button>
-                        <button 
-                          onClick={() => openEditModal(employee)}
-                          style={{ 
-                            background: '#fff3e0', 
-                            color: '#ff9800', 
-                            border: 'none', 
-                            borderRadius: 8, 
-                            padding: '8px 16px', 
-                            fontSize: 14, 
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            minWidth: '60px'
-                          }}
+                          {truncateText(employee.name, 15).displayText}
+                        </div>
+                        <div style={{ 
+                          color: '#999', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.3',
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          cursor: 'default'
+                        }}
+                        title={truncateText(employee.email, 20).title}
                         >
-                          Editar
-                        </button>
-                        <button 
-                          onClick={() => openDeleteModal(employee)}
-                          style={{ 
+                          {truncateText(employee.email, 20).displayText}
+                        </div>
+                        <div style={{ 
+                          color: '#666', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.3',
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          cursor: 'default'
+                        }}
+                        title={truncateText(employee.department, 12).title}
+                        >
+                          {truncateText(employee.department, 12).displayText}
+                        </div>
+                        <div style={{ 
+                          color: '#999', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.3',
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          cursor: 'default'
+                        }}
+                        title={truncateText(employee.position, 15).title}
+                        >
+                          {truncateText(employee.position, 15).displayText}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ 
                             background: '#ffeaea', 
                             color: '#ff5e5e', 
-                            border: 'none', 
-                            borderRadius: 8, 
-                            padding: '8px 16px', 
+                            fontWeight: 700, 
                             fontSize: 14, 
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            minWidth: '60px'
-                          }}
-                        >
-                          Eliminar
-                        </button>
+                            borderRadius: 8, 
+                            padding: '6px 12px',
+                            textAlign: 'center',
+                            display: 'inline-block',
+                            minWidth: '80px'
+                          }}>
+                            Inactivo
+                          </span>
+                        </div>
+                        <div style={{ 
+                          color: '#999', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontWeight: 600, 
+                          fontSize: 16,
+                          textAlign: 'center'
+                        }}>
+                          {employee.sessions}
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
+                          <button 
+                            onClick={() => handleReactivateEmployee(employee)}
+                            style={{ 
+                              background: '#eaffea', 
+                              color: '#2ecc71', 
+                              border: 'none', 
+                              borderRadius: 8, 
+                              padding: '8px 16px', 
+                              fontSize: 14, 
+                              cursor: 'pointer',
+                              fontWeight: 600,
+                              minWidth: '60px'
+                            }}
+                          >
+                            Reactivar
+                          </button>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#7a8bbd', fontSize: 16 }}>
+                      No hay empleados inactivos
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            </div>
-
-            {/* Panel lateral: Estadísticas y Acciones */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 24 }}>
-              {/* Estadísticas Generales */}
-              <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '1.5rem 2rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ color: '#222', fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Estadísticas Generales</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-                  <span>Total empleados</span>
-                  <span style={{ color: '#0057ff', fontWeight: 800, fontSize: 20 }}>{employees.length}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-                  <span>Activos</span>
-                  <span style={{ color: '#2ecc71', fontWeight: 800, fontSize: 20 }}>{employees.filter(emp => emp.status === 'Activo').length}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-                  <span>Inactivos</span>
-                  <span style={{ color: '#888', fontWeight: 800, fontSize: 20 }}>{employees.filter(emp => emp.status === 'Inactivo').length}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-                  <span>Reportan estrés</span>
-                  <span style={{ color: '#ff4444', fontWeight: 800, fontSize: 20 }}>156</span>
-                </div>
-                <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15, margin: '10px 0 2px 0' }}>Sesiones totales</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>{employees.reduce((sum, emp) => sum + emp.sessions, 0)}/106</span>
-                  <div style={{ flex: 1, height: 10, background: '#f5e3d6', borderRadius: 8, overflow: 'hidden' }}>
-                    <div style={{ width: `${(employees.reduce((sum, emp) => sum + emp.sessions, 0) / 106) * 100}%`, height: '100%', background: '#0057ff', borderRadius: 8 }}></div>
-                  </div>
-                </div>
-              </div>
-              {/* Acciones Rápidas */}
-              <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '1.5rem 2rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ color: '#222', fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Acciones Rápidas</div>
-                <button 
-                  onClick={openAssignSessionsModal}
-                  style={{ background: '#0057ff', color: '#fff', border: 'none', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                >
-                  <span style={{ fontSize: 20 }}>👥</span> Editar Sesiones
-                </button>
-                <button 
-                  onClick={openNotificationModal}
-                  style={{ background: '#fff', color: '#7a8bbd', border: '1.5px solid #e0e7ef', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer' }}
-                >
-                  <span style={{ fontSize: 20, marginRight: 6 }}>📧</span> Enviar Notificación
-                </button>
               </div>
             </div>
           </div>
@@ -1125,171 +1500,111 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 <div style={{ color: '#222', fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Información de la Empresa</div>
                 <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15 }}>Nombre de la empresa</div>
                 <input value="TechCorp Solutions" readOnly style={{ width: '100%', fontSize: 18, padding: '0.7rem 1.2rem', borderRadius: 14, border: '1.5px solid #e0e7ef', background: '#fafbfc', color: '#222', fontWeight: 700, marginBottom: 10 }} />
+                <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Correo de la empresa</div>
+                <input 
+                  value={companyEmail} 
+                  onChange={(e) => setCompanyEmail(e.target.value)}
+                  style={{ width: '100%', fontSize: 18, padding: '0.7rem 1.2rem', borderRadius: 14, border: '1.5px solid #e0e7ef', background: '#fff', color: '#222', fontWeight: 700, marginBottom: 10 }} 
+                />
                 <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Departamentos</div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {['Marketing', 'Ventas', 'RRHH', 'TI', 'Finanzas'].map(dep => (
-                    <span key={dep} style={{ background: '#f2f2f2', color: '#222', fontWeight: 700, fontSize: 15, borderRadius: 8, padding: '6px 18px' }}>{dep}</span>
+                  {departments.filter(d => d !== 'Todos').map(dep => (
+                    <span key={dep} style={{ 
+                      background: '#f2f2f2', 
+                      color: '#222', 
+                      fontWeight: 700, 
+                      fontSize: 15, 
+                      borderRadius: 8, 
+                      padding: '6px 18px',
+                      cursor: 'pointer',
+                      position: 'relative'
+                    }}
+                    onClick={() => openDeleteDepartmentModal(dep)}
+                    title="Haz clic para eliminar"
+                    >
+                      {dep}
+                      <span style={{ 
+                        position: 'absolute', 
+                        top: -5, 
+                        right: -5, 
+                        background: '#ff5e5e', 
+                        color: '#fff', 
+                        borderRadius: '50%', 
+                        width: 16, 
+                        height: 16, 
+                        fontSize: 10, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        fontWeight: 'bold'
+                      }}>
+                        ×
+                      </span>
+                    </span>
                   ))}
-                  <span style={{ background: '#fff', color: '#222', fontWeight: 700, fontSize: 15, borderRadius: 8, padding: '6px 18px', border: '1.5px solid #e0e7ef', cursor: 'pointer' }}>+ Agregar</span>
+                  <span 
+                    style={{ 
+                      background: '#fff', 
+                      color: '#222', 
+                      fontWeight: 700, 
+                      fontSize: 15, 
+                      borderRadius: 8, 
+                      padding: '6px 18px', 
+                      border: '1.5px solid #e0e7ef', 
+                      cursor: 'pointer' 
+                    }}
+                    onClick={() => setShowAddDepartmentModal(true)}
+                  >
+                    + Agregar
+                  </span>
                 </div>
               </div>
               {/* Configuración de Notificaciones */}
               <div style={{ flex: 1, background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '2rem 2.5rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 18 }}>
                 <div style={{ color: '#222', fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Configuración de Notificaciones</div>
-                {[
-                  { label: 'Alertas de sesiones', checked: true },
-                  { label: 'Reportes semanales', checked: true },
-                  { label: 'Notificaciones de emergencia', checked: true },
-                  { label: 'Actualizaciones del sistema', checked: false },
-                ].map((n, i) => (
-                  <div key={n.label} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 17, color: '#222', fontWeight: 600 }}>
-                    <span>{n.label}</span>
-                    <input type="checkbox" checked={n.checked} readOnly style={{ width: 20, height: 20, accentColor: '#0057ff', marginLeft: 'auto' }} />
-                  </div>
-                ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 17, color: '#222', fontWeight: 600 }}>
+                  <span>Alertas de sesiones</span>
+                  <input 
+                    type="checkbox" 
+                    checked={notificationSettings.sessionAlerts} 
+                    onChange={(e) => setNotificationSettings({...notificationSettings, sessionAlerts: e.target.checked})}
+                    style={{ width: 20, height: 20, accentColor: '#0057ff', marginLeft: 'auto' }} 
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 17, color: '#222', fontWeight: 600 }}>
+                  <span>Reportes semanales</span>
+                  <input 
+                    type="checkbox" 
+                    checked={notificationSettings.weeklyReports} 
+                    onChange={(e) => setNotificationSettings({...notificationSettings, weeklyReports: e.target.checked})}
+                    style={{ width: 20, height: 20, accentColor: '#0057ff', marginLeft: 'auto' }} 
+                  />
+                </div>
               </div>
             </div>
-            {/* Integrations & APIs */}
-            <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '2rem 2.5rem', border: '1.5px solid #f2f2f2', marginBottom: 32 }}>
-              <div style={{ color: '#222', fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Integrations & APIs</div>
-              <div style={{ display: 'flex', gap: 24, marginBottom: 18 }}>
-                {/* Slack */}
-                <div style={{ flex: 1, background: '#f6f8ff', borderRadius: 14, padding: '1.1rem 1.2rem', display: 'flex', alignItems: 'center', gap: 16, border: '1.5px solid #e0e7ef' }}>
-                  <span style={{ fontSize: 28, background: '#e0e7ef', borderRadius: 8, padding: 8 }}>🧑‍💻</span>
-                  <span style={{ color: '#222', fontWeight: 700, fontSize: 18 }}>Slack</span>
-                  <span style={{ background: '#eaffea', color: '#2ecc71', fontWeight: 700, fontSize: 15, borderRadius: 8, padding: '2px 16px', marginLeft: 'auto' }}>Conectado</span>
-                </div>
-                {/* Teams */}
-                <div style={{ flex: 1, background: '#fafbfc', borderRadius: 14, padding: '1.1rem 1.2rem', display: 'flex', alignItems: 'center', gap: 16, border: '1.5px solid #e0e7ef' }}>
-                  <span style={{ fontSize: 28, background: '#f3eaff', borderRadius: 8, padding: 8 }}>📹</span>
-                  <span style={{ color: '#222', fontWeight: 700, fontSize: 18 }}>Teams</span>
-                  <button style={{ background: '#fff', color: '#0057ff', border: '1.5px solid #e0e7ef', borderRadius: 8, padding: '6px 18px', fontWeight: 700, fontSize: 15, marginLeft: 'auto', cursor: 'pointer' }}>Conectar</button>
-                </div>
-                {/* Learning Platform */}
-                <div style={{ flex: 1, background: '#f6fff6', borderRadius: 14, padding: '1.1rem 1.2rem', display: 'flex', alignItems: 'center', gap: 16, border: '1.5px solid #e0e7ef' }}>
-                  <span style={{ fontSize: 28, background: '#eaffea', borderRadius: 8, padding: 8 }}>🎓</span>
-                  <span style={{ color: '#222', fontWeight: 700, fontSize: 18 }}>Learning Platform</span>
-                  <button style={{ background: '#fff', color: '#0057ff', border: '1.5px solid #e0e7ef', borderRadius: 8, padding: '6px 18px', fontWeight: 700, fontSize: 15, marginLeft: 'auto', cursor: 'pointer' }}>Conectar</button>
-                </div>
-              </div>
-              <button style={{ background: '#0057ff', color: '#fff', border: 'none', borderRadius: 12, padding: '0.9rem 2.2rem', fontWeight: 700, fontSize: 18, cursor: 'pointer', boxShadow: '0 2px 8px #0057ff22', marginTop: 8 }}>Guardar cambios</button>
+            {/* Botón Guardar Cambios */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+              <button 
+                onClick={handleSaveConfiguration}
+                style={{ 
+                  background: '#0057ff', 
+                  color: '#fff', 
+                  border: 'none', 
+                  borderRadius: 12, 
+                  padding: '1rem 3rem', 
+                  fontWeight: 700, 
+                  fontSize: 18, 
+                  cursor: 'pointer', 
+                  boxShadow: '0 2px 8px #0057ff22'
+                }}
+              >
+                Guardar Cambios
+              </button>
             </div>
           </div>
         )}
         
-        {/* ========================================
-             SECCIÓN SEGURIDAD - CONFIGURACIÓN DE SEGURIDAD
-             ======================================== 
-             Gestiona configuraciones de seguridad: contraseñas, accesos,
-             autenticación de dos factores y políticas de seguridad
-        */}
-        {activeSection === 'Seguridad' && (
-          <div style={{ marginTop: 32, marginBottom: 24 }}>
-            <span style={{ color: '#222', fontWeight: 800, fontSize: 32, display: 'block', marginBottom: 24 }}>Seguridad y Privacidad</span>
-            
-            {/* Gestión de Usuarios */}
-            <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '2rem 2.5rem', border: '1.5px solid #f2f2f2', marginBottom: 32 }}>
-              <div style={{ color: '#222', fontWeight: 800, fontSize: 24, marginBottom: 24 }}>Gestión de Usuarios</div>
-              
-              {/* Tabla de usuarios */}
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid #e0e7ef' }}>
-                      <th style={{ 
-                        padding: '1rem 0', 
-                        textAlign: 'left', 
-                        color: '#7a8bbd', 
-                        fontWeight: 700, 
-                        fontSize: 16,
-                        borderBottom: '2px solid #e0e7ef'
-                      }}>
-                        Nombre
-                      </th>
-                      <th style={{ 
-                        padding: '1rem 0', 
-                        textAlign: 'left', 
-                        color: '#7a8bbd', 
-                        fontWeight: 700, 
-                        fontSize: 16,
-                        borderBottom: '2px solid #e0e7ef'
-                      }}>
-                        Correo Electrónico
-                      </th>
-                      <th style={{ 
-                        padding: '1rem 0', 
-                        textAlign: 'center', 
-                        color: '#7a8bbd', 
-                        fontWeight: 700, 
-                        fontSize: 16,
-                        borderBottom: '2px solid #e0e7ef'
-                      }}>
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employees.map((employee) => (
-                      <tr key={employee.id} style={{ borderBottom: '1px solid #f2f2f2' }}>
-                        <td style={{ 
-                          padding: '1rem 0', 
-                          color: '#222', 
-                          fontWeight: 600, 
-                          fontSize: 16 
-                        }}>
-                          {employee.name}
-                        </td>
-                        <td style={{ 
-                          padding: '1rem 0', 
-                          color: '#7a8bbd', 
-                          fontSize: 16 
-                        }}>
-                          {employee.email}
-                        </td>
-                        <td style={{ 
-                          padding: '1rem 0', 
-                          textAlign: 'center' 
-                        }}>
-                          <button 
-                            onClick={() => handleResetPassword(employee.id)}
-                            style={{
-                              background: '#fff',
-                              color: '#ff6b6b',
-                              border: '1.5px solid #ff6b6b',
-                              borderRadius: 8,
-                              padding: '0.5rem 1rem',
-                              fontWeight: 600,
-                              fontSize: 14,
-                              cursor: 'pointer',
-                              transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => {
-                              e.target.style.background = '#ff6b6b';
-                              e.target.style.color = '#fff';
-                            }}
-                            onMouseOut={(e) => {
-                              e.target.style.background = '#fff';
-                              e.target.style.color = '#ff6b6b';
-                            }}
-                          >
-                            🔑 Restablecer Contraseña
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-            {/* Políticas de Privacidad */}
-            <div style={{ background: '#fff', borderRadius: 28, boxShadow: '0 2px 8px #e0e7ef', padding: '2.2rem 2.5rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <div style={{ color: '#222', fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Políticas de Privacidad</div>
-              <div style={{ color: '#7a8bbd', fontSize: 18, marginBottom: 18 }}>Configuración de manejo de datos</div>
-              <button style={{ background: '#fff', color: '#222', border: '1.5px solid #e0e7ef', borderRadius: 18, padding: '1.1rem 0', fontWeight: 700, fontSize: 19, cursor: 'pointer', width: '100%' }}>Ver políticas</button>
-            </div>
-          </div>
-        )}
+
         
         {/* ========================================
              SECCIÓN NOTIFICACIONES - SISTEMA DE COMUNICACIÓN
@@ -1303,24 +1618,74 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
               Centro de <span style={{ background: '#2050c7', color: '#fff', borderRadius: 6, padding: '0 8px' }}>Notificaciones</span>
             </div>
             <div style={{ background: '#fff', borderRadius: 24, boxShadow: '0 2px 8px #e0e7ef', padding: '2rem 2.5rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 18 }}>
-              {/* Notificación 1 */}
-              <div style={{ background: '#fafbfc', borderRadius: 22, padding: '1.2rem 1.5rem', display: 'flex', alignItems: 'center', gap: 18, border: '1.5px solid #e0e7ef', marginBottom: 8 }}>
-                <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#2ecc71', display: 'inline-block', marginRight: 12 }}></span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: '#222', fontWeight: 700, fontSize: 19 }}>Nueva sesión completada</div>
-                  <div style={{ color: '#7a8bbd', fontSize: 16 }}>Juan Ramírez completó su sesión de coaching</div>
+              {notifications.length > 0 ? (
+                notifications.map((notification) => (
+                  <div key={notification.id} style={{ 
+                    background: '#fafbfc', 
+                    borderRadius: 22, 
+                    padding: '1.2rem 1.5rem', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 18, 
+                    border: '1.5px solid #e0e7ef',
+                    position: 'relative'
+                  }}>
+                    <span style={{ 
+                      width: 16, 
+                      height: 16, 
+                      borderRadius: '50%', 
+                      background: notification.color, 
+                      display: 'inline-block', 
+                      marginRight: 12 
+                    }}></span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ color: '#222', fontWeight: 700, fontSize: 19 }}>{notification.title}</div>
+                      <div style={{ color: '#7a8bbd', fontSize: 16 }}>{notification.message}</div>
+                    </div>
+                    <div style={{ color: '#7a8bbd', fontSize: 16, minWidth: 90, textAlign: 'right' }}>{notification.time}</div>
+                    <button
+                      onClick={() => handleDeleteNotification(notification.id)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#ff5e5e',
+                        fontSize: 18,
+                        cursor: 'pointer',
+                        padding: '4px',
+                        borderRadius: '50%',
+                        width: 32,
+                        height: 32,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s',
+                        marginLeft: 8
+                      }}
+                      title="Eliminar notificación"
+                      onMouseOver={(e) => {
+                        e.target.style.background = '#ffeaea';
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.background = 'none';
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div style={{ 
+                  padding: '3rem', 
+                  textAlign: 'center', 
+                  color: '#7a8bbd', 
+                  fontSize: 16,
+                  background: '#fafbfc',
+                  borderRadius: 22,
+                  border: '1.5px solid #e0e7ef'
+                }}>
+                  No hay notificaciones para mostrar
                 </div>
-                <div style={{ color: '#7a8bbd', fontSize: 16, minWidth: 90, textAlign: 'right' }}>Hace 2 min</div>
-              </div>
-              {/* Notificación 2 */}
-              <div style={{ background: '#fafbfc', borderRadius: 22, padding: '1.2rem 1.5rem', display: 'flex', alignItems: 'center', gap: 18, border: '1.5px solid #e0e7ef' }}>
-                <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#2050c7', display: 'inline-block', marginRight: 12 }}></span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: '#222', fontWeight: 700, fontSize: 19 }}>Reporte mensual disponible</div>
-                  <div style={{ color: '#7a8bbd', fontSize: 16 }}>El reporte de febrero ya está listo</div>
-                </div>
-                <div style={{ color: '#7a8bbd', fontSize: 16, minWidth: 90, textAlign: 'right' }}>Hace 1 hora</div>
-              </div>
+              )}
             </div>
           </div>
         )}
@@ -1350,13 +1715,23 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
               <div style={{ background: '#fff', borderRadius: 28, boxShadow: '0 2px 8px #e0e7ef', padding: '2.2rem 2.5rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 18 }}>
                 <div style={{ color: '#222', fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Centro de Ayuda</div>
                 <div style={{ color: '#7a8bbd', fontSize: 17, marginBottom: 18 }}>Encuentra respuestas a preguntas frecuentes</div>
-                <button style={{ background: '#fff', color: '#222', border: '1.5px solid #e0e7ef', borderRadius: 18, padding: '1.1rem 0', fontWeight: 700, fontSize: 19, cursor: 'pointer', width: '100%' }}>Ver documentación</button>
+                <button 
+                  onClick={handleNavigateToFAQ}
+                  style={{ background: '#fff', color: '#222', border: '1.5px solid #e0e7ef', borderRadius: 18, padding: '1.1rem 0', fontWeight: 700, fontSize: 19, cursor: 'pointer', width: '100%' }}
+                >
+                  Ver FAQ
+                </button>
               </div>
               {/* Programar Reunión */}
               <div style={{ background: '#fff', borderRadius: 28, boxShadow: '0 2px 8px #e0e7ef', padding: '2.2rem 2.5rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 18 }}>
                 <div style={{ color: '#222', fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Programar Reunión</div>
                 <div style={{ color: '#7a8bbd', fontSize: 17, marginBottom: 18 }}>Agenda una llamada con nuestro equipo</div>
-                <button style={{ background: '#fff', color: '#222', border: '1.5px solid #e0e7ef', borderRadius: 18, padding: '1.1rem 0', fontWeight: 700, fontSize: 19, cursor: 'pointer', width: '100%' }}>Agendar</button>
+                <button 
+                  onClick={handleNavigateToFreeOrientation}
+                  style={{ background: '#fff', color: '#222', border: '1.5px solid #e0e7ef', borderRadius: 18, padding: '1.1rem 0', fontWeight: 700, fontSize: 19, cursor: 'pointer', width: '100%' }}
+                >
+                  Agendar
+                </button>
               </div>
             </div>
           </div>
@@ -1511,8 +1886,15 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 <input
                   type="number"
                   min="0"
-                  value={newEmployee.sessions}
-                  onChange={(e) => setNewEmployee({...newEmployee, sessions: parseInt(e.target.value) || 0})}
+                  placeholder="Ingresa el número de sesiones"
+                  value={newEmployee.sessions === 0 ? '' : newEmployee.sessions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setNewEmployee({
+                      ...newEmployee, 
+                      sessions: value === '' ? 0 : parseInt(value) || 0
+                    });
+                  }}
                   style={{
                     width: '100%',
                     padding: '0.8rem 1rem',
@@ -1793,24 +2175,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 </div>
               </div>
               
-              <div>
-                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#222' }}>Estado</label>
-                <select
-                  value={editEmployee.status}
-                  onChange={(e) => setEditEmployee({...editEmployee, status: e.target.value})}
-                  style={{
-                    width: '100%',
-                    padding: '0.8rem 1rem',
-                    borderRadius: 12,
-                    border: '1.5px solid #e0e7ef',
-                    fontSize: 16,
-                    outline: 'none'
-                  }}
-                >
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
-                </select>
-              </div>
+              
             </div>
             
             <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
@@ -1852,12 +2217,12 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
       )}
 
       {/* ========================================
-           MODAL ELIMINAR EMPLEADO
+           MODAL DESACTIVAR EMPLEADO
            ======================================== 
-           Confirma la eliminación de un empleado del sistema
-           Incluye advertencia sobre pérdida de datos
+           Confirma la desactivación de un empleado del sistema
+           El empleado se marca como inactivo pero se mantiene en el historial
       */}
-      {/* Modal Eliminar Empleado */}
+      {/* Modal Desactivar Empleado */}
       {showDeleteModal && selectedEmployee && (
         <div style={{
           position: 'fixed',
@@ -1882,12 +2247,15 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
           }}>
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
-              <h3 style={{ color: '#222', fontWeight: 800, fontSize: 24, margin: '0 0 12px 0' }}>Confirmar Eliminación</h3>
+              <h3 style={{ color: '#222', fontWeight: 800, fontSize: 24, margin: '0 0 12px 0' }}>Confirmar Desactivación</h3>
               <p style={{ color: '#7a8bbd', fontSize: 16, margin: 0 }}>
-                ¿Estás seguro de que quieres eliminar a <strong>{selectedEmployee.name}</strong>?
+                ¿Estás seguro de que quieres desactivar a <strong>{selectedEmployee.name}</strong>?
               </p>
-              <p style={{ color: '#ff5e5e', fontSize: 14, margin: '8px 0 0 0' }}>
-                Esta acción no se puede deshacer.
+              <p style={{ color: '#ff9800', fontSize: 14, margin: '8px 0 0 0', fontWeight: 600 }}>
+                El empleado se marcará como inactivo y se moverá a la lista de empleados inactivos.
+              </p>
+              <p style={{ color: '#2ecc71', fontSize: 14, margin: '8px 0 0 0', fontWeight: 600 }}>
+                Puedes reactivarlo en cualquier momento desde la sección de empleados inactivos.
               </p>
             </div>
             
@@ -1896,7 +2264,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 onClick={handleDeleteEmployee}
                 style={{
                   flex: 1,
-                  background: '#ff5e5e',
+                  background: '#ff9800',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 12,
@@ -1906,7 +2274,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                   cursor: 'pointer'
                 }}
               >
-                Eliminar
+                Desactivar
               </button>
               <button
                 onClick={() => setShowDeleteModal(false)}
@@ -2140,8 +2508,15 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
                 <input
                   type="number"
                   min="0"
-                  value={assignSessionsForm.sessions}
-                  onChange={(e) => setAssignSessionsForm({...assignSessionsForm, sessions: parseInt(e.target.value) || 0})}
+                  placeholder="Ingresa el número de sesiones"
+                  value={assignSessionsForm.sessions === 0 ? '' : assignSessionsForm.sessions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setAssignSessionsForm({
+                      ...assignSessionsForm, 
+                      sessions: value === '' ? 0 : parseInt(value) || 0
+                    });
+                  }}
                   style={{
                     width: '100%',
                     padding: '0.8rem 1rem',
@@ -2213,6 +2588,176 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
           </div>
         </div>
       )}
+
+      {/* ========================================
+           MODAL AGREGAR DEPARTAMENTO
+           ======================================== 
+           Permite agregar nuevos departamentos a la empresa
+      */}
+      {showAddDepartmentModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 18,
+            padding: '2rem',
+            width: '90%',
+            maxWidth: 400,
+            boxShadow: '0 4px 32px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+              <h3 style={{ color: '#222', fontWeight: 800, fontSize: 24, margin: 0 }}>Agregar Departamento</h3>
+              <button 
+                onClick={() => setShowAddDepartmentModal(false)}
+                style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#7a8bbd' }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#222' }}>Nombre del departamento</label>
+              <input
+                type="text"
+                value={newDepartment}
+                onChange={(e) => setNewDepartment(e.target.value)}
+                placeholder="Ej: Recursos Humanos"
+                style={{
+                  width: '100%',
+                  padding: '0.8rem 1rem',
+                  borderRadius: 12,
+                  border: '1.5px solid #e0e7ef',
+                  fontSize: 16,
+                  outline: 'none'
+                }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={handleAddDepartment}
+                disabled={!newDepartment.trim()}
+                style={{
+                  flex: 1,
+                  background: '#0057ff',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '1rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  opacity: !newDepartment.trim() ? 0.5 : 1
+                }}
+              >
+                Agregar
+              </button>
+              <button
+                onClick={() => setShowAddDepartmentModal(false)}
+                style={{
+                  flex: 1,
+                  background: '#fff',
+                  color: '#7a8bbd',
+                  border: '1.5px solid #e0e7ef',
+                  borderRadius: 12,
+                  padding: '1rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================
+           MODAL ELIMINAR DEPARTAMENTO
+           ======================================== 
+           Confirma la eliminación de un departamento
+      */}
+      {showDeleteDepartmentModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 18,
+            padding: '2rem',
+            width: '90%',
+            maxWidth: 400,
+            boxShadow: '0 4px 32px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center'
+          }}>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+              <h3 style={{ color: '#222', fontWeight: 800, fontSize: 24, margin: '0 0 12px 0' }}>Eliminar Departamento</h3>
+              <p style={{ color: '#7a8bbd', fontSize: 16, margin: 0 }}>
+                ¿Estás seguro de que quieres eliminar el departamento <strong>{departmentToDelete}</strong>?
+              </p>
+              <p style={{ color: '#ff5e5e', fontSize: 14, margin: '8px 0 0 0' }}>
+                Esta acción no se puede deshacer.
+              </p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={handleDeleteDepartment}
+                style={{
+                  flex: 1,
+                  background: '#ff5e5e',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '1rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer'
+                }}
+              >
+                Eliminar
+              </button>
+              <button
+                onClick={() => setShowDeleteDepartmentModal(false)}
+                style={{
+                  flex: 1,
+                  background: '#fff',
+                  color: '#7a8bbd',
+                  border: '1.5px solid #e0e7ef',
+                  borderRadius: 12,
+                  padding: '1rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -2230,9 +2775,8 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
  * 2. Reportes - Análisis detallado por categorías (Comunicación, Estrés, Liderazgo, General)
  * 3. Colaboradores - Gestión completa de empleados (CRUD)
  * 4. Configuración - Ajustes de la empresa y políticas
- * 5. Seguridad - Configuración de seguridad y accesos
- * 6. Notificaciones - Sistema de comunicación interna
- * 7. Soporte - Acceso a ayuda y documentación
+ * 5. Notificaciones - Sistema de comunicación interna
+ * 6. Soporte - Acceso a ayuda y documentación
  * 
  * FUNCIONALIDADES PRINCIPALES:
  * - Gestión completa de empleados (crear, editar, eliminar, ver)
@@ -2240,7 +2784,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
  * - Asignación de sesiones de terapia
  * - Métricas en tiempo real de bienestar
  * - Reportes detallados de mejora organizacional
- * - Configuración de seguridad empresarial
+ * - Configuración de empresa y departamentos
  * 
  * NECESIDADES DE BACKEND:
  * - Autenticación y autorización empresarial
@@ -2248,7 +2792,7 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
  * - Sistema de notificaciones
  * - Base de datos para métricas y reportes
  * - Integración con sistema de sesiones
- * - Configuración de seguridad
+ * - Configuración de empresa y departamentos
  * 
  * TODO: Separar en componentes más pequeños para mejor mantenibilidad
  */
