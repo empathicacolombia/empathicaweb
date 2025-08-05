@@ -49,10 +49,10 @@ const AppointmentsPage = ({ navigationProps }) => {
   const sidebarOpen = navigationProps?.sidebarOpen ?? true;
 
   /**
-   * Datos de ejemplo de citas del usuario
+   * Datos de ejemplo de citas próximas del usuario
    * En una implementación real, estos datos vendrían del backend
    */
-  const appointments = [
+  const upcomingAppointments = [
     {
       id: 1,
       type: 'Sesión individual',
@@ -75,11 +75,82 @@ const AppointmentsPage = ({ navigationProps }) => {
     }
   ];
 
+  /**
+   * Datos de ejemplo de citas del historial
+   * En una implementación real, estos datos vendrían del backend
+   */
+  const historyAppointments = [
+    {
+      id: 101,
+      type: 'Sesión individual',
+      date: 'jueves, 11 de julio de 2024',
+      time: '10:00 AM',
+      specialist: 'Dra. María González',
+      status: 'Completada',
+      statusColor: '#e8f5e8',
+      statusTextColor: '#00C851'
+    },
+    {
+      id: 102,
+      type: 'Sesión de seguimiento',
+      date: 'jueves, 4 de julio de 2024',
+      time: '2:00 PM',
+      specialist: 'Dra. María González',
+      status: 'Completada',
+      statusColor: '#e8f5e8',
+      statusTextColor: '#00C851'
+    },
+    {
+      id: 103,
+      type: 'Sesión individual',
+      date: 'jueves, 27 de junio de 2024',
+      time: '11:00 AM',
+      specialist: 'Dra. María González',
+      status: 'Completada',
+      statusColor: '#e8f5e8',
+      statusTextColor: '#00C851'
+    },
+    {
+      id: 104,
+      type: 'Sesión de evaluación',
+      date: 'jueves, 20 de junio de 2024',
+      time: '3:00 PM',
+      specialist: 'Dra. María González',
+      status: 'Completada',
+      statusColor: '#e8f5e8',
+      statusTextColor: '#00C851'
+    },
+    {
+      id: 105,
+      type: 'Sesión individual',
+      date: 'jueves, 13 de junio de 2024',
+      time: '10:00 AM',
+      specialist: 'Dra. María González',
+      status: 'Completada',
+      statusColor: '#e8f5e8',
+      statusTextColor: '#00C851'
+    },
+    {
+      id: 106,
+      type: 'Sesión de seguimiento',
+      date: 'jueves, 6 de junio de 2024',
+      time: '2:00 PM',
+      specialist: 'Dra. María González',
+      status: 'Completada',
+      statusColor: '#e8f5e8',
+      statusTextColor: '#00C851'
+    }
+  ];
+
+  // Seleccionar las citas según la pestaña activa
+  const appointments = activeTab === 'upcoming' ? upcomingAppointments : historyAppointments;
+
   return (
     <div style={{
       display: 'flex',
-      minHeight: '100vh',
-      background: '#f8f9fa'
+      height: '100vh',
+      background: '#f8f9fa',
+      overflow: 'hidden'
     }}>
       {/* ========================================
            SIDEBAR DE NAVEGACIÓN
@@ -92,7 +163,8 @@ const AppointmentsPage = ({ navigationProps }) => {
       <div style={{
         flex: 1,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflow: 'hidden'
       }}>
         {/* ========================================
              HEADER SUPERIOR
@@ -160,7 +232,8 @@ const AppointmentsPage = ({ navigationProps }) => {
         <div style={{
           flex: 1,
           padding: '2rem',
-          overflow: 'auto'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}>
           {/* ========================================
                NAVEGACIÓN MÓVIL
@@ -379,38 +452,61 @@ const AppointmentsPage = ({ navigationProps }) => {
                   {/* ========================================
                        BOTONES DE ACCIÓN
                        ======================================== */}
-                  <div className="appointment-actions" style={{
-                    display: 'flex',
-                    gap: '0.5rem'
-                  }}>
-                    {/* Botón de reagendar */}
-                    <button style={{
-                      background: 'transparent',
-                      color: '#0057FF',
-                      border: '1px solid #0057FF',
-                      borderRadius: 6,
-                      padding: '0.5rem 1rem',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer'
+                  {activeTab === 'upcoming' && (
+                    <div className="appointment-actions" style={{
+                      display: 'flex',
+                      gap: '0.5rem'
                     }}>
-                      Reagendar
-                    </button>
-                    
-                    {/* Botón de cancelar */}
-                    <button style={{
-                      background: 'transparent',
-                      color: '#ff4444',
-                      border: '1px solid #ff4444',
-                      borderRadius: 6,
-                      padding: '0.5rem 1rem',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer'
+                      {/* Botón de reagendar */}
+                      <button style={{
+                        background: 'transparent',
+                        color: '#0057FF',
+                        border: '1px solid #0057FF',
+                        borderRadius: 6,
+                        padding: '0.5rem 1rem',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}>
+                        Reagendar
+                      </button>
+                      
+                      {/* Botón de cancelar */}
+                      <button style={{
+                        background: 'transparent',
+                        color: '#ff4444',
+                        border: '1px solid #ff4444',
+                        borderRadius: 6,
+                        padding: '0.5rem 1rem',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}>
+                        Cancelar
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Botón de ver detalles para historial */}
+                  {activeTab === 'history' && (
+                    <div className="appointment-actions" style={{
+                      display: 'flex',
+                      gap: '0.5rem'
                     }}>
-                      Cancelar
-                    </button>
-                  </div>
+                      <button style={{
+                        background: 'transparent',
+                        color: '#0057FF',
+                        border: '1px solid #0057FF',
+                        borderRadius: 6,
+                        padding: '0.5rem 1rem',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}>
+                        Ver detalles
+                      </button>
+                    </div>
+                  )}
 
                   {/* Menú de opciones adicionales */}
                   <button style={{

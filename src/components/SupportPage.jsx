@@ -49,11 +49,21 @@ const SupportPage = ({ navigationProps }) => {
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
+  // Función para abrir el cliente de correo
+  const openEmail = () => {
+    const email = 'miguel@nitbit.mx';
+    const subject = 'Soporte Empathica';
+    const body = 'Hola, necesito ayuda con Empathica.';
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div style={{
       display: 'flex',
-      minHeight: '100vh',
-      background: '#f8f9fa'
+      height: '100vh',
+      background: '#f8f9fa',
+      overflow: 'hidden'
     }}>
       {/* Sidebar */}
       <ClientSidebar navigationProps={navigationProps} activePage="support" sidebarOpen={sidebarOpen} />
@@ -62,7 +72,8 @@ const SupportPage = ({ navigationProps }) => {
       <div style={{
         flex: 1,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflow: 'hidden'
       }}>
         {/* Header superior */}
         <div style={{
@@ -121,7 +132,8 @@ const SupportPage = ({ navigationProps }) => {
         <div style={{
           flex: 1,
           padding: '2rem',
-          overflow: 'auto'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}>
           {/* Navegación móvil */}
           <MobileDashboardNav 
@@ -267,7 +279,7 @@ const SupportPage = ({ navigationProps }) => {
                 margin: '0 0 0.25rem 0',
                 fontWeight: 600
               }}>
-                soporte@empathica.com
+                miguel@nitbit.mx
               </p>
               
               <p style={{
@@ -278,17 +290,20 @@ const SupportPage = ({ navigationProps }) => {
                 Respuesta en 24 horas
               </p>
               
-              <button style={{
-                background: '#fff',
-                color: '#0057FF',
-                border: '1px solid #0057FF',
-                borderRadius: 8,
-                padding: '0.75rem 1.5rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: 14,
-                width: '100%'
-              }}>
+              <button 
+                onClick={openEmail}
+                style={{
+                  background: '#fff',
+                  color: '#0057FF',
+                  border: '1px solid #0057FF',
+                  borderRadius: 8,
+                  padding: '0.75rem 1.5rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  width: '100%'
+                }}
+              >
                 Enviar email
               </button>
             </div>
@@ -339,27 +354,12 @@ const SupportPage = ({ navigationProps }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
-                marginBottom: '1.5rem',
                 fontSize: 14,
                 color: '#666'
               }}>
                 <span role="img" aria-label="clock" style={{ fontSize: 14 }}>🕐</span>
                 Lun-Vie 8AM-6PM
               </div>
-              
-              <button style={{
-                background: '#fff',
-                color: '#0057FF',
-                border: '1px solid #0057FF',
-                borderRadius: 8,
-                padding: '0.75rem 1.5rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: 14,
-                width: '100%'
-              }}>
-                Llamar ahora
-              </button>
             </div>
           </div>
         </div>

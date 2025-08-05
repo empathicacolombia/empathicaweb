@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, XCircle, AlertCircle, Edit, Trash, Save, CheckSquare, Square, Play, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, XCircle, AlertCircle, Edit, Trash, Save, CheckSquare, Square, Play, Check, Pause, Square as StopIcon } from 'lucide-react';
 
 /**
  * Pestañas disponibles para filtrar citas
@@ -19,7 +19,8 @@ const PsychologistAppointments = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [notesForm, setNotesForm] = useState({
     notes: '',
-    tags: []
+    tags: [],
+    tagIntensities: {} // Para almacenar la intensidad de cada tag
   });
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelForm, setCancelForm] = useState({
@@ -28,6 +29,21 @@ const PsychologistAppointments = () => {
     newDate: '',
     newTime: ''
   });
+
+  // Estados para el cronómetro
+  const [timer, setTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const intervalRef = useRef(null);
+
+  // Limpiar intervalo cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   /**
    * Tags disponibles para categorizar pacientes y sesiones
@@ -201,6 +217,64 @@ const PsychologistAppointments = () => {
   };
 
   /**
+   * Formatea el tiempo en formato MM:SS
+   * 
+   * @param {number} seconds - Segundos totales
+   * @returns {string} Tiempo formateado
+   */
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  /**
+   * Inicia el cronómetro para una sesión
+   * 
+   * @param {number} appointmentId - ID de la cita
+   */
+  const startTimer = (appointmentId) => {
+    setActiveSessionId(appointmentId);
+    setIsTimerRunning(true);
+    setTimer(0);
+    
+    intervalRef.current = setInterval(() => {
+      setTimer(prev => prev + 1);
+    }, 1000);
+  };
+
+  /**
+   * Pausa el cronómetro
+   */
+  const pauseTimer = () => {
+    setIsTimerRunning(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+  };
+
+  /**
+   * Reanuda el cronómetro
+   */
+  const resumeTimer = () => {
+    setIsTimerRunning(true);
+    intervalRef.current = setInterval(() => {
+      setTimer(prev => prev + 1);
+    }, 1000);
+  };
+
+  /**
+   * Detiene el cronómetro
+   */
+  const stopTimer = () => {
+    setIsTimerRunning(false);
+    setActiveSessionId(null);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+  };
+
+  /**
    * Inicia una cita cambiando su estado a "En Proceso"
    * Permite al psicólogo marcar el inicio de una sesión
    * 
@@ -212,6 +286,7 @@ const PsychologistAppointments = () => {
         ? { ...apt, status: 'En Proceso' }
         : apt
     ));
+    startTimer(appointment.id);
   };
 
   /**
@@ -224,7 +299,8 @@ const PsychologistAppointments = () => {
     setSelectedAppointment(appointment);
     setNotesForm({
       notes: appointment.notes || '',
-      tags: appointment.tags || []
+      tags: appointment.tags || [],
+      tagIntensities: appointment.tagIntensities || {}
     });
     setShowNotesModal(true);
   };
@@ -235,7 +311,7 @@ const PsychologistAppointments = () => {
   const closeNotesModal = () => {
     setShowNotesModal(false);
     setSelectedAppointment(null);
-    setNotesForm({ notes: '', tags: [] });
+    setNotesForm({ notes: '', tags: [], tagIntensities: {} });
   };
 
   /**
@@ -261,7 +337,26 @@ const PsychologistAppointments = () => {
       ...prev,
       tags: prev.tags.includes(tag)
         ? prev.tags.filter(t => t !== tag)
-        : [...prev.tags, tag]
+        : [...prev.tags, tag],
+      tagIntensities: prev.tags.includes(tag)
+        ? { ...prev.tagIntensities, [tag]: undefined }
+        : { ...prev.tagIntensities, [tag]: 50 } // Intensidad por defecto
+    }));
+  };
+
+  /**
+   * Maneja el cambio de intensidad de un tag
+   * 
+   * @param {string} tag - Tag a modificar
+   * @param {number} intensity - Nueva intensidad (0-100)
+   */
+  const handleTagIntensityChange = (tag, intensity) => {
+    setNotesForm(prev => ({
+      ...prev,
+      tagIntensities: {
+        ...prev.tagIntensities,
+        [tag]: intensity
+      }
     }));
   };
 
@@ -277,11 +372,14 @@ const PsychologistAppointments = () => {
               ...apt, 
               status: 'Completada',
               notes: notesForm.notes,
-              tags: notesForm.tags
+              tags: notesForm.tags,
+              tagIntensities: notesForm.tagIntensities,
+              sessionDuration: timer // Guardar la duración de la sesión
             }
           : apt
       ));
     }
+    stopTimer(); // Detener el cronómetro
     closeNotesModal();
   };
 
@@ -354,29 +452,86 @@ const PsychologistAppointments = () => {
           </button>
         );
       case 'En Proceso':
+        const isActiveSession = activeSessionId === appointment.id;
         return (
-          <button 
-            onClick={() => openNotesModal(appointment)}
-            style={{
-              background: '#10B981',
-              color: '#fff',
-              border: 'none',
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+            alignItems: 'center'
+          }}>
+            {/* Cronómetro */}
+            <div style={{
+              background: '#f8f9fa',
+              border: '1px solid #e0e0e0',
               borderRadius: 6,
-              padding: '0.5rem 1rem',
-              fontSize: 12,
+              padding: '0.5rem',
+              fontSize: 14,
               fontWeight: 600,
-              cursor: 'pointer',
+              color: '#333',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#059669'}
-            onMouseLeave={e => e.currentTarget.style.background = '#10B981'}
-          >
-            <Check size={14} />
-            Finalizar
-          </button>
+              gap: '0.5rem'
+            }}>
+              <Clock size={14} color="#0057FF" />
+              {formatTime(timer)}
+            </div>
+            
+            {/* Controles del cronómetro */}
+            <div style={{
+              display: 'flex',
+              gap: '0.25rem'
+            }}>
+              {isTimerRunning ? (
+                <button 
+                  onClick={pauseTimer}
+                  style={{
+                    background: '#F59E0B',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 4,
+                    padding: '0.25rem 0.5rem',
+                    fontSize: 10,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Pause size={12} />
+                </button>
+              ) : (
+                <button 
+                  onClick={resumeTimer}
+                  style={{
+                    background: '#10B981',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 4,
+                    padding: '0.25rem 0.5rem',
+                    fontSize: 10,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Play size={12} />
+                </button>
+              )}
+              
+              <button 
+                onClick={() => openNotesModal(appointment)}
+                style={{
+                  background: '#10B981',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 4,
+                  padding: '0.25rem 0.5rem',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                <Check size={12} />
+                Finalizar
+              </button>
+            </div>
+          </div>
         );
       case 'Completada':
         return (
@@ -825,12 +980,15 @@ const PsychologistAppointments = () => {
                   color: '#666',
                   marginBottom: '1rem'
                 }}>
-                  Selecciona o deselecciona los tags para modificar el diagnóstico del paciente:
+                  Selecciona los tags y ajusta la intensidad de cada trastorno:
                 </p>
+                
+                {/* Tags disponibles */}
                 <div style={{
                   display: 'flex',
                   flexWrap: 'wrap',
-                  gap: '0.5rem'
+                  gap: '0.5rem',
+                  marginBottom: '1.5rem'
                 }}>
                   {availableTags.map((tag) => (
                     <button
@@ -852,6 +1010,96 @@ const PsychologistAppointments = () => {
                     </button>
                   ))}
                 </div>
+
+                {/* Tags seleccionados con barras de intensidad */}
+                {notesForm.tags.length > 0 && (
+                  <div style={{
+                    background: '#f8f9fa',
+                    borderRadius: 8,
+                    padding: '1rem',
+                    border: '1px solid #e0e0e0'
+                  }}>
+                    <h4 style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: '#333',
+                      margin: '0 0 1rem 0'
+                    }}>
+                      Intensidad de Trastornos
+                    </h4>
+                    
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem'
+                    }}>
+                      {notesForm.tags.map((tag) => (
+                        <div key={tag} style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.5rem'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <span style={{
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: '#333'
+                            }}>
+                              {tag}
+                            </span>
+                            <span style={{
+                              fontSize: 12,
+                              color: '#666',
+                              fontWeight: 600
+                            }}>
+                              {notesForm.tagIntensities[tag] || 50}%
+                            </span>
+                          </div>
+                          
+                          <div style={{
+                            position: 'relative',
+                            width: '100%',
+                            height: '8px',
+                            background: '#e0e0e0',
+                            borderRadius: '4px',
+                            overflow: 'hidden'
+                          }}>
+                            <div style={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              height: '100%',
+                              width: `${notesForm.tagIntensities[tag] || 50}%`,
+                              background: 'linear-gradient(90deg, #ff6b6b 0%, #ffa500 50%, #4ecdc4 100%)',
+                              borderRadius: '4px',
+                              transition: 'width 0.3s ease'
+                            }} />
+                          </div>
+                          
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={notesForm.tagIntensities[tag] || 50}
+                            onChange={(e) => handleTagIntensityChange(tag, parseInt(e.target.value))}
+                            style={{
+                              width: '100%',
+                              height: '6px',
+                              borderRadius: '3px',
+                              background: 'transparent',
+                              outline: 'none',
+                              cursor: 'pointer'
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Botones de acción */}

@@ -51,7 +51,10 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
       borderRight: '1px solid #e0e7ef',
       transition: 'width 0.3s ease',
       overflow: 'hidden',
-      boxShadow: sidebarOpen ? '2px 0 12px #0057ff0a' : 'none'
+      boxShadow: sidebarOpen ? '2px 0 12px #0057ff0a' : 'none',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh'
     }}>
       {/* ========================================
            SECCIÓN DEL LOGO Y TÍTULO
@@ -105,7 +108,12 @@ const ClientSidebar = ({ navigationProps, activePage, sidebarOpen = true }) => {
       {/* ========================================
            SECCIÓN DE NAVEGACIÓN PRINCIPAL
            ======================================== */}
-      <div style={{ padding: '1.5rem' }}>
+      <div style={{ 
+        padding: '1.5rem',
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden'
+      }}>
         {/* Título de la sección de navegación */}
         {sidebarOpen && (
           <div style={{

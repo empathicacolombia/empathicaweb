@@ -6,9 +6,6 @@ import {
   Target,
   Award,
   Calendar,
-  Edit,
-  Save,
-  X,
   TrendingUp,
   Users,
   Clock,
@@ -19,20 +16,17 @@ import ClientSidebar from './ClientSidebar';
 import MobileDashboardNav from './MobileDashboardNav';
 
 const ClientProfilePage = ({ navigationProps, testAnswers }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
+  const [profileData] = useState({
     firstName: 'Chris',
     lastName: 'Martínez',
     email: 'chris.martinez@email.com',
     phone: '+52 55 1234 5678',
-    age: 28,
-    occupation: 'Desarrollador de Software',
-    company: 'TechCorp'
+    age: 28
   });
 
-  const [testResults, setTestResults] = useState({
+  const [testResults] = useState({
     completed: testAnswers ? true : false,
-    date: testAnswers ? '15 de Noviembre, 2024' : null,
+    date: testAnswers ? '15 de Julio, 2024' : null,
     profile: testAnswers ? {
       nivelAngustia: 'Moderado',
       disposicionCambio: 'Alta',
@@ -46,23 +40,6 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
       'Terapia de Aceptación y Compromiso (ACT)'
     ] : []
   });
-
-  const handleInputChange = (field, value) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-    // Aquí se guardaría la información en la base de datos
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    // Restaurar datos originales si es necesario
-  };
 
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
@@ -82,8 +59,9 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
   return (
     <div className="dashboard-container" style={{
       display: 'flex',
-      minHeight: '100vh',
-      background: '#f8f9fa'
+      height: '100vh',
+      background: '#f8f9fa',
+      overflow: 'hidden'
     }}>
       {/* Sidebar */}
       <ClientSidebar navigationProps={navigationProps} activePage="client-profile" sidebarOpen={sidebarOpen} />
@@ -92,7 +70,8 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
       <div className="main-content" style={{
         flex: 1,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflow: 'hidden'
       }}>
         {/* Header superior */}
         <div style={{
@@ -149,7 +128,8 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
         <div style={{
           flex: 1,
           padding: '2rem',
-          overflow: 'auto'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}>
           {/* Navegación móvil */}
           <MobileDashboardNav 
@@ -172,9 +152,6 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
 
           {/* Header del perfil */}
           <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
             marginBottom: '2rem'
           }}>
             <div>
@@ -194,30 +171,6 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                 Gestiona tu información personal y revisa tus resultados
               </p>
             </div>
-            {!isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                style={{
-                  background: '#0057FF',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '12px 24px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = '#0046cc'}
-                onMouseLeave={e => e.currentTarget.style.background = '#0057FF'}
-              >
-                <Edit size={16} />
-                Editar Perfil
-              </button>
-            )}
           </div>
 
           <div style={{
@@ -269,43 +222,14 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Nombre completo
                   </label>
-                  {isEditing ? (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input
-                        type="text"
-                        value={profileData.firstName}
-                        onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        style={{
-                          flex: 1,
-                          padding: '8px 12px',
-                          border: '1px solid #ddd',
-                          borderRadius: '6px',
-                          fontSize: '14px'
-                        }}
-                      />
-                      <input
-                        type="text"
-                        value={profileData.lastName}
-                        onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        style={{
-                          flex: 1,
-                          padding: '8px 12px',
-                          border: '1px solid #ddd',
-                          borderRadius: '6px',
-                          fontSize: '14px'
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <p style={{
-                      fontSize: '16px',
-                      color: '#333',
-                      margin: 0,
-                      fontWeight: '500'
-                    }}>
-                      {profileData.firstName} {profileData.lastName}
-                    </p>
-                  )}
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#333',
+                    margin: 0,
+                    fontWeight: '500'
+                  }}>
+                    {profileData.firstName} {profileData.lastName}
+                  </p>
                 </div>
 
                 <div>
@@ -318,29 +242,14 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Correo electrónico
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="email"
-                      value={profileData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  ) : (
-                    <p style={{
-                      fontSize: '16px',
-                      color: '#333',
-                      margin: 0,
-                      fontWeight: '500'
-                    }}>
-                      {profileData.email}
-                    </p>
-                  )}
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#333',
+                    margin: 0,
+                    fontWeight: '500'
+                  }}>
+                    {profileData.email}
+                  </p>
                 </div>
 
                 <div>
@@ -353,29 +262,14 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Teléfono
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="tel"
-                      value={profileData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  ) : (
-                    <p style={{
-                      fontSize: '16px',
-                      color: '#333',
-                      margin: 0,
-                      fontWeight: '500'
-                    }}>
-                      {profileData.phone}
-                    </p>
-                  )}
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#333',
+                    margin: 0,
+                    fontWeight: '500'
+                  }}>
+                    {profileData.phone}
+                  </p>
                 </div>
 
                 <div>
@@ -388,148 +282,20 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Edad
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="number"
-                      value={profileData.age}
-                      onChange={(e) => handleInputChange('age', e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  ) : (
-                    <p style={{
-                      fontSize: '16px',
-                      color: '#333',
-                      margin: 0,
-                      fontWeight: '500'
-                    }}>
-                      {profileData.age} años
-                    </p>
-                  )}
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#333',
+                    margin: 0,
+                    fontWeight: '500'
+                  }}>
+                    {profileData.age} años
+                  </p>
                 </div>
 
-                <div>
-                  <label style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#666',
-                    marginBottom: '4px',
-                    display: 'block'
-                  }}>
-                    Ocupación
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={profileData.occupation}
-                      onChange={(e) => handleInputChange('occupation', e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  ) : (
-                    <p style={{
-                      fontSize: '16px',
-                      color: '#333',
-                      margin: 0,
-                      fontWeight: '500'
-                    }}>
-                      {profileData.occupation}
-                    </p>
-                  )}
-                </div>
 
-                <div>
-                  <label style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#666',
-                    marginBottom: '4px',
-                    display: 'block'
-                  }}>
-                    Empresa
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={profileData.company}
-                      onChange={(e) => handleInputChange('company', e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  ) : (
-                    <p style={{
-                      fontSize: '16px',
-                      color: '#333',
-                      margin: 0,
-                      fontWeight: '500'
-                    }}>
-                      {profileData.company}
-                    </p>
-                  )}
-                </div>
               </div>
 
-              {isEditing && (
-                <div style={{
-                  display: 'flex',
-                  gap: '12px',
-                  marginTop: '1.5rem'
-                }}>
-                  <button
-                    onClick={handleSave}
-                    style={{
-                      background: '#0057FF',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '6px',
-                      padding: '8px 16px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <Save size={14} />
-                    Guardar
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    style={{
-                      background: '#f8f9fa',
-                      color: '#666',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      padding: '8px 16px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <X size={14} />
-                    Cancelar
-                  </button>
-                </div>
-              )}
+
             </div>
 
             {/* Resultados del Test */}

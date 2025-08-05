@@ -4,7 +4,6 @@ import {
   Clock,
   Calendar,
   CalendarDays,
-  Users,
   FileText,
   BookOpen,
   CreditCard,
@@ -13,8 +12,7 @@ import {
   Activity
 } from 'lucide-react';
 import logoEmpathica from '../assets/Logoempathica.png';
-import PsychologistPatients from './PsychologistPatients';
-import PsychologistPatientsList from './PsychologistPatientsList';
+
 import PsychologistSchedule from './PsychologistSchedule';
 import PsychologistAppointments from './PsychologistAppointments';
 import PsychologistHistory from './PsychologistHistory';
@@ -31,7 +29,6 @@ const sidebarItems = [
   { icon: <Home size={22} />, label: 'Inicio', section: 'Dashboard' },
   { icon: <Clock size={22} />, label: 'Horarios', section: 'Horarios' },
   { icon: <Calendar size={22} />, label: 'Mis Citas', section: 'Citas' },
-  { icon: <Users size={22} />, label: 'Pacientes', section: 'Pacientes' },
   { icon: <FileText size={22} />, label: 'Historial', section: 'Historial' },
   { icon: <BookOpen size={22} />, label: 'Biblioteca', section: 'Biblioteca' },
   { icon: <CreditCard size={22} />, label: 'Facturación', section: 'Facturación' },
@@ -242,10 +239,19 @@ const PsychologistDashboard = ({ navigationProps }) => {
         {/* ========================================
              RENDERIZADO CONDICIONAL DE SECCIONES
              ======================================== */}
-        {/* Sección Dashboard - Vista principal de pacientes */}
+        {/* Sección Dashboard - Vista principal */}
         {activeSection === 'Dashboard' && (
           <div className="dashboard-section">
-            <PsychologistPatients />
+            <div style={{
+              padding: '2rem',
+              background: '#fff',
+              borderRadius: 12,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              textAlign: 'center'
+            }}>
+              <h2 style={{ color: '#333', marginBottom: '1rem' }}>Bienvenido al Dashboard</h2>
+              <p style={{ color: '#666' }}>Selecciona una sección del menú lateral para comenzar.</p>
+            </div>
           </div>
         )}
         {/* Sección Horarios - Gestión de disponibilidad */}
@@ -260,12 +266,7 @@ const PsychologistDashboard = ({ navigationProps }) => {
             <PsychologistAppointments />
           </div>
         )}
-        {/* Sección Pacientes - Lista completa de pacientes */}
-        {activeSection === 'Pacientes' && (
-          <div className="dashboard-section">
-            <PsychologistPatientsList />
-          </div>
-        )}
+
         {/* Sección Historial - Registro de sesiones */}
         {activeSection === 'Historial' && (
           <div className="dashboard-section">

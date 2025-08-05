@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Home, CalendarDays, Heart, Users, LifeBuoy, User, LogOut } from 'lucide-react';
 import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
-import AppointmentCalendarModal from './AppointmentCalendarModal';
 import MobileDashboardNav from './MobileDashboardNav';
 
 const MySpecialistPage = ({ navigationProps }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
@@ -26,8 +24,9 @@ const MySpecialistPage = ({ navigationProps }) => {
   return (
     <div style={{
       display: 'flex',
-      minHeight: '100vh',
-      background: '#f8f9fa'
+      height: '100vh',
+      background: '#f8f9fa',
+      overflow: 'hidden'
     }}>
       {/* Sidebar */}
       <ClientSidebar navigationProps={navigationProps} activePage="my-specialist" sidebarOpen={sidebarOpen} />
@@ -36,7 +35,8 @@ const MySpecialistPage = ({ navigationProps }) => {
       <div style={{
         flex: 1,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflow: 'hidden'
       }}>
         {/* Header superior */}
         <div style={{
@@ -95,7 +95,8 @@ const MySpecialistPage = ({ navigationProps }) => {
         <div style={{
           flex: 1,
           padding: '2rem',
-          overflow: 'auto'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}>
           {/* Navegación móvil */}
           <MobileDashboardNav 
@@ -220,26 +221,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                   "Te ayudo a encontrar equilibrio desde la empatía y comprensión profunda de tus necesidades emocionales."
                 </p>
 
-                {/* Botón */}
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  style={{
-                    background: '#fff',
-                    color: '#0057FF',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '0.75rem 1.5rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontSize: 14,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <CalendarDays size={16} />
-                  Agendar cita
-                </button>
+
               </div>
             </div>
           </div>
@@ -400,73 +382,9 @@ const MySpecialistPage = ({ navigationProps }) => {
             </div>
           </div>
 
-          {/* Próxima Disponibilidad */}
-          <div style={{
-            background: '#fff',
-            borderRadius: 12,
-            padding: '1.5rem',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span role="img" aria-label="clock" style={{ fontSize: 20 }}>🕐</span>
-                <h3 style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  margin: 0,
-                  color: '#333'
-                }}>
-                  Próxima Disponibilidad
-                </h3>
-              </div>
-              
-              <div style={{
-                marginLeft: '2rem'
-              }}>
-                <div style={{
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: '#333',
-                  marginBottom: '0.25rem'
-                }}>
-                  Mañana a las 2:00 PM
-                </div>
-                <div style={{
-                  fontSize: 14,
-                  color: '#666'
-                }}>
-                  Sesión de 50 minutos disponible
-                </div>
-              </div>
-            </div>
-            
-            <button style={{
-              background: '#0057FF',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '0.75rem 1.5rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontSize: 14
-            }}>
-              Reservar ahora
-            </button>
-          </div>
+
         </div>
       </div>
-      <AppointmentCalendarModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

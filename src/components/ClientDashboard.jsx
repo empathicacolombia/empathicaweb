@@ -479,12 +479,11 @@ const ClientDashboard = ({ navigationProps }) => {
           </div>
 
           {/* ========================================
-               SECCIONES INFERIORES - ESPECIALISTA Y CITA
+               SECCIÓN DE MI ESPECIALISTA
                ======================================== */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-            gap: '1.5rem'
+            display: 'flex',
+            justifyContent: 'center'
           }}>
             {/* ========================================
                  TARJETA DE MI ESPECIALISTA
@@ -493,7 +492,9 @@ const ClientDashboard = ({ navigationProps }) => {
               background: '#fff',
               borderRadius: 12,
               padding: '1.5rem',
-              boxShadow: '0 2px 8px #0057ff11'
+              boxShadow: '0 2px 8px #0057ff11',
+              maxWidth: '500px',
+              width: '100%'
             }}>
               {/* Encabezado de la tarjeta */}
               <div style={{
@@ -568,75 +569,6 @@ const ClientDashboard = ({ navigationProps }) => {
                 }}
               >
                 Ver perfil completo
-              </button>
-            </div>
-
-            {/* ========================================
-                 TARJETA DE PRÓXIMA CITA
-                 ======================================== */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: '1.5rem',
-              boxShadow: '0 2px 8px #0057ff11'
-            }}>
-              {/* Encabezado de la tarjeta */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '1.5rem'
-              }}>
-                <CalendarDays size={18} color="#0057FF" />
-                <h3 style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  margin: 0,
-                  color: '#333'
-                }}>
-                  Próxima Cita
-                </h3>
-              </div>
-              
-              {/* Detalles de la cita */}
-              <div style={{
-                marginBottom: '1.5rem'
-              }}>
-                {/* Fecha de la cita */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.5rem'
-                }}>
-                  <span style={{ color: '#666', fontSize: 14 }}>Fecha:</span>
-                  <span style={{ fontWeight: 600, color: '#333' }}>Viernes 19 de Julio, 2024</span>
-                </div>
-                
-                {/* Hora de la cita */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }}>
-                  <span style={{ color: '#666', fontSize: 14 }}>Hora:</span>
-                  <span style={{ fontWeight: 600, color: '#333' }}>10:00 AM</span>
-                </div>
-              </div>
-              
-              {/* Botón para ver todas las citas */}
-              <button
-                onClick={() => handleNavigation('appointments')}
-                style={{
-                  background: '#0057FF',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0.75rem 1.5rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  width: '100%'
-                }}
-              >
-                Ver todas las citas
               </button>
             </div>
           </div>

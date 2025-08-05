@@ -33,6 +33,10 @@ const PsychologistHistory = () => {
       notes: 'Sesión completada exitosamente',
       avatar: 'JM',
       tags: ['Burnout', 'Estrés laboral'],
+      tagIntensities: {
+        'Burnout': 75,
+        'Estrés laboral': 60
+      },
       attendance: true
     },
     {
@@ -49,6 +53,9 @@ const PsychologistHistory = () => {
       notes: 'Cancelada por el paciente',
       avatar: 'SC',
       tags: ['Depresión'],
+      tagIntensities: {
+        'Depresión': 85
+      },
       attendance: false
     },
     {
@@ -65,6 +72,10 @@ const PsychologistHistory = () => {
       notes: 'Evaluación de progreso satisfactoria',
       avatar: 'RM',
       tags: ['Trauma', 'Duelo'],
+      tagIntensities: {
+        'Trauma': 90,
+        'Duelo': 70
+      },
       attendance: true
     },
     {
@@ -81,6 +92,9 @@ const PsychologistHistory = () => {
       notes: 'Paciente no se presentó',
       avatar: 'CS',
       tags: ['Adicciones'],
+      tagIntensities: {
+        'Adicciones': 95
+      },
       attendance: false
     },
     {
@@ -97,6 +111,10 @@ const PsychologistHistory = () => {
       notes: 'Trabajo en técnicas de relajación',
       avatar: 'AG',
       tags: ['Ansiedad', 'Estrés'],
+      tagIntensities: {
+        'Ansiedad': 65,
+        'Estrés': 55
+      },
       attendance: true
     },
     {
@@ -113,6 +131,10 @@ const PsychologistHistory = () => {
       notes: 'Seguimiento de objetivos terapéuticos',
       avatar: 'CM',
       tags: ['Autoestima', 'Comunicación'],
+      tagIntensities: {
+        'Autoestima': 45,
+        'Comunicación': 80
+      },
       attendance: true
     }
   ];
@@ -700,7 +722,7 @@ const PsychologistHistory = () => {
               </div>
             </div>
 
-            {/* Tags del paciente */}
+            {/* Tags del paciente con intensidades */}
             <div style={{
               background: '#f8f9fa',
               borderRadius: 8,
@@ -717,24 +739,62 @@ const PsychologistHistory = () => {
               </h3>
               <div style={{
                 display: 'flex',
-                flexWrap: 'wrap',
-                gap: '0.5rem'
+                flexDirection: 'column',
+                gap: '1rem'
               }}>
-                {selectedAppointment.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      background: '#0057FF',
-                      color: '#fff',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '20px',
-                      fontSize: 12,
-                      fontWeight: 600
-                    }}
-                  >
-                    {tag}
-                  </span>
-                ))}
+                {selectedAppointment.tags.map((tag, index) => {
+                  const intensity = selectedAppointment.tagIntensities?.[tag] || 50;
+                  return (
+                    <div key={index} style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{
+                          background: '#0057FF',
+                          color: '#fff',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '20px',
+                          fontSize: 12,
+                          fontWeight: 600
+                        }}>
+                          {tag}
+                        </span>
+                        <span style={{
+                          fontSize: 12,
+                          color: '#666',
+                          fontWeight: 600
+                        }}>
+                          {intensity}%
+                        </span>
+                      </div>
+                      <div style={{
+                        position: 'relative',
+                        width: '100%',
+                        height: '8px',
+                        background: '#e0e0e0',
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
+                          height: '100%',
+                          width: `${intensity}%`,
+                          background: 'linear-gradient(90deg, #ff6b6b 0%, #ffa500 50%, #4ecdc4 100%)',
+                          borderRadius: '4px',
+                          transition: 'width 0.3s ease'
+                        }} />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

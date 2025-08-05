@@ -4,46 +4,7 @@ const TestResults = ({ navigationProps, testAnswers }) => {
   const [patientProfile, setPatientProfile] = useState(null);
   const [therapeuticApproaches, setTherapeuticApproaches] = useState([]);
   const [compatiblePsychologists, setCompatiblePsychologists] = useState([]);
-
-
-  useEffect(() => {
-    if (testAnswers) {
-      const profile = processTestAnswers(testAnswers);
-      setPatientProfile(profile);
-
-      const approaches = recommendTherapeuticApproaches(profile);
-      setTherapeuticApproaches(approaches);
-
-      const psychologists = generateCompatiblePsychologists(profile);
-      setCompatiblePsychologists(psychologists);
-    }
-  }, [testAnswers, processTestAnswers, generateCompatiblePsychologists]);
-
-  // Función para procesar las respuestas del test y generar el perfil del paciente
-  const processTestAnswers = useCallback((answers) => {
-    const profile = {
-      // Variables psicológicas principales
-      nivelAngustia: determineNivelAngustia(answers),
-      disposicionCambio: determineDisposicionCambio(answers),
-      orientacionTemporal: determineOrientacionTemporal(answers),
-      estiloTrabajoPaciente: determineEstiloTrabajo(answers),
-      
-      // Tags específicos basados en respuestas
-      tags: generateTags(answers),
-      
-      // Información para el mensaje personalizado
-      areaEnfoque: determineAreaEnfoque(answers),
-      motivacion: determineMotivacion(answers),
-      objetivoPrincipal: determineObjetivoPrincipal(answers),
-      objetivoLargoPlazo: determineObjetivoLargoPlazo(answers),
-      estiloGuia: determineEstiloGuia(answers),
-      manejoTareas: determineManejoTareas(answers),
-      disposicionAutoRevelacion: determineDisposicionAutoRevelacion(answers),
-      preferenciasAdicionales: determinePreferenciasAdicionales(answers)
-    };
-
-    return profile;
-  }, []);
+  const [recommendedPsychologist, setRecommendedPsychologist] = useState(null);
 
   // Determinar nivel de angustia basado en Q1 y Q12
   const determineNivelAngustia = (answers) => {
@@ -157,20 +118,20 @@ const TestResults = ({ navigationProps, testAnswers }) => {
     
     // Tags basados en Q9 (recarga de energía)
     const q9 = answers.section4?.question9;
-    if (q9.includes('A')) tags.push('Introspección');
-    if (q9.includes('B')) tags.push('Social');
-    if (q9.includes('C')) tags.push('Físico');
-    if (q9.includes('D')) tags.push('Creativo');
-    if (q9.includes('E')) tags.push('Intelectual');
+    if (q9 && q9.includes('A')) tags.push('Introspección');
+    if (q9 && q9.includes('B')) tags.push('Social');
+    if (q9 && q9.includes('C')) tags.push('Físico');
+    if (q9 && q9.includes('D')) tags.push('Creativo');
+    if (q9 && q9.includes('E')) tags.push('Intelectual');
     
     // Tags basados en Q10 (valores más importantes)
     const q10 = answers.section4?.question10;
-    if (q10.includes('A')) tags.push('Paz Interior');
-    if (q10.includes('B')) tags.push('Aprendizaje');
-    if (q10.includes('C')) tags.push('Conexión');
-    if (q10.includes('D')) tags.push('Contribución');
-    if (q10.includes('E')) tags.push('Autonomía');
-    if (q10.includes('F')) tags.push('Éxito');
+    if (q10 && q10.includes('A')) tags.push('Paz Interior');
+    if (q10 && q10.includes('B')) tags.push('Aprendizaje');
+    if (q10 && q10.includes('C')) tags.push('Conexión');
+    if (q10 && q10.includes('D')) tags.push('Contribución');
+    if (q10 && q10.includes('E')) tags.push('Autonomía');
+    if (q10 && q10.includes('F')) tags.push('Éxito');
     
     // Tags basados en Q11 (visión de futuro)
     const q11 = answers.section4?.question11?.id;
@@ -289,6 +250,32 @@ const TestResults = ({ navigationProps, testAnswers }) => {
     return preferencias.length > 0 ? preferencias.join(', ') : 'que se adapte a tus necesidades';
   };
 
+  // Función para procesar las respuestas del test y generar el perfil del paciente
+  const processTestAnswers = (answers) => {
+    const profile = {
+      // Variables psicológicas principales
+      nivelAngustia: determineNivelAngustia(answers),
+      disposicionCambio: determineDisposicionCambio(answers),
+      orientacionTemporal: determineOrientacionTemporal(answers),
+      estiloTrabajoPaciente: determineEstiloTrabajo(answers),
+      
+      // Tags específicos basados en respuestas
+      tags: generateTags(answers),
+      
+      // Información para el mensaje personalizado
+      areaEnfoque: determineAreaEnfoque(answers),
+      motivacion: determineMotivacion(answers),
+      objetivoPrincipal: determineObjetivoPrincipal(answers),
+      objetivoLargoPlazo: determineObjetivoLargoPlazo(answers),
+      estiloGuia: determineEstiloGuia(answers),
+      manejoTareas: determineManejoTareas(answers),
+      disposicionAutoRevelacion: determineDisposicionAutoRevelacion(answers),
+      preferenciasAdicionales: determinePreferenciasAdicionales(answers)
+    };
+
+    return profile;
+  };
+
   // Recomendar enfoques terapéuticos basados en el perfil
   const recommendTherapeuticApproaches = (profile) => {
     const approaches = [];
@@ -349,7 +336,7 @@ const TestResults = ({ navigationProps, testAnswers }) => {
   };
 
   // Generar psicólogos compatibles basados en el perfil
-  const generateCompatiblePsychologists = useCallback((profile) => {
+  const generateCompatiblePsychologists = (profile, approaches) => {
     const psychologists = [
       {
         id: 1,
@@ -382,13 +369,62 @@ const TestResults = ({ navigationProps, testAnswers }) => {
       );
 
       // Verificar si hay coincidencia en tipo de terapia
-      const therapyMatches = therapeuticApproaches.some(approach =>
+      const therapyMatches = approaches.some(approach =>
         psychologist.tipoTerapia.toLowerCase().includes(approach.name.toLowerCase())
       );
 
       return tagMatches || therapyMatches;
     });
-  }, [therapeuticApproaches]);
+  };
+
+  // Función para generar el psicólogo recomendado basado en las respuestas
+  const generateRecommendedPsychologist = (answers) => {
+    // Lógica simple para determinar el tipo de especialización basado en las respuestas
+    const q1 = answers.section1?.id;
+    const q12 = answers.section5?.question12?.id;
+    
+    let specialization = 'Psicóloga especialista en ansiedad';
+    let description = 'Especializada en terapia cognitivo-conductual para el manejo de la ansiedad y el estrés.';
+    
+    if ((q1 === 'A' || q1 === 'B') && q12 === 'A') {
+      specialization = 'Psicóloga especialista en ansiedad';
+      description = 'Especializada en terapia cognitivo-conductual para el manejo de la ansiedad y el estrés.';
+    } else if (q1 === 'C' && q12 === 'B') {
+      specialization = 'Psicóloga especialista en depresión';
+      description = 'Experta en terapia de aceptación y compromiso para el tratamiento de la depresión.';
+    } else {
+      specialization = 'Psicóloga especialista en bienestar emocional';
+      description = 'Especializada en mindfulness y terapia integral para el equilibrio emocional.';
+    }
+
+    return {
+      nombre: 'Dra. María González',
+      especializacion: specialization,
+      descripcion: description,
+      imagen: '👩‍⚕️',
+      experiencia: '8 años de experiencia',
+      enfoque: 'Terapia Cognitivo-Conductual',
+      idiomas: 'Español, Inglés',
+      modalidad: 'Presencial y Online'
+    };
+  };
+
+  useEffect(() => {
+    if (testAnswers) {
+      const profile = processTestAnswers(testAnswers);
+      setPatientProfile(profile);
+
+      const approaches = recommendTherapeuticApproaches(profile);
+      setTherapeuticApproaches(approaches);
+
+      const psychologists = generateCompatiblePsychologists(profile, approaches);
+      setCompatiblePsychologists(psychologists);
+
+      // Generar psicólogo recomendado basado en las respuestas del test
+      const recommended = generateRecommendedPsychologist(testAnswers);
+      setRecommendedPsychologist(recommended);
+    }
+  }, [testAnswers]);
 
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
@@ -396,7 +432,6 @@ const TestResults = ({ navigationProps, testAnswers }) => {
     }
   };
 
-  // Verificar si el usuario está registrado
   const isUserRegistered = navigationProps && navigationProps.isUserRegistered;
 
   if (!patientProfile) {
@@ -454,157 +489,204 @@ const TestResults = ({ navigationProps, testAnswers }) => {
         </div>
       </nav>
 
-      {/* Contenido principal */}
-      <div style={{ 
-        maxWidth: 1200, 
-        margin: '0 auto', 
-        padding: '0 20px' 
-      }}>
-        
-        {/* Título principal */}
+              {/* Contenido principal */}
         <div style={{ 
-          textAlign: 'center', 
-          marginBottom: '40px' 
-        }}>
-          <h1 style={{ 
-            fontWeight: 'bold', 
-            fontSize: 'clamp(24px, 5vw, 32px)', 
-            color: '#0057FF', 
-            margin: '0 0 16px 0',
-            lineHeight: '1.3'
-          }}>
-            ¡Nos encanta conocerte! ✨
-          </h1>
-          <p style={{ 
-            color: '#666', 
-            fontSize: 'clamp(16px, 3vw, 18px)', 
-            margin: 0,
-            lineHeight: '1.5'
-          }}>
-            Encuentra tu psicólogo ideal con nuestro sistema de matching emocional
-          </p>
-        </div>
-
-        {/* Layout de dos columnas */}
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          gap: '32px',
-          '@media (min-width: 1024px)': {
-            flexDirection: 'row',
-            gap: '40px'
-          }
+          maxWidth: 1200, 
+          margin: '0 auto', 
+          padding: '0 20px' 
         }}>
           
-          {/* Columna izquierda - Perfil del usuario */}
+          {/* Título principal */}
           <div style={{ 
-            flex: 1,
-            '@media (min-width: 1024px)': {
-              maxWidth: '50%'
-            }
+            textAlign: 'center', 
+            marginBottom: '40px' 
           }}>
-            
-            {/* Tu Perfil Emocional */}
-            <div style={{ 
-              background: '#fff', 
-              borderRadius: 20, 
-              boxShadow: '0 4px 24px #0057ff11', 
-              padding: '32px',
-              marginBottom: '32px'
+            <h1 style={{ 
+              fontWeight: 'bold', 
+              fontSize: 'clamp(24px, 5vw, 32px)', 
+              color: '#0057FF', 
+              margin: '0 0 16px 0',
+              lineHeight: '1.3'
             }}>
-              <h2 style={{ 
-                fontWeight: 'bold', 
-                fontSize: 'clamp(20px, 4vw, 24px)', 
-                color: '#0057FF', 
-                margin: '0 0 24px 0'
-              }}>
-                Tu Perfil Emocional
-              </h2>
-              
-              {/* Información General */}
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ 
-                  fontWeight: 600, 
-                  color: '#333', 
-                  margin: '0 0 16px 0',
-                  fontSize: 'clamp(16px, 3vw, 18px)'
-                }}>
-                  Tu Perfil de Respuestas
-                </h3>
-                <div style={{ 
-                  fontSize: 'clamp(14px, 2.5vw, 16px)', 
-                  lineHeight: 1.6,
-                  color: '#666'
-                }}>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Test completado:</strong> 100%
-                  </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Secciones respondidas:</strong> 5/5
-                  </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Perfil generado:</strong> Personalizado
-                  </div>
-                </div>
-              </div>
+              ¡Nos encanta conocerte! ✨
+            </h1>
+            <p style={{ 
+              color: '#666', 
+              fontSize: 'clamp(16px, 3vw, 18px)', 
+              margin: 0,
+              lineHeight: '1.5'
+            }}>
+              Encuentra tu psicólogo ideal con nuestro sistema de matching emocional
+            </p>
+          </div>
 
-              {/* Descripción del perfil */}
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ 
-                  fontWeight: 600, 
-                  color: '#333', 
-                  margin: '0 0 16px 0',
-                  fontSize: 'clamp(16px, 3vw, 18px)'
-                }}>
-                  Tu Perfil Emocional
-                </h3>
-                <p style={{ 
-                  color: '#666', 
-                  fontSize: 'clamp(14px, 2.5vw, 16px)', 
-                  lineHeight: 1.6,
-                  margin: 0
-                }}>
-                  Vemos que eres una persona que te preocupa {patientProfile.areaEnfoque}. 
-                  Actualmente experimentas {patientProfile.nivelAngustia === 'Alta' ? 'ansiedad' : 'estrés'}, 
-                  te sientes estresado/a a menudo. Te interesa sentirte más segura emocionalmente, 
-                  especialmente en tus relaciones personales y laborales. Buscas un acompañamiento 
-                  que te ayude a fortalecer tus vínculos y tomar decisiones con más claridad.
-                </p>
-              </div>
+                     {/* Perfil del usuario */}
+           <div style={{ 
+             maxWidth: '800px',
+             margin: '0 auto'
+           }}>
+             
+             {/* Tu Perfil Emocional */}
+             <div style={{ 
+               background: '#fff', 
+               borderRadius: 20, 
+               boxShadow: '0 4px 24px #0057ff11', 
+               padding: '32px',
+               marginBottom: '32px'
+             }}>
+               <h2 style={{ 
+                 fontWeight: 'bold', 
+                 fontSize: 'clamp(20px, 4vw, 24px)', 
+                 color: '#0057FF', 
+                 margin: '0 0 24px 0'
+               }}>
+                 Tu Perfil Emocional
+               </h2>
+               
+               {/* Información General */}
+               <div style={{ marginBottom: '24px' }}>
+                 <h3 style={{ 
+                   fontWeight: 600, 
+                   color: '#333', 
+                   margin: '0 0 16px 0',
+                   fontSize: 'clamp(16px, 3vw, 18px)'
+                 }}>
+                   Tu Perfil de Respuestas
+                 </h3>
+                 <div style={{ 
+                   fontSize: 'clamp(14px, 2.5vw, 16px)', 
+                   lineHeight: 1.6,
+                   color: '#666'
+                 }}>
+                   <div style={{ marginBottom: '8px' }}>
+                     <strong>Test completado:</strong> 100%
+                   </div>
+                   <div style={{ marginBottom: '8px' }}>
+                     <strong>Secciones respondidas:</strong> 5/5
+                   </div>
+                   <div style={{ marginBottom: '8px' }}>
+                     <strong>Perfil generado:</strong> Personalizado
+                   </div>
+                 </div>
+               </div>
 
-              {/* Lo que nos has contado */}
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ 
-                  fontWeight: 600, 
-                  color: '#333', 
-                  margin: '0 0 16px 0',
-                  fontSize: 'clamp(16px, 3vw, 18px)'
-                }}>
-                  Lo que Nos Has Contado
-                </h3>
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  gap: '12px'
-                }}>
-                  {patientProfile.tags.slice(0, 3).map((tag, index) => (
-                    <div key={index} style={{
-                      background: '#f0f4ff',
-                      color: '#0057FF',
-                      padding: '12px 16px',
-                      borderRadius: 12,
-                      fontSize: 'clamp(14px, 2.5vw, 16px)',
-                      fontWeight: 500
-                    }}>
-                      {tag}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+               {/* Descripción del perfil */}
+               <div style={{ marginBottom: '24px' }}>
+                 <h3 style={{ 
+                   fontWeight: 600, 
+                   color: '#333', 
+                   margin: '0 0 16px 0',
+                   fontSize: 'clamp(16px, 3vw, 18px)'
+                 }}>
+                   Tu Perfil Emocional
+                 </h3>
+                 <p style={{ 
+                   color: '#666', 
+                   fontSize: 'clamp(14px, 2.5vw, 16px)', 
+                   lineHeight: 1.6,
+                   margin: 0
+                 }}>
+                   Vemos que eres una persona que te preocupa {patientProfile.areaEnfoque}. 
+                   Actualmente experimentas {patientProfile.nivelAngustia === 'Alta' ? 'ansiedad' : 'estrés'}, 
+                   te sientes estresado/a a menudo. Te interesa sentirte más segura emocionalmente, 
+                   especialmente en tus relaciones personales y laborales. Buscas un acompañamiento 
+                   que te ayude a fortalecer tus vínculos y tomar decisiones con más claridad.
+                 </p>
+               </div>
 
-            {/* Enfoques Recomendados */}
+               {/* Lo que nos has contado */}
+               <div style={{ marginBottom: '24px' }}>
+                 <h3 style={{ 
+                   fontWeight: 600, 
+                   color: '#333', 
+                   margin: '0 0 16px 0',
+                   fontSize: 'clamp(16px, 3vw, 18px)'
+                 }}>
+                   Lo que Nos Has Contado
+                 </h3>
+                 <div style={{ 
+                   display: 'flex', 
+                   flexDirection: 'column',
+                   gap: '12px'
+                 }}>
+                   {patientProfile.tags.slice(0, 3).map((tag, index) => (
+                     <div key={index} style={{
+                       background: '#f0f4ff',
+                       color: '#0057FF',
+                       padding: '12px 16px',
+                       borderRadius: 12,
+                       fontSize: 'clamp(14px, 2.5vw, 16px)',
+                       fontWeight: 500
+                     }}>
+                       {tag}
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             </div>
+
+             {/* Enfoques Recomendados */}
+             <div style={{ 
+               background: '#fff', 
+               borderRadius: 20, 
+               boxShadow: '0 4px 24px #0057ff11', 
+               padding: '32px'
+             }}>
+               <h2 style={{ 
+                 fontWeight: 'bold', 
+                 fontSize: 'clamp(20px, 4vw, 24px)', 
+                 color: '#0057FF', 
+                 margin: '0 0 24px 0'
+               }}>
+                 Enfoques Recomendados para Ti
+               </h2>
+               
+               <div style={{ 
+                 display: 'flex', 
+                 flexDirection: 'column',
+                 gap: '20px'
+               }}>
+                 {therapeuticApproaches.map((approach, index) => (
+                   <div key={index} style={{
+                     display: 'flex',
+                     alignItems: 'flex-start',
+                     gap: '16px'
+                   }}>
+                     <div style={{
+                       width: '4px',
+                       height: '60px',
+                       background: '#0057FF',
+                       borderRadius: '2px',
+                       flexShrink: 0
+                     }}></div>
+                     <div>
+                       <h4 style={{ 
+                         fontWeight: 600, 
+                         color: '#333', 
+                         margin: '0 0 8px 0',
+                         fontSize: 'clamp(16px, 3vw, 18px)'
+                       }}>
+                         {approach.name}
+                       </h4>
+                       <p style={{ 
+                         color: '#666', 
+                         fontSize: 'clamp(14px, 2.5vw, 16px)', 
+                         lineHeight: 1.6,
+                         margin: 0
+                       }}>
+                         {approach.description}
+                       </p>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           </div>
+
+          {/* Sección del Psicólogo Recomendado */}
+          {recommendedPsychologist && (
             <div style={{ 
+              marginTop: '48px',
               background: '#fff', 
               borderRadius: 20, 
               boxShadow: '0 4px 24px #0057ff11', 
@@ -614,313 +696,218 @@ const TestResults = ({ navigationProps, testAnswers }) => {
                 fontWeight: 'bold', 
                 fontSize: 'clamp(20px, 4vw, 24px)', 
                 color: '#0057FF', 
-                margin: '0 0 24px 0'
+                margin: '0 0 24px 0',
+                textAlign: 'center'
               }}>
-                Enfoques Recomendados para Ti
+                Tu Psicólogo Recomendado
               </h2>
               
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column',
-                gap: '20px'
-              }}>
-                {therapeuticApproaches.map((approach, index) => (
-                  <div key={index} style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '16px'
-                  }}>
-                    <div style={{
-                      width: '4px',
-                      height: '60px',
-                      background: '#0057FF',
-                      borderRadius: '2px',
-                      flexShrink: 0
-                    }}></div>
-                    <div>
-                      <h4 style={{ 
-                        fontWeight: 600, 
-                        color: '#333', 
-                        margin: '0 0 8px 0',
-                        fontSize: 'clamp(16px, 3vw, 18px)'
-                      }}>
-                        {approach.name}
-                      </h4>
-                      <p style={{ 
-                        color: '#666', 
-                        fontSize: 'clamp(14px, 2.5vw, 16px)', 
-                        lineHeight: 1.6,
-                        margin: 0
-                      }}>
-                        {approach.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Columna derecha - Psicólogos compatibles */}
-          <div style={{ 
-            flex: 1,
-            '@media (min-width: 1024px)': {
-              maxWidth: '50%'
-            }
-          }}>
-            
-            <h2 style={{ 
-              fontWeight: 'bold', 
-              fontSize: 'clamp(20px, 4vw, 24px)', 
-              color: '#0057FF', 
-              margin: '0 0 24px 0'
-            }}>
-              Profesionales Compatibles
-            </h2>
-
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              gap: '24px'
-            }}>
-              {compatiblePsychologists.map((psychologist, index) => (
-                <div key={index} style={{
-                  background: '#fff',
-                  borderRadius: 20,
-                  boxShadow: '0 4px 24px #0057ff11',
-                  padding: '24px',
-                  border: '1px solid #e0e7ef'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '16px',
-                    marginBottom: '16px'
-                  }}>
-                    <div style={{
-                      width: '60px',
-                      height: '60px',
-                      borderRadius: '50%',
-                      background: '#f0f4ff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '24px',
-                      flexShrink: 0
-                    }}>
-                      {psychologist.imagen}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ 
-                        fontWeight: 600, 
-                        color: '#333', 
-                        margin: '0 0 8px 0',
-                        fontSize: 'clamp(16px, 3vw, 18px)',
-                        textTransform: 'capitalize'
-                      }}>
-                        {psychologist.nombre}
-                      </h3>
-                      <p style={{ 
-                        color: '#0057FF', 
-                        fontSize: 'clamp(14px, 2.5vw, 16px)', 
-                        fontWeight: 600,
-                        margin: '0 0 8px 0'
-                      }}>
-                        {psychologist.tipoTerapia}
-                      </p>
-                      <p style={{ 
-                        color: '#666', 
-                        fontSize: 'clamp(14px, 2.5vw, 16px)', 
-                        margin: '0 0 16px 0'
-                      }}>
-                        {psychologist.descripcion}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Tags */}
-                  <div style={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: '8px',
-                    marginBottom: '20px'
-                  }}>
-                    {psychologist.tags.map((tag, tagIndex) => (
-                      <span key={tagIndex} style={{
-                        background: '#f0f4ff',
-                        color: '#0057FF',
-                        padding: '6px 12px',
-                        borderRadius: 20,
-                        fontSize: 'clamp(12px, 2vw, 14px)',
-                        fontWeight: 500
-                      }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Botones */}
-                  <div style={{
-                    display: 'flex',
-                    gap: '12px'
-                  }}>
-                    {psychologist.video && (
-                      <button style={{
-                        background: '#fff',
-                        color: '#0057FF',
-                        border: '2px solid #0057FF',
-                        borderRadius: 12,
-                        padding: '10px 16px',
-                        fontSize: 'clamp(14px, 2.5vw, 16px)',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f0f4ff';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#fff';
-                      }}
-                      >
-                        ▶️ Video
-                      </button>
-                    )}
-                    <button style={{
-                      background: '#0057FF',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 12,
-                      padding: '10px 20px',
-                      fontSize: 'clamp(14px, 2.5vw, 16px)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                    >
-                      👤 Elegir
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Tip */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 16,
-              padding: '20px',
-              marginTop: '24px',
-              border: '1px solid #e0e7ef'
-            }}>
+              {/* Información del psicólogo */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px'
+                gap: '20px',
+                marginBottom: '24px'
               }}>
-                <span style={{ fontSize: '20px' }}>✨</span>
-                <p style={{ 
-                  color: '#666', 
-                  fontSize: 'clamp(14px, 2.5vw, 16px)', 
-                  margin: 0,
-                  lineHeight: '1.5'
+                {/* Avatar */}
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: '#f0f4ff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '32px',
+                  flexShrink: 0
                 }}>
-                  <strong>Tip:</strong> Usa el botón "Elegir" para una conexión directa con el psicólogo que más te resuene.
-                </p>
+                  {recommendedPsychologist.imagen}
+                </div>
+                
+                {/* Información */}
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ 
+                    fontWeight: 'bold', 
+                    color: '#333', 
+                    margin: '0 0 8px 0',
+                    fontSize: 'clamp(18px, 3vw, 20px)'
+                  }}>
+                    {recommendedPsychologist.nombre}
+                  </h3>
+                  <p style={{ 
+                    color: '#666', 
+                    fontSize: 'clamp(14px, 2.5vw, 16px)', 
+                    margin: '0 0 8px 0',
+                    fontWeight: '500'
+                  }}>
+                    {recommendedPsychologist.especializacion}
+                  </p>
+                  <p style={{ 
+                    color: '#666', 
+                    fontSize: 'clamp(14px, 2.5vw, 16px)', 
+                    margin: 0,
+                    lineHeight: '1.5'
+                  }}>
+                    {recommendedPsychologist.descripcion}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Botones de acción */}
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: '48px' 
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            gap: '16px',
-            alignItems: 'center',
-            '@media (min-width: 768px)': {
-              flexDirection: 'row',
-              justifyContent: 'center',
-              gap: '16px'
-            }
-          }}>
-            <button 
-              onClick={() => isUserRegistered ? handleNavigation('client-dashboard') : handleNavigation('quick-register')}
-              style={{ 
-                background: '#0057FF', 
-                color: '#fff', 
-                border: 'none', 
-                borderRadius: 14, 
-                padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
-                fontWeight: 700, 
-                fontSize: 'clamp(16px, 3vw, 18px)', 
-                cursor: 'pointer', 
-                boxShadow: '0 4px 16px rgba(0, 87, 255, 0.3)',
-                transition: 'all 0.2s ease',
-                width: '100%',
-                maxWidth: '300px',
-                '@media (min-width: 768px)': {
-                  width: 'auto'
-                }
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 87, 255, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 87, 255, 0.3)';
-              }}
-            >
-              {isUserRegistered ? 'Ir a mi dashboard' : 'Registrarse para continuar'}
-            </button>
-            
-            <button 
-              onClick={() => handleNavigation('psychologists')}
-              style={{ 
-                background: '#fff', 
-                color: '#0057FF', 
-                border: '2px solid #0057FF', 
-                borderRadius: 14, 
-                padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
-                fontWeight: 700, 
-                fontSize: 'clamp(16px, 3vw, 18px)', 
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                width: '100%',
-                maxWidth: '300px',
-                '@media (min-width: 768px)': {
-                  width: 'auto'
-                }
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f0f4ff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#fff';
-              }}
-            >
-              Ver más psicólogos
-            </button>
-          </div>
+              {/* Detalles adicionales */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '16px',
+                marginBottom: '24px'
+              }}>
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '4px'
+                  }}>
+                    Experiencia
+                  </div>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333'
+                  }}>
+                    {recommendedPsychologist.experiencia}
+                  </div>
+                </div>
+                
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '4px'
+                  }}>
+                    Enfoque
+                  </div>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333'
+                  }}>
+                    {recommendedPsychologist.enfoque}
+                  </div>
+                </div>
+                
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '4px'
+                  }}>
+                    Modalidad
+                  </div>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333'
+                  }}>
+                    {recommendedPsychologist.modalidad}
+                  </div>
+                </div>
+              </div>
+
+              
+            </div>
+          )}
+
+                     {/* Botones de acción */}
+           <div style={{ 
+             textAlign: 'center', 
+             marginTop: '48px' 
+           }}>
+             <div style={{ 
+               display: 'flex', 
+               flexDirection: 'column',
+               gap: '16px',
+               alignItems: 'center',
+               '@media (min-width: 768px)': {
+                 flexDirection: 'row',
+                 justifyContent: 'center',
+                 gap: '16px'
+               }
+             }}>
+               <button 
+                 onClick={() => handleNavigation('client-dashboard')}
+                 style={{ 
+                   background: '#0057FF', 
+                   color: '#fff', 
+                   border: 'none', 
+                   borderRadius: 14, 
+                   padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
+                   fontWeight: 700, 
+                   fontSize: 'clamp(16px, 3vw, 18px)', 
+                   cursor: 'pointer', 
+                   boxShadow: '0 4px 16px rgba(0, 87, 255, 0.3)',
+                   transition: 'all 0.2s ease',
+                   width: '100%',
+                   maxWidth: '300px',
+                   '@media (min-width: 768px)': {
+                     width: 'auto'
+                   }
+                 }}
+                 onMouseEnter={(e) => {
+                   e.currentTarget.style.transform = 'scale(1.05)';
+                   e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 87, 255, 0.4)';
+                 }}
+                 onMouseLeave={(e) => {
+                   e.currentTarget.style.transform = 'scale(1)';
+                   e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 87, 255, 0.3)';
+                 }}
+               >
+                 Ir a mi dashboard
+               </button>
+               
+               <button 
+                 onClick={() => handleNavigation('psychologists')}
+                 style={{ 
+                   background: '#fff', 
+                   color: '#0057FF', 
+                   border: '2px solid #0057FF', 
+                   borderRadius: 14, 
+                   padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
+                   fontWeight: 700, 
+                   fontSize: 'clamp(16px, 3vw, 18px)', 
+                   cursor: 'pointer',
+                   transition: 'all 0.2s ease',
+                   width: '100%',
+                   maxWidth: '300px',
+                   '@media (min-width: 768px)': {
+                     width: 'auto'
+                   }
+                 }}
+                 onMouseEnter={(e) => {
+                   e.currentTarget.style.background = '#f0f4ff';
+                 }}
+                 onMouseLeave={(e) => {
+                   e.currentTarget.style.background = '#fff';
+                 }}
+               >
+                 Ver más psicólogos
+               </button>
+             </div>
+           </div>
         </div>
-      </div>
     </div>
   );
 };

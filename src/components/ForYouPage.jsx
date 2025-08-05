@@ -18,7 +18,7 @@ const ForYouPage = ({ navigationProps }) => {
   /**
    * Estado para controlar la pestaña activa de contenido
    */
-  const [activeTab, setActiveTab] = useState('podcasts'); // 'podcasts', 'articles', 'tests'
+  const [activeTab, setActiveTab] = useState('podcasts'); // 'podcasts', 'articles'
   
   /**
    * Estado para el estado de ánimo seleccionado (funcionalidad futura)
@@ -78,85 +78,56 @@ const ForYouPage = ({ navigationProps }) => {
     podcasts: [
       {
         id: 1,
-        type: 'Relajación',
-        title: 'Mindfulness para principiantes',
-        description: 'Aprende técnicas básicas de atención plena para reducir el estrés',
-        author: 'Dr. Carlos Ruiz',
-        duration: '25 min',
+        type: 'Psicología Clínica',
+        title: 'Psicología al Desnudo',
+        description: 'Un podcast con un enfoque clínico y profundo sobre temas como la ansiedad, las relaciones y la construcción de una autoestima sana.',
+        author: 'Psi Mammoliti',
+        duration: '30-40 min',
         icon: '🎧',
-        externalUrl: 'https://open.spotify.com/show/example-mindfulness'
+        externalUrl: 'https://open.spotify.com/show/1TDJJoHWEq7Nbh3yEBOJOj'
       },
       {
         id: 2,
-        type: 'Ansiedad',
-        title: 'Manejo del estrés diario',
-        description: 'Estrategias prácticas para reducir la ansiedad en el trabajo',
-        author: 'Dra. María González',
-        duration: '20 min',
+        type: 'Meditación y Mindfulness',
+        title: 'Meditada',
+        description: 'Hola! Soy Luis. Meditada es un lugar de Meditación Guiada y Mindfulness. Un espacio seguro en el que evadirse, dormir, relajarse y liberarse de la ansiedad y el estrés.',
+        author: 'Luis',
+        duration: '15-30 min',
         icon: '🎧',
-        externalUrl: 'https://www.youtube.com/watch?v=example-stress'
+        externalUrl: 'https://open.spotify.com/show/4TmUpG1YdJMa4aAnp9s21F'
       },
-      {
-        id: 3,
-        type: 'Autoestima',
-        title: 'Construyendo confianza personal',
-        description: 'Herramientas para mejorar tu autoestima y autoconfianza',
-        author: 'Psic. Laura Torres',
-        duration: '30 min',
-        icon: '🎧',
-        externalUrl: 'https://anchor.fm/example-confidence'
-      }
+
     ],
     articles: [
       {
         id: 1,
-        type: 'Ansiedad',
-        title: 'Superando la ansiedad social',
-        description: 'Estrategias prácticas para manejar situaciones sociales con confianza',
-        author: 'Dra. Ana Martín',
-        duration: '30 min',
+        type: 'Ansiedad Social',
+        title: 'Trastorno de ansiedad social (fobia social) - Mayo Clinic',
+        description: 'Este artículo es muy completo. Explica los síntomas, las causas y, lo más importante, ofrece una guía detallada sobre el tratamiento, incluyendo remedios caseros, estrategias de afrontamiento y cuándo buscar ayuda profesional.',
+        author: 'Mayo Clinic',
+        duration: '20 min',
         icon: '📖',
-        externalUrl: 'https://www.psychologytoday.com/us/blog/example-social-anxiety'
+        externalUrl: 'https://www.mayoclinic.org/es/diseases-conditions/social-anxiety-disorder/diagnosis-treatment/drc-20353567'
       },
       {
         id: 2,
-        type: 'Bienestar',
-        title: 'Hábitos matutinos para un día productivo',
-        description: 'Rutinas que transformarán tu mañana y tu día completo',
-        author: 'Dr. Roberto Silva',
+        type: 'Ansiedad Social',
+        title: 'Cómo Superar la Ansiedad Social Efectivamente - Bupa Salud',
+        description: 'Un recurso práctico que se enfoca en técnicas concretas como reconocer y cuestionar pensamientos negativos, practicar la aceptación, técnicas de relajación y la exposición gradual a situaciones sociales.',
+        author: 'Bupa Salud',
         duration: '15 min',
         icon: '📖',
-        externalUrl: 'https://medium.com/@example/morning-habits'
+        externalUrl: 'https://www.bupasalud.com.mx/salud/superar-ansiedad-social'
       },
       {
         id: 3,
-        type: 'Relaciones',
-        title: 'Comunicación efectiva en pareja',
-        description: 'Técnicas para mejorar la comunicación y fortalecer tu relación',
-        author: 'Psic. Carmen Vega',
+        type: 'Ansiedad Social',
+        title: '12 Formas poderosas para superar la ansiedad social - Psychology Today',
+        description: 'Ofrece una docena de estrategias prácticas y respaldadas por la psicología para manejar y superar la ansiedad social, incluyendo el desafío a pensamientos negativos y la práctica de la atención plena (mindfulness).',
+        author: 'Psychology Today',
         duration: '25 min',
         icon: '📖',
-        externalUrl: 'https://www.huffpost.com/entry/example-couple-communication'
-      }
-    ],
-    tests: [
-      {
-        id: 1,
-        type: 'Test',
-        title: '¿Cómo está tu nivel de estrés?',
-        description: 'Evalúa tu estado actual y recibe recomendaciones personalizadas',
-        questions: '10 preguntas',
-        duration: '5 min',
-        icon: '🧠'
-      },
-      {
-        id: 2,
-        type: 'Test',
-        title: 'Test de bienestar emocional',
-        description: 'Conoce mejor tu estado emocional y áreas de mejora',
-        questions: '15 preguntas',
-        duration: '8 min',
-        icon: '🧠'
+        externalUrl: 'https://www.psychologytoday.com/mx/blog/12-formas-poderosas-para-superar-la-ansiedad-social'
       }
     ]
   };
@@ -172,8 +143,9 @@ const ForYouPage = ({ navigationProps }) => {
   return (
     <div style={{
       display: 'flex',
-      minHeight: '100vh',
-      background: '#f8f9fa'
+      height: '100vh',
+      background: '#f8f9fa',
+      overflow: 'hidden'
     }}>
       {/* ========================================
            SIDEBAR DE NAVEGACIÓN
@@ -186,7 +158,8 @@ const ForYouPage = ({ navigationProps }) => {
       <div style={{
         flex: 1,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflow: 'hidden'
       }}>
         {/* ========================================
              HEADER SUPERIOR
@@ -254,7 +227,8 @@ const ForYouPage = ({ navigationProps }) => {
         <div style={{
           flex: 1,
           padding: '2rem',
-          overflow: 'auto'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}>
           {/* ========================================
                NAVEGACIÓN MÓVIL
@@ -446,23 +420,6 @@ const ForYouPage = ({ navigationProps }) => {
             >
               Artículos
             </button>
-            
-            {/* Pestaña de tests */}
-            <button
-              onClick={() => setActiveTab('tests')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: '1rem 2rem',
-                cursor: 'pointer',
-                borderBottom: activeTab === 'tests' ? '2px solid #0057FF' : '2px solid transparent',
-                color: activeTab === 'tests' ? '#0057FF' : '#666',
-                fontWeight: activeTab === 'tests' ? 600 : 400,
-                fontSize: 16
-              }}
-            >
-              Tests
-            </button>
           </div>
 
           {/* ========================================
@@ -507,8 +464,8 @@ const ForYouPage = ({ navigationProps }) => {
                 }}>
                   <span style={{ fontSize: 16 }}>{item.icon}</span>
                   <span style={{
-                    background: activeTab === 'tests' ? '#ffe0b2' : '#d7ccc8',
-                    color: activeTab === 'tests' ? '#e65100' : '#5d4037',
+                    background: '#d7ccc8',
+                    color: '#5d4037',
                     padding: '0.25rem 0.75rem',
                     borderRadius: '12px',
                     fontSize: 12,
@@ -538,62 +495,31 @@ const ForYouPage = ({ navigationProps }) => {
                   {item.description}
                 </p>
 
-                {/* Detalles específicos según el tipo de contenido */}
-                {activeTab === 'tests' ? (
-                  /* Detalles para tests */
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '1rem'
+                {/* Autor y duración para podcasts y artículos */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '1rem'
+                }}>
+                  <span style={{
+                    fontSize: 12,
+                    color: '#666'
                   }}>
-                    <span style={{
-                      fontSize: 12,
-                      color: '#666'
-                    }}>
-                      {item.questions}
-                    </span>
-                    <span style={{
-                      fontSize: 12,
-                      color: '#666',
-                      fontWeight: 600
-                    }}>
-                      {item.duration}
-                    </span>
-                  </div>
-                ) : (
-                  /* Autor y duración para podcasts y artículos */
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '1rem'
+                    {item.author}
+                  </span>
+                  <span style={{
+                    fontSize: 12,
+                    color: '#666',
+                    fontWeight: 600
                   }}>
-                    <span style={{
-                      fontSize: 12,
-                      color: '#666'
-                    }}>
-                      {item.author}
-                    </span>
-                    <span style={{
-                      fontSize: 12,
-                      color: '#666',
-                      fontWeight: 600
-                    }}>
-                      {item.duration}
-                    </span>
-                  </div>
-                )}
+                    {item.duration}
+                  </span>
+                </div>
 
                 {/* Botón de acción principal */}
                 <button 
-                  onClick={() => {
-                    if (activeTab === 'tests') {
-                      handleNavigation('questionnaire-match');
-                    } else {
-                      openExternalUrl(item.externalUrl);
-                    }
-                  }}
+                  onClick={() => openExternalUrl(item.externalUrl)}
                   style={{
                     background: '#0057FF',
                     color: '#fff',
@@ -606,9 +532,7 @@ const ForYouPage = ({ navigationProps }) => {
                     fontSize: 14
                   }}
                 >
-                  {activeTab === 'podcasts' ? 'Escuchar ahora' : 
-                   activeTab === 'articles' ? 'Leer ahora' : 
-                   'Comenzar test'}
+                  {activeTab === 'podcasts' ? 'Escuchar ahora' : 'Leer ahora'}
                 </button>
               </div>
             ))}
