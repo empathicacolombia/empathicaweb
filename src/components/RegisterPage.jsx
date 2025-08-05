@@ -61,25 +61,85 @@ const RegisterPage = ({ navigationProps }) => {
   };
 
   /**
+   * Estado para manejar el loading durante el registro
+   */
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  /**
+   * URL base del servidor backend
+   */
+  const API_BASE_URL = 'http://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8080';
+
+  /**
    * Maneja el envío del formulario de registro
-   * Redirige según el tipo de usuario registrado
+   * Conecta con el backend para registrar al usuario
    * @param {Event} e - Evento del formulario
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Register attempt:', { userType, formData });
-    
-    // Marcar al usuario como registrado
-    if (navigationProps && navigationProps.onUserRegistration) {
-      navigationProps.onUserRegistration();
-    }
-    
-    // Redirigir según el tipo de usuario
-    if (userType === 'psychologist') {
-      handleNavigation('psychologist-profile-form');
-    } else {
-      // Cliente va directo al dashboard
-      handleNavigation('client-dashboard');
+    setError('');
+    setIsLoading(true);
+
+    try {
+      // Validaciones básicas
+      if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+        throw new Error('Por favor completa todos los campos obligatorios');
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error('Las contraseñas no coinciden');
+      }
+
+      if (formData.password.length < 6) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres');
+      }
+
+      // Preparar datos para el backend
+      const userData = {
+        username: formData.email, // Usar email como username
+        name: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        role: userType === 'patient' ? 'PATIENT' : 'PSICOLOGO'
+      };
+
+      // Llamada al endpoint de registro
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error en el registro');
+      }
+
+      const result = await response.json();
+      console.log('Registro exitoso:', result);
+
+      // Marcar al usuario como registrado
+      if (navigationProps && navigationProps.onUserRegistration) {
+        navigationProps.onUserRegistration();
+      }
+      
+      // Redirigir según el tipo de usuario
+      if (userType === 'psychologist') {
+        handleNavigation('psychologist-profile-form');
+      } else {
+        // Cliente va directo al dashboard
+        handleNavigation('client-dashboard');
+      }
+
+    } catch (error) {
+      console.error('Error en el registro:', error);
+      setError(error.message || 'Error al registrar usuario');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,6 +149,15 @@ const RegisterPage = ({ navigationProps }) => {
       background: 'linear-gradient(135deg, #fff 0%, #fff3e0 100%)',
       position: 'relative'
     }}>
+      {/* CSS para animación de loading */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
       {/* ========================================
            HEADER / BARRA DE NAVEGACIÓN
            ======================================== */}
@@ -964,33 +1033,73 @@ const RegisterPage = ({ navigationProps }) => {
             </div>
 
             {/* ========================================
+                 MENSAJE DE ERROR
+                 ======================================== */}
+            {error && (
+              <div style={{
+                background: '#fee',
+                border: '1px solid #fcc',
+                borderRadius: 8,
+                padding: '1rem',
+                marginBottom: '1.5rem',
+                color: '#c33',
+                fontSize: 14
+              }}>
+                {error}
+              </div>
+            )}
+
+            {/* ========================================
                  BOTÓN DE REGISTRO
                  ======================================== */}
             <button
               type="submit"
+              disabled={isLoading}
               style={{
                 width: '100%',
-                background: '#0057FF',
+                background: isLoading ? '#ccc' : '#0057FF',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 12,
                 padding: '1rem',
                 fontSize: 16,
                 fontWeight: 700,
-                cursor: 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                marginBottom: '1.5rem'
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 87, 255, 0.3)';
+                if (!isLoading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 87, 255, 0.3)';
+                }
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                if (!isLoading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
               }}
             >
-              Registrarse como {userType === 'patient' ? 'Paciente' : 'Psicólogo'}
+              {isLoading ? (
+                <>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid #fff',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  Registrando...
+                </>
+              ) : (
+                `Registrarse como ${userType === 'patient' ? 'Paciente' : 'Psicólogo'}`
+              )}
             </button>
 
             {/* ========================================
