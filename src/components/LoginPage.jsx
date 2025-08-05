@@ -43,65 +43,6 @@ const LoginPage = ({ navigationProps }) => {
   const [error, setError] = useState('');
 
   /**
-   * Función para crear un usuario de prueba (solo para desarrollo)
-   */
-  const createTestUser = async () => {
-    try {
-      const testUserData = {
-        id: 0,
-        username: 'test@example.com',
-        name: 'Usuario',
-        lastName: 'Prueba',
-        email: 'test@example.com',
-        password: '123456',
-        role: 'PATIENT'
-      };
-
-      console.log('Creando usuario de prueba...');
-      const response = await fetch('https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(testUserData)
-      });
-
-      console.log('Respuesta del signup:', {
-        status: response.status,
-        statusText: response.statusText
-      });
-
-      const result = await response.json();
-      console.log('Usuario de prueba creado:', result);
-      
-      // Auto-completar el formulario con las credenciales de prueba
-      setEmail('test@example.com');
-      setPassword('123456');
-      
-      setError('Usuario de prueba creado. Intenta hacer login ahora.');
-      
-    } catch (error) {
-      console.error('Error creando usuario de prueba:', error);
-      setError('Error creando usuario de prueba: ' + error.message);
-    }
-  };
-
-  /**
-   * Función para probar la conectividad con el servidor
-   */
-  const testServerConnection = async () => {
-    try {
-      console.log('Probando conectividad con el servidor...');
-      const response = await fetch('https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443/api/auth/login', {
-        method: 'OPTIONS'
-      });
-      console.log('Respuesta OPTIONS:', response);
-    } catch (error) {
-      console.error('Error de conectividad:', error);
-    }
-  };
-
-  /**
    * Maneja la navegación entre diferentes páginas de la aplicación
    * @param {string} page - Nombre de la página a la que navegar
    */
@@ -789,49 +730,12 @@ const LoginPage = ({ navigationProps }) => {
             </div>
 
             {/* ========================================
-                 ENLACE DE CONTRASEÑA OLVIDADA Y BOTÓN DE PRUEBA
+                 ENLACE DE CONTRASEÑA OLVIDADA
                  ======================================== */}
             <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              textAlign: 'right',
               marginBottom: '2rem'
             }}>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={createTestUser}
-                  style={{
-                    color: '#666',
-                    fontSize: 12,
-                    fontWeight: 500,
-                    background: 'none',
-                    border: '1px solid #ddd',
-                    padding: '0.5rem 1rem',
-                    borderRadius: 8,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Crear usuario de prueba
-                </button>
-                <button
-                  type="button"
-                  onClick={testServerConnection}
-                  style={{
-                    color: '#666',
-                    fontSize: 12,
-                    fontWeight: 500,
-                    background: 'none',
-                    border: '1px solid #ddd',
-                    padding: '0.5rem 1rem',
-                    borderRadius: 8,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Probar servidor
-                </button>
-              </div>
-              
               <button
                 type="button"
                 style={{
