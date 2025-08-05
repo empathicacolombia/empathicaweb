@@ -757,7 +757,7 @@ const PsychologistPatients = () => {
                   color: '#333',
                   width: '15%'
                 }}>
-                  Última Sesión
+                  Última Reunión
                 </th>
                 <th style={{
                   textAlign: 'left',

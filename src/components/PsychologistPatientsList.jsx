@@ -359,7 +359,7 @@ const PsychologistPatientsList = () => {
         }}>
           <div>Paciente</div>
           <div>Estado</div>
-          <div>Última Sesión</div>
+          <div>Última Reunión</div>
           <div>Total Sesiones</div>
           <div>Próxima Sesión</div>
           <div>Acciones</div>
@@ -424,7 +424,7 @@ const PsychologistPatientsList = () => {
                 </span>
               </div>
 
-              {/* Última sesión */}
+              {/* Última reunión */}
               <div style={{
                 fontSize: 14,
                 color: '#333'
