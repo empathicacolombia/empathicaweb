@@ -1,25 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const TestResults = ({ navigationProps, testAnswers }) => {
   const [patientProfile, setPatientProfile] = useState(null);
   const [therapeuticApproaches, setTherapeuticApproaches] = useState([]);
   const [compatiblePsychologists, setCompatiblePsychologists] = useState([]);
 
+
   useEffect(() => {
     if (testAnswers) {
       const profile = processTestAnswers(testAnswers);
       setPatientProfile(profile);
-      
+
       const approaches = recommendTherapeuticApproaches(profile);
       setTherapeuticApproaches(approaches);
-      
+
       const psychologists = generateCompatiblePsychologists(profile);
       setCompatiblePsychologists(psychologists);
     }
-  }, [testAnswers]);
+  }, [testAnswers, processTestAnswers, generateCompatiblePsychologists]);
 
   // Función para procesar las respuestas del test y generar el perfil del paciente
-  const processTestAnswers = (answers) => {
+  const processTestAnswers = useCallback((answers) => {
     const profile = {
       // Variables psicológicas principales
       nivelAngustia: determineNivelAngustia(answers),
@@ -42,7 +43,7 @@ const TestResults = ({ navigationProps, testAnswers }) => {
     };
 
     return profile;
-  };
+  }, []);
 
   // Determinar nivel de angustia basado en Q1 y Q12
   const determineNivelAngustia = (answers) => {
@@ -348,7 +349,7 @@ const TestResults = ({ navigationProps, testAnswers }) => {
   };
 
   // Generar psicólogos compatibles basados en el perfil
-  const generateCompatiblePsychologists = (profile) => {
+  const generateCompatiblePsychologists = useCallback((profile) => {
     const psychologists = [
       {
         id: 1,
@@ -387,7 +388,7 @@ const TestResults = ({ navigationProps, testAnswers }) => {
 
       return tagMatches || therapyMatches;
     });
-  };
+  }, [therapeuticApproaches]);
 
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
