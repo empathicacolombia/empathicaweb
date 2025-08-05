@@ -1002,21 +1002,21 @@ const RegisterPage = ({ navigationProps }) => {
               color: '#666'
             }}>
               ¿Ya tienes una cuenta?{' '}
-              <a 
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavigation('login');
-                }}
+              <button
+                type="button"
+                onClick={() => handleNavigation('login')}
                 style={{
                   color: '#0057FF',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0
                 }}
               >
                 Inicia sesión aquí
-              </a>
+              </button>
             </div>
           </form>
         </div>
