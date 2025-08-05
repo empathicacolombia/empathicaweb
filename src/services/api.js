@@ -13,13 +13,37 @@ const API_BASE_URL = 'https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:84
  */
 const handleResponse = async (response) => {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    let errorData = {};
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      // Si no se puede parsear JSON, intentar leer como texto
+      const textError = await response.text();
+      errorData = { message: textError || 'Error desconocido' };
+    }
+    
     console.error('Error response:', {
       status: response.status,
       statusText: response.statusText,
-      errorData: errorData
+      errorData: errorData,
+      url: response.url
     });
-    throw new Error(errorData.message || errorData.error || `Error HTTP: ${response.status} - ${response.statusText}`);
+    
+    // Mensaje de error más específico
+    let errorMessage = 'Error de autenticación';
+    if (response.status === 401) {
+      errorMessage = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+    } else if (response.status === 404) {
+      errorMessage = 'Servicio no encontrado. Verifica la URL del servidor.';
+    } else if (response.status === 500) {
+      errorMessage = 'Error interno del servidor. Intenta más tarde.';
+    } else if (errorData.message) {
+      errorMessage = errorData.message;
+    } else if (errorData.error) {
+      errorMessage = errorData.error;
+    }
+    
+    throw new Error(errorMessage);
   }
   return response.json();
 };
@@ -79,7 +103,9 @@ export const authService = {
 
              console.log('Enviando datos de login:', {
                url: `${API_BASE_URL}/api/auth/login`,
-               data: { ...loginData, password: '[HIDDEN]' }
+               data: { ...loginData, password: '[HIDDEN]' },
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' }
              });
 
              const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -93,10 +119,27 @@ export const authService = {
              console.log('Respuesta del servidor:', {
                status: response.status,
                statusText: response.statusText,
-               headers: Object.fromEntries(response.headers.entries())
+               url: response.url,
+               headers: Object.fromEntries(response.headers.entries()),
+               ok: response.ok
              });
 
-             return await handleResponse(response);
+             // Intentar leer el cuerpo de la respuesta para debug
+             try {
+               const responseText = await response.text();
+               console.log('Cuerpo de la respuesta:', responseText);
+               
+               // Si la respuesta no es exitosa, lanzar error
+               if (!response.ok) {
+                 throw new Error(`HTTP ${response.status}: ${responseText || response.statusText}`);
+               }
+               
+               // Si es exitosa, parsear como JSON
+               return JSON.parse(responseText);
+             } catch (parseError) {
+               console.error('Error parseando respuesta:', parseError);
+               throw parseError;
+             }
            } catch (error) {
              console.error('Error en login:', error);
              throw error;

@@ -57,12 +57,18 @@ const LoginPage = ({ navigationProps }) => {
         role: 'PATIENT'
       };
 
+      console.log('Creando usuario de prueba...');
       const response = await fetch('https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(testUserData)
+      });
+
+      console.log('Respuesta del signup:', {
+        status: response.status,
+        statusText: response.statusText
       });
 
       const result = await response.json();
@@ -72,8 +78,26 @@ const LoginPage = ({ navigationProps }) => {
       setEmail('test@example.com');
       setPassword('123456');
       
+      setError('Usuario de prueba creado. Intenta hacer login ahora.');
+      
     } catch (error) {
       console.error('Error creando usuario de prueba:', error);
+      setError('Error creando usuario de prueba: ' + error.message);
+    }
+  };
+
+  /**
+   * Función para probar la conectividad con el servidor
+   */
+  const testServerConnection = async () => {
+    try {
+      console.log('Probando conectividad con el servidor...');
+      const response = await fetch('https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443/api/auth/login', {
+        method: 'OPTIONS'
+      });
+      console.log('Respuesta OPTIONS:', response);
+    } catch (error) {
+      console.error('Error de conectividad:', error);
     }
   };
 
@@ -773,22 +797,40 @@ const LoginPage = ({ navigationProps }) => {
               alignItems: 'center',
               marginBottom: '2rem'
             }}>
-              <button
-                type="button"
-                onClick={createTestUser}
-                style={{
-                  color: '#666',
-                  fontSize: 12,
-                  fontWeight: 500,
-                  background: 'none',
-                  border: '1px solid #ddd',
-                  padding: '0.5rem 1rem',
-                  borderRadius: 8,
-                  cursor: 'pointer'
-                }}
-              >
-                Crear usuario de prueba
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={createTestUser}
+                  style={{
+                    color: '#666',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    background: 'none',
+                    border: '1px solid #ddd',
+                    padding: '0.5rem 1rem',
+                    borderRadius: 8,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Crear usuario de prueba
+                </button>
+                <button
+                  type="button"
+                  onClick={testServerConnection}
+                  style={{
+                    color: '#666',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    background: 'none',
+                    border: '1px solid #ddd',
+                    padding: '0.5rem 1rem',
+                    borderRadius: 8,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Probar servidor
+                </button>
+              </div>
               
               <button
                 type="button"
