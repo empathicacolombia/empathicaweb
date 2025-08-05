@@ -61,15 +61,10 @@ export const authService = {
           */
          login: async (credentials) => {
            try {
-             // Preparar datos para el backend según la estructura requerida
+             // Enviar solo email y password al backend
              const loginData = {
-               id: 0, // Campo requerido por el backend
-               username: credentials.email, // Usar email como username
-               name: '', // Campo requerido pero no usado en login
-               lastName: '', // Campo requerido pero no usado en login
                email: credentials.email,
-               password: credentials.password,
-               role: '' // Campo requerido pero no usado en login
+               password: credentials.password
              };
 
              const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
