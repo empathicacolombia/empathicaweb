@@ -665,14 +665,22 @@ const LoginPage = ({ navigationProps }) => {
               textAlign: 'right',
               marginBottom: '2rem'
             }}>
-              <a href="#" style={{
-                color: '#0057FF',
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: 500
-              }}>
+              <button
+                type="button"
+                style={{
+                  color: '#0057FF',
+                  textDecoration: 'none',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer'
+                }}
+                onClick={() => {/* TODO: Add forgot password handler */}}
+              >
                 ¿Olvidaste tu contraseña?
-              </a>
+              </button>
             </div>
 
             {/* ========================================
@@ -714,21 +722,21 @@ const LoginPage = ({ navigationProps }) => {
               color: '#666'
             }}>
               ¿No tienes una cuenta?{' '}
-              <a 
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavigation('register');
-                }}
+              <button
+                type="button"
+                onClick={() => handleNavigation('register')}
                 style={{
                   color: '#0057FF',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0
                 }}
               >
                 Regístrate aquí
-              </a>
+              </button>
             </div>
           </form>
         </div>
