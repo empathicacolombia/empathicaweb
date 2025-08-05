@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import logoEmpathica from '../assets/Logoempathica.png';
+import { authService } from '../services/api';
 
 /**
  * Componente de página de Registro
@@ -67,11 +68,6 @@ const RegisterPage = ({ navigationProps }) => {
   const [error, setError] = useState('');
 
   /**
-   * URL base del servidor backend
-   */
-  const API_BASE_URL = 'http://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8080';
-
-  /**
    * Maneja el envío del formulario de registro
    * Conecta con el backend para registrar al usuario
    * @param {Event} e - Evento del formulario
@@ -105,21 +101,8 @@ const RegisterPage = ({ navigationProps }) => {
         role: userType === 'patient' ? 'PATIENT' : 'PSICOLOGO'
       };
 
-      // Llamada al endpoint de registro
-      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error en el registro');
-      }
-
-      const result = await response.json();
+      // Llamada al servicio de API
+      const result = await authService.signup(userData);
       console.log('Registro exitoso:', result);
 
       // Marcar al usuario como registrado
