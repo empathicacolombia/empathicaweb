@@ -55,7 +55,7 @@ const LoginPage = ({ navigationProps }) => {
 
   /**
    * Maneja el envío del formulario de login
-   * Integra con el backend para autenticar al usuario
+   * Integra con el backend para autenticación
    * @param {Event} e - Evento del formulario
    */
   const handleLogin = async (e) => {
@@ -76,51 +76,26 @@ const LoginPage = ({ navigationProps }) => {
     setError('');
 
     try {
-      // Preparar datos para el backend
-      const loginData = {
-        email: email,
-        password: password
-      };
-
       // Llamar al servicio de autenticación
-      const response = await authService.login(loginData);
+      const response = await authService.login({ email, password });
       
       console.log('Login exitoso:', response);
       
-      // Guardar el token en localStorage
+      // Guardar token si viene en la respuesta
       if (response.token) {
         localStorage.setItem('authToken', response.token);
-        localStorage.setItem('userData', JSON.stringify(response.user));
       }
 
-      // Redirigir según el rol del usuario
-      if (response.user && response.user.role) {
-        if (response.user.role === 'PSICOLOGO') {
-          handleNavigation('psychologist-dashboard');
-        } else if (response.user.role === 'PATIENT') {
-          handleNavigation('client-dashboard');
-        } else {
-          // Rol no reconocido, redirigir a página principal
-          handleNavigation('individuals');
-        }
-      } else {
-        // Sin rol específico, redirigir al dashboard del psicólogo por defecto
+      // Redirigir según el rol del usuario (si está disponible en la respuesta)
+      if (response.role === 'PSICOLOGO') {
         handleNavigation('psychologist-dashboard');
+      } else {
+        handleNavigation('client-dashboard');
       }
 
     } catch (error) {
       console.error('Error en login:', error);
-      
-      // Manejar diferentes tipos de errores
-      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-        setError('Credenciales incorrectas. Verifica tu email y contraseña.');
-      } else if (error.message.includes('404')) {
-        setError('Usuario no encontrado. Verifica tu email.');
-      } else if (error.message.includes('500')) {
-        setError('Error del servidor. Intenta nuevamente más tarde.');
-      } else {
-        setError('Error al iniciar sesión. Verifica tu conexión e intenta nuevamente.');
-      }
+      setError(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setIsLoading(false);
     }
@@ -132,6 +107,14 @@ const LoginPage = ({ navigationProps }) => {
       background: 'linear-gradient(180deg, #fff 0%, #fff3e0 100%)',
       position: 'relative'
     }}>
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
       {/* ========================================
            HEADER / BARRA DE NAVEGACIÓN
            ======================================== */}
@@ -637,27 +620,25 @@ const LoginPage = ({ navigationProps }) => {
           </p>
 
           {/* ========================================
-               MENSAJE DE ERROR
-               ======================================== */}
-          {error && (
-            <div style={{
-              background: '#fee',
-              border: '1px solid #fcc',
-              color: '#c33',
-              padding: '1rem',
-              borderRadius: 8,
-              marginBottom: '1.5rem',
-              fontSize: 14,
-              textAlign: 'center'
-            }}>
-              {error}
-            </div>
-          )}
-
-          {/* ========================================
                FORMULARIO DE LOGIN
                ======================================== */}
           <form onSubmit={handleLogin}>
+            {/* ========================================
+                 MENSAJE DE ERROR
+                 ======================================== */}
+            {error && (
+              <div style={{
+                background: '#fee',
+                color: '#c33',
+                padding: '1rem',
+                borderRadius: 8,
+                marginBottom: '1.5rem',
+                fontSize: 14,
+                border: '1px solid #fcc'
+              }}>
+                {error}
+              </div>
+            )}
             {/* ========================================
                  CAMPO DE CORREO ELECTRÓNICO
                  ======================================== */}
@@ -809,21 +790,17 @@ const LoginPage = ({ navigationProps }) => {
                 }
               }}
             >
-              {isLoading ? (
-                <>
-                  <div style={{
-                    width: 20,
-                    height: 20,
-                    border: '2px solid #fff',
-                    borderTop: '2px solid transparent',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }} />
-                  Iniciando sesión...
-                </>
-              ) : (
-                'Iniciar sesión'
+              {isLoading && (
+                <div style={{
+                  width: 20,
+                  height: 20,
+                  border: '2px solid #fff',
+                  borderTop: '2px solid transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
               )}
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
 
             {/* ========================================
@@ -854,18 +831,6 @@ const LoginPage = ({ navigationProps }) => {
           </form>
         </div>
       </div>
-
-      {/* ========================================
-           ESTILOS CSS PARA ANIMACIONES
-           ======================================== */}
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 };

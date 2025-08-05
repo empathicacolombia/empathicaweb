@@ -52,29 +52,40 @@ export const authService = {
     }
   },
 
-  /**
-   * Inicia sesión de un usuario
-   * @param {Object} credentials - Credenciales de login
-   * @param {string} credentials.email - Email del usuario
-   * @param {string} credentials.password - Contraseña del usuario
-   * @returns {Promise} - Respuesta del servidor con token
-   */
-  login: async (credentials) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials)
-      });
+           /**
+          * Inicia sesión de un usuario
+          * @param {Object} credentials - Credenciales de login
+          * @param {string} credentials.email - Email del usuario
+          * @param {string} credentials.password - Contraseña del usuario
+          * @returns {Promise} - Respuesta del servidor con token
+          */
+         login: async (credentials) => {
+           try {
+             // Preparar datos para el backend según la estructura requerida
+             const loginData = {
+               id: 0, // Campo requerido por el backend
+               username: credentials.email, // Usar email como username
+               name: '', // Campo requerido pero no usado en login
+               lastName: '', // Campo requerido pero no usado en login
+               email: credentials.email,
+               password: credentials.password,
+               role: '' // Campo requerido pero no usado en login
+             };
 
-      return await handleResponse(response);
-    } catch (error) {
-      console.error('Error en login:', error);
-      throw error;
-    }
-  }
+             const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+               method: 'POST',
+               headers: {
+                 'Content-Type': 'application/json',
+               },
+               body: JSON.stringify(loginData)
+             });
+
+             return await handleResponse(response);
+           } catch (error) {
+             console.error('Error en login:', error);
+             throw error;
+           }
+         }
 };
 
 /**
