@@ -29,6 +29,7 @@ const sidebarItems = [
   { icon: <Home size={22} />, label: 'Dashboard', section: 'Dashboard' },
   { icon: <FileText size={22} />, label: 'Reportes', section: 'Reportes' },
   { icon: <Users size={22} />, label: 'Colaboradores', section: 'Colaboradores' },
+  { icon: <ShoppingCart size={22} />, label: 'Toolkits', section: 'Toolkits' },
   { icon: <Settings size={22} />, label: 'Configuración', section: 'Configuración' },
   { icon: <Bell size={22} />, label: 'Notificaciones', section: 'Notificaciones' },
   { icon: <HelpCircle size={22} />, label: 'Soporte', section: 'Soporte' },
@@ -179,6 +180,128 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
   const [departments, setDepartments] = useState(['Todos', 'Marketing', 'Ventas', 'RRHH', 'Tecnología', 'Finanzas', 'Operaciones']);
   const positions = ['Manager', 'Specialist', 'Representative', 'Developer', 'Analyst', 'Coordinator'];
 
+/**
+ * Datos de toolkits disponibles para empleados
+ * Incluye recursos, materiales y herramientas para el bienestar organizacional
+ * que pueden ser aplicados a todos los empleados de la empresa
+ */
+const availableToolkits = [
+  {
+    id: 1,
+    name: 'Kit de Gestión del Estrés',
+    category: 'Bienestar Emocional',
+    description: 'Herramientas y recursos para manejar el estrés laboral de manera efectiva',
+    price: 0,
+    status: 'Disponible',
+    features: [
+      'Guías de respiración y relajación',
+      'Ejercicios de mindfulness',
+      'Técnicas de gestión del tiempo',
+      'Evaluaciones de estrés',
+      'Material descargable'
+    ],
+    icon: '🧘‍♀️',
+    color: '#4CAF50',
+    applications: 156,
+    rating: 4.8
+  },
+  {
+    id: 2,
+    name: 'Kit de Comunicación Asertiva',
+    category: 'Habilidades Blandas',
+    description: 'Recursos para mejorar la comunicación interpersonal en el trabajo',
+    price: 0,
+    status: 'Disponible',
+    features: [
+      'Técnicas de comunicación efectiva',
+      'Ejercicios de escucha activa',
+      'Guías para feedback constructivo',
+      'Casos prácticos',
+      'Videos instructivos'
+    ],
+    icon: '💬',
+    color: '#2196F3',
+    applications: 203,
+    rating: 4.9
+  },
+  {
+    id: 3,
+    name: 'Kit de Liderazgo Emocional',
+    category: 'Desarrollo Directivo',
+    description: 'Herramientas para desarrollar habilidades de liderazgo emocional',
+    price: 0,
+    status: 'Disponible',
+    features: [
+      'Modelos de liderazgo',
+      'Ejercicios de autoconocimiento',
+      'Técnicas de motivación',
+      'Gestión de conflictos',
+      'Evaluaciones de liderazgo'
+    ],
+    icon: '👑',
+    color: '#FF9800',
+    applications: 89,
+    rating: 4.7
+  },
+  {
+    id: 4,
+    name: 'Kit de Trabajo en Equipo',
+    category: 'Colaboración',
+    description: 'Recursos para fomentar la colaboración y el trabajo en equipo',
+    price: 0,
+    status: 'Disponible',
+    features: [
+      'Dinámicas de grupo',
+      'Herramientas de colaboración',
+      'Técnicas de resolución de conflictos',
+      'Evaluaciones de equipo',
+      'Plantillas de trabajo'
+    ],
+    icon: '🤝',
+    color: '#9C27B0',
+    applications: 134,
+    rating: 4.6
+  },
+  {
+    id: 5,
+    name: 'Kit de Bienestar Físico',
+    category: 'Salud Integral',
+    description: 'Recursos para promover la salud física en el entorno laboral',
+    price: 0,
+    status: 'Disponible',
+    features: [
+      'Ejercicios de escritorio',
+      'Guías de ergonomía',
+      'Rutinas de estiramiento',
+      'Consejos de nutrición',
+      'Evaluaciones de postura'
+    ],
+    icon: '💪',
+    color: '#F44336',
+    applications: 98,
+    rating: 4.5
+  },
+  {
+    id: 6,
+    name: 'Kit de Gestión del Cambio',
+    category: 'Adaptabilidad',
+    description: 'Herramientas para manejar cambios organizacionales de manera efectiva',
+    price: 0,
+    status: 'Disponible',
+    features: [
+      'Modelos de cambio',
+      'Técnicas de adaptación',
+      'Comunicación del cambio',
+      'Gestión de resistencia',
+      'Planificación estratégica'
+    ],
+    icon: '🔄',
+    color: '#607D8B',
+    applications: 67,
+    rating: 4.4
+  }
+];
+
   // Estados para configuración
   const [companyEmail, setCompanyEmail] = useState('contacto@techcorp.com');
   const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
@@ -189,6 +312,19 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
     sessionAlerts: true,
     weeklyReports: true
   });
+
+  // Estados para toolkits
+  const [selectedToolkit, setSelectedToolkit] = useState(null);
+  const [showToolkitModal, setShowToolkitModal] = useState(false);
+  const [toolkitSearchTerm, setToolkitSearchTerm] = useState('');
+  const [toolkitCategoryFilter, setToolkitCategoryFilter] = useState('Todas');
+
+  // Estados para subir CSV de empleados
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   // Estados para notificaciones
   const [notifications, setNotifications] = useState([
@@ -449,6 +585,136 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
    */
   const handleDeleteNotification = (notificationId) => {
     setNotifications(notifications.filter(notification => notification.id !== notificationId));
+  };
+
+  // ========================================
+  // FUNCIONES PARA GESTIÓN DE TOOLKITS
+  // ========================================
+
+  /**
+   * Abre el modal de detalles de un toolkit
+   * @param {Object} toolkit - Toolkit seleccionado
+   */
+  const openToolkitModal = (toolkit) => {
+    setSelectedToolkit(toolkit);
+    setShowToolkitModal(true);
+  };
+
+  /**
+   * Cierra el modal de toolkit
+   */
+  const closeToolkitModal = () => {
+    setShowToolkitModal(false);
+    setSelectedToolkit(null);
+  };
+
+  /**
+   * Aplica un toolkit a los empleados (simulado)
+   * @param {Object} toolkit - Toolkit a aplicar
+   */
+  const handleApplyToolkit = (toolkit) => {
+    // Simular aplicación del toolkit
+    console.log(`Aplicando toolkit: ${toolkit.name}`);
+    alert(`Toolkit "${toolkit.name}" aplicado exitosamente a todos los empleados activos.`);
+    closeToolkitModal();
+  };
+
+  /**
+   * Filtra toolkits según búsqueda y categoría
+   * @returns {Array} Lista filtrada de toolkits
+   */
+  const filteredToolkits = availableToolkits.filter(toolkit => {
+    const matchesSearch = toolkit.name.toLowerCase().includes(toolkitSearchTerm.toLowerCase()) ||
+                         toolkit.description.toLowerCase().includes(toolkitSearchTerm.toLowerCase());
+    const matchesCategory = toolkitCategoryFilter === 'Todas' || toolkit.category === toolkitCategoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  /**
+   * Obtiene categorías únicas de toolkits
+   * @returns {Array} Lista de categorías
+   */
+  const toolkitCategories = ['Todas', ...new Set(availableToolkits.map(toolkit => toolkit.category))];
+
+  // ========================================
+  // FUNCIONES PARA SUBIDA DE CSV DE EMPLEADOS
+  // ========================================
+
+  /**
+   * Abre el modal para subir CSV de empleados
+   */
+  const openUploadModal = () => {
+    setShowUploadModal(true);
+    setUploadedFile(null);
+    setUploadProgress(0);
+    setUploadError('');
+  };
+
+  /**
+   * Cierra el modal de subida
+   */
+  const closeUploadModal = () => {
+    setShowUploadModal(false);
+    setUploadedFile(null);
+    setUploadProgress(0);
+    setUploadError('');
+    setIsUploading(false);
+  };
+
+  /**
+   * Maneja la selección de archivo
+   * @param {Event} event - Evento de cambio de archivo
+   */
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validar tipo de archivo
+      if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+        setUploadedFile(file);
+        setUploadError('');
+      } else {
+        setUploadError('Por favor selecciona un archivo CSV válido');
+        setUploadedFile(null);
+      }
+    }
+  };
+
+  /**
+   * Simula la subida del archivo CSV
+   */
+  const handleUploadCSV = async () => {
+    if (!uploadedFile) {
+      setUploadError('Por favor selecciona un archivo CSV');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadError('');
+
+    try {
+      // Simular progreso de subida
+      for (let i = 0; i <= 100; i += 10) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        setUploadProgress(i);
+      }
+
+      // Simular procesamiento del CSV
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Simular éxito
+      alert(`Archivo "${uploadedFile.name}" procesado exitosamente. Se agregaron nuevos empleados al sistema.`);
+      closeUploadModal();
+      
+      // Aquí se procesaría el CSV y se agregarían los empleados
+      console.log('Archivo procesado:', uploadedFile.name);
+      
+    } catch (error) {
+      setUploadError('Error al procesar el archivo. Intenta nuevamente.');
+      console.error('Error en upload:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // ========================================
@@ -1104,6 +1370,12 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
               <div style={{ flex: 1, background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '1.5rem 2rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ color: '#222', fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Acciones Rápidas</div>
                 <button 
+                  onClick={openUploadModal}
+                  style={{ background: '#2ecc71', color: '#fff', border: 'none', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                >
+                  <span style={{ fontSize: 20 }}>📁</span> Subir CSV de Empleados
+                </button>
+                <button 
                   onClick={openAssignSessionsModal}
                   style={{ background: '#0057ff', color: '#fff', border: 'none', borderRadius: 12, padding: '0.8rem 0', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                 >
@@ -1691,6 +1963,232 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
         )}
         
         {/* ========================================
+             SECCIÓN TOOLKITS - RECURSOS Y HERRAMIENTAS
+             ======================================== 
+             Proporciona acceso a toolkits, recursos y materiales
+             para aplicar a todos los empleados y mejorar el bienestar organizacional
+        */}
+        {activeSection === 'Toolkits' && (
+          <div style={{ marginTop: 32, marginBottom: 24 }}>
+            <span style={{ color: '#222', fontWeight: 800, fontSize: 32, display: 'block', marginBottom: 24 }}>
+              Centro de <span style={{ background: '#2050c7', color: '#fff', borderRadius: 6, padding: '0 8px' }}>Toolkits</span>
+            </span>
+            
+            {/* Filtros y búsqueda */}
+            <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
+              <input
+                type="text"
+                placeholder="Buscar toolkits..."
+                value={toolkitSearchTerm}
+                onChange={(e) => setToolkitSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '0.8rem 1.2rem',
+                  borderRadius: 12,
+                  border: '1.5px solid #e0e7ef',
+                  fontSize: 16,
+                  outline: 'none'
+                }}
+              />
+              <select
+                value={toolkitCategoryFilter}
+                onChange={(e) => setToolkitCategoryFilter(e.target.value)}
+                style={{
+                  padding: '0.8rem 1.2rem',
+                  borderRadius: 12,
+                  border: '1.5px solid #e0e7ef',
+                  fontSize: 16,
+                  outline: 'none',
+                  minWidth: 200
+                }}
+              >
+                {toolkitCategories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Grid de toolkits */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', 
+              gap: 24 
+            }}>
+              {filteredToolkits.map((toolkit) => (
+                <div key={toolkit.id} style={{
+                  background: '#fff',
+                  borderRadius: 18,
+                  boxShadow: '0 2px 8px #e0e7ef',
+                  border: '1.5px solid #f2f2f2',
+                  overflow: 'hidden',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px #e0e7ef';
+                }}
+                onClick={() => openToolkitModal(toolkit)}
+                >
+                  {/* Header del toolkit */}
+                  <div style={{
+                    background: toolkit.color,
+                    padding: '1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 16
+                  }}>
+                    <div style={{
+                      fontSize: 32,
+                      background: 'rgba(255,255,255,0.2)',
+                      borderRadius: '50%',
+                      width: 60,
+                      height: 60,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      {toolkit.icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ color: '#fff', fontWeight: 800, fontSize: 20, marginBottom: 4 }}>
+                        {toolkit.name}
+                      </div>
+                      <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 600 }}>
+                        {toolkit.category}
+                      </div>
+                    </div>
+                    <div style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      color: '#fff',
+                      padding: '0.5rem 1rem',
+                      borderRadius: 20,
+                      fontSize: 12,
+                      fontWeight: 700
+                    }}>
+                      {toolkit.status}
+                    </div>
+                  </div>
+
+                  {/* Contenido del toolkit */}
+                  <div style={{ padding: '1.5rem' }}>
+                    <p style={{
+                      color: '#666',
+                      fontSize: 14,
+                      lineHeight: 1.5,
+                      marginBottom: 16
+                    }}>
+                      {toolkit.description}
+                    </p>
+
+                    {/* Características principales */}
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ color: '#222', fontWeight: 700, fontSize: 14, marginBottom: 8 }}>
+                        Características principales:
+                      </div>
+                      <ul style={{
+                        listStyle: 'none',
+                        padding: 0,
+                        margin: 0,
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 8
+                      }}>
+                        {toolkit.features.slice(0, 3).map((feature, index) => (
+                          <li key={index} style={{
+                            background: '#f8f9fa',
+                            color: '#666',
+                            padding: '0.3rem 0.8rem',
+                            borderRadius: 12,
+                            fontSize: 12,
+                            fontWeight: 600
+                          }}>
+                            {feature}
+                          </li>
+                        ))}
+                        {toolkit.features.length > 3 && (
+                          <li style={{
+                            background: '#e3f2fd',
+                            color: '#2050c7',
+                            padding: '0.3rem 0.8rem',
+                            borderRadius: 12,
+                            fontSize: 12,
+                            fontWeight: 600
+                          }}>
+                            +{toolkit.features.length - 3} más
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+
+                    {/* Estadísticas y precio */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingTop: 16,
+                      borderTop: '1px solid #f0f0f0'
+                    }}>
+                                             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                         <div style={{ textAlign: 'center' }}>
+                           <div style={{ color: '#222', fontWeight: 700, fontSize: 16 }}>
+                             {toolkit.applications}
+                           </div>
+                           <div style={{ color: '#7a8bbd', fontSize: 12 }}>
+                             Aplicaciones
+                           </div>
+                         </div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ color: '#222', fontWeight: 700, fontSize: 16 }}>
+                            ⭐ {toolkit.rating}
+                          </div>
+                          <div style={{ color: '#7a8bbd', fontSize: 12 }}>
+                            Rating
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{
+                        background: toolkit.color,
+                        color: '#fff',
+                        padding: '0.5rem 1rem',
+                        borderRadius: 12,
+                        fontWeight: 700,
+                        fontSize: 16
+                      }}>
+                        {toolkit.price === 0 ? 'Gratis' : `$${toolkit.price}`}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mensaje cuando no hay resultados */}
+            {filteredToolkits.length === 0 && (
+              <div style={{
+                textAlign: 'center',
+                padding: '4rem 2rem',
+                background: '#f8f9fa',
+                borderRadius: 18,
+                border: '1.5px solid #e0e7ef'
+              }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+                <div style={{ color: '#222', fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
+                  No se encontraron toolkits
+                </div>
+                <div style={{ color: '#7a8bbd', fontSize: 16 }}>
+                  Intenta ajustar los filtros de búsqueda
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================
              SECCIÓN SOPORTE - AYUDA Y CONTACTO
              ======================================== 
              Proporciona acceso al soporte técnico, documentación,
@@ -1744,6 +2242,216 @@ const BusinessDemoDashboard = ({ navigationProps }) => {
       {/* ========================================
            MODALES DEL DASHBOARD EMPRESARIAL
            ======================================== */}
+
+      {/* ========================================
+           MODAL DE DETALLES DE TOOLKIT
+           ======================================== 
+           Muestra información detallada de un toolkit seleccionado
+           Incluye características completas y opción de aplicación a empleados
+      */}
+      {showToolkitModal && selectedToolkit && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '2rem'
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 18,
+            width: '100%',
+            maxWidth: '600px',
+            maxHeight: '90vh',
+            overflow: 'hidden',
+            boxShadow: '0 4px 32px rgba(0, 0, 0, 0.1)'
+          }}>
+            {/* Header del modal */}
+            <div style={{
+              background: selectedToolkit.color,
+              padding: '2rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16
+            }}>
+              <div style={{
+                fontSize: 48,
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: '50%',
+                width: 80,
+                height: 80,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {selectedToolkit.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: '#fff', fontWeight: 800, fontSize: 24, marginBottom: 4 }}>
+                  {selectedToolkit.name}
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 16, fontWeight: 600 }}>
+                  {selectedToolkit.category}
+                </div>
+              </div>
+              <button
+                onClick={closeToolkitModal}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: 24,
+                  cursor: 'pointer',
+                  borderRadius: '50%',
+                  width: 40,
+                  height: 40,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Contenido del modal */}
+            <div style={{ padding: '2rem', maxHeight: '60vh', overflowY: 'auto' }}>
+              {/* Descripción */}
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ color: '#222', fontWeight: 700, fontSize: 18, marginBottom: 12 }}>
+                  Descripción
+                </h3>
+                <p style={{ color: '#666', fontSize: 16, lineHeight: 1.6 }}>
+                  {selectedToolkit.description}
+                </p>
+              </div>
+
+              {/* Características completas */}
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ color: '#222', fontWeight: 700, fontSize: 18, marginBottom: 12 }}>
+                  Características incluidas
+                </h3>
+                <ul style={{
+                  listStyle: 'none',
+                  padding: 0,
+                  margin: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8
+                }}>
+                  {selectedToolkit.features.map((feature, index) => (
+                    <li key={index} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '0.8rem',
+                      background: '#f8f9fa',
+                      borderRadius: 12,
+                      fontSize: 14,
+                      color: '#222',
+                      fontWeight: 500
+                    }}>
+                      <span style={{
+                        color: selectedToolkit.color,
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                      }}>
+                        ✓
+                      </span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Estadísticas */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: 16,
+                marginBottom: 24
+              }}>
+                <div style={{ textAlign: 'center', padding: '1rem', background: '#f8f9fa', borderRadius: 12 }}>
+                  <div style={{ color: '#222', fontWeight: 700, fontSize: 20 }}>
+                    {selectedToolkit.applications}
+                  </div>
+                  <div style={{ color: '#7a8bbd', fontSize: 14 }}>
+                    Aplicaciones
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center', padding: '1rem', background: '#f8f9fa', borderRadius: 12 }}>
+                  <div style={{ color: '#222', fontWeight: 700, fontSize: 20 }}>
+                    ⭐ {selectedToolkit.rating}
+                  </div>
+                  <div style={{ color: '#7a8bbd', fontSize: 14 }}>
+                    Rating
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center', padding: '1rem', background: '#f8f9fa', borderRadius: 12 }}>
+                  <div style={{ color: '#222', fontWeight: 700, fontSize: 20 }}>
+                    {selectedToolkit.price === 0 ? 'Gratis' : `$${selectedToolkit.price}`}
+                  </div>
+                  <div style={{ color: '#7a8bbd', fontSize: 14 }}>
+                    Precio
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer del modal */}
+            <div style={{
+              padding: '1.5rem 2rem',
+              borderTop: '1px solid #e0e7ef',
+              background: '#f8f9fa',
+              display: 'flex',
+              gap: 12
+            }}>
+              <button
+                onClick={() => handleApplyToolkit(selectedToolkit)}
+                style={{
+                  flex: 1,
+                  background: selectedToolkit.color,
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '1rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8
+                }}
+              >
+                ✅ Aplicar Toolkit
+              </button>
+              <button
+                onClick={closeToolkitModal}
+                style={{
+                  flex: 1,
+                  background: '#fff',
+                  color: '#7a8bbd',
+                  border: '1.5px solid #e0e7ef',
+                  borderRadius: 12,
+                  padding: '1rem',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer'
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* ========================================
            MODAL CREAR EMPLEADO
