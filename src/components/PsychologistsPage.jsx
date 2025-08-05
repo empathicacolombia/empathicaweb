@@ -1,14 +1,34 @@
 import React, { useState } from 'react';
 
+/**
+ * Componente de página de Psicólogos
+ * Permite a los usuarios buscar y filtrar psicólogos especializados
+ * Incluye sistema de filtros y resultados de búsqueda
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación entre páginas
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ */
 const PsychologistsPage = ({ navigationProps }) => {
+  /**
+   * Estado para manejar los filtros de búsqueda
+   * Incluye ubicación, especialidad, edad y enfoque terapéutico
+   */
   const [filters, setFilters] = useState({
     location: 'Todos',
     specialty: 'Todas las especialidades',
     age: 'Todas las edades',
     approach: 'Todos los enfoques'
   });
+  
+  /**
+   * Estado para controlar el menú móvil
+   */
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  /**
+   * Maneja la navegación entre diferentes páginas de la aplicación
+   * @param {string} page - Nombre de la página a la que navegar
+   */
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
@@ -16,10 +36,18 @@ const PsychologistsPage = ({ navigationProps }) => {
     setMobileMenuOpen(false); // Cerrar menú móvil al navegar
   };
 
+  /**
+   * Alterna la visibilidad del menú móvil
+   */
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  /**
+   * Actualiza el estado de los filtros cuando el usuario cambia una opción
+   * @param {string} filterType - Tipo de filtro (location, specialty, age, approach)
+   * @param {string} value - Nuevo valor seleccionado
+   */
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
       ...prev,
@@ -27,6 +55,9 @@ const PsychologistsPage = ({ navigationProps }) => {
     }));
   };
 
+  /**
+   * Restablece todos los filtros a sus valores por defecto
+   */
   const clearFilters = () => {
     setFilters({
       location: 'Todos',
@@ -41,7 +72,9 @@ const PsychologistsPage = ({ navigationProps }) => {
       minHeight: '100vh',
       background: '#fff'
     }}>
-      {/* Header */}
+      {/* ========================================
+           HEADER / BARRA DE NAVEGACIÓN
+           ======================================== */}
       <nav className="navbar-container" style={{ 
         background: '#0057FF', 
         color: '#fff', 
@@ -56,7 +89,7 @@ const PsychologistsPage = ({ navigationProps }) => {
           justifyContent: 'space-between',
           padding: '0 2rem'
         }}>
-          {/* Logo */}
+          {/* Logo de la empresa */}
           <span
             className="navbar-logo"
             style={{
@@ -73,7 +106,7 @@ const PsychologistsPage = ({ navigationProps }) => {
             Empathica
           </span>
 
-          {/* Menú hamburguesa móvil */}
+          {/* Botón de menú hamburguesa para móviles */}
           <button
             className="visible-mobile"
             onClick={toggleMobileMenu}
@@ -90,7 +123,7 @@ const PsychologistsPage = ({ navigationProps }) => {
             ☰
           </button>
 
-          {/* Enlaces de navegación */}
+          {/* Menú de navegación principal */}
           <ul className="navbar-links" style={{ 
             display: 'flex', 
             gap: '2.5rem', 
@@ -100,6 +133,7 @@ const PsychologistsPage = ({ navigationProps }) => {
             fontSize: 18, 
             fontWeight: 500 
           }}>
+            {/* Enlace a página de psicólogos */}
             <li>
               <button
                 onClick={() => handleNavigation('psychologists')}
@@ -116,6 +150,8 @@ const PsychologistsPage = ({ navigationProps }) => {
                 Psicólogos
               </button>
             </li>
+            
+            {/* Enlace a página de empresas */}
             <li>
               <button
                 onClick={() => handleNavigation('business')}
@@ -132,6 +168,8 @@ const PsychologistsPage = ({ navigationProps }) => {
                 Empresas
               </button>
             </li>
+            
+            {/* Enlace a página "Acerca de" */}
             <li>
               <button
                 onClick={() => handleNavigation('about')}
@@ -148,6 +186,8 @@ const PsychologistsPage = ({ navigationProps }) => {
                 Acerca de
               </button>
             </li>
+            
+            {/* Enlace a página de precios */}
             <li>
               <button
                 onClick={() => handleNavigation('pricing')}
@@ -166,8 +206,9 @@ const PsychologistsPage = ({ navigationProps }) => {
             </li>
           </ul>
 
-          {/* Botones */}
+          {/* Botones de autenticación */}
           <div className="navbar-buttons" style={{ display: 'flex', gap: '1.2rem' }}>
+            {/* Botón de inicio de sesión */}
             <button
               className="btn-secondary"
               onClick={() => handleNavigation('login')}
@@ -187,6 +228,8 @@ const PsychologistsPage = ({ navigationProps }) => {
             >
               Iniciar sesión
             </button>
+            
+            {/* Botón de registro */}
             <button
               className="btn-primary"
               onClick={() => handleNavigation('register')}
@@ -209,9 +252,12 @@ const PsychologistsPage = ({ navigationProps }) => {
           </div>
         </div>
 
-        {/* Menú móvil */}
+        {/* ========================================
+             MENÚ MÓVIL DESPLEGABLE
+             ======================================== */}
         {mobileMenuOpen && (
           <div className="navbar-mobile-menu visible-mobile" style={{ display: 'none', background: '#0057FF', padding: '1rem 2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            {/* Enlaces de navegación móvil */}
             <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               <li style={{ marginBottom: '1rem' }}>
                 <button
@@ -286,6 +332,8 @@ const PsychologistsPage = ({ navigationProps }) => {
                 </button>
               </li>
             </ul>
+            
+            {/* Botones de autenticación móvil */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
               <button
                 className="btn-secondary"
@@ -326,13 +374,16 @@ const PsychologistsPage = ({ navigationProps }) => {
         )}
       </nav>
 
-      {/* Hero Section */}
+      {/* ========================================
+           SECCIÓN HERO / PRESENTACIÓN
+           ======================================== */}
       <div className="section-container" style={{
         padding: '4rem 2rem',
         textAlign: 'center',
         maxWidth: 800,
         margin: '0 auto'
       }}>
+        {/* Título principal de la página */}
         <h1 className="section-title" style={{
           fontSize: '3.5rem',
           fontWeight: 800,
@@ -344,6 +395,7 @@ const PsychologistsPage = ({ navigationProps }) => {
           <span style={{ color: '#9e9e9e' }}>Ideal</span>
         </h1>
         
+        {/* Descripción del servicio */}
         <p className="section-subtitle" style={{
           fontSize: '1.2rem',
           color: '#333',
@@ -353,6 +405,7 @@ const PsychologistsPage = ({ navigationProps }) => {
           Contamos con más de 100 psicólogos especializados, todos verificados y listos para ayudarte en tu proceso de bienestar emocional.
         </p>
         
+        {/* Botón de call-to-action para el test de matching */}
         <button
           className="btn-primary"
           onClick={() => handleNavigation('questionnaire-match')}
@@ -380,7 +433,9 @@ const PsychologistsPage = ({ navigationProps }) => {
         </button>
       </div>
 
-      {/* Sección de Filtros */}
+      {/* ========================================
+           SECCIÓN DE FILTROS DE BÚSQUEDA
+           ======================================== */}
       <div className="section-container" style={{
         background: '#fff',
         padding: '2rem',
@@ -394,7 +449,7 @@ const PsychologistsPage = ({ navigationProps }) => {
           flexWrap: 'wrap',
           justifyContent: 'center'
         }}>
-          {/* Filtro Ubicación */}
+          {/* Filtro por ubicación/ciudad */}
           <select
             value={filters.location}
             onChange={(e) => handleFilterChange('location', e.target.value)}
@@ -415,7 +470,7 @@ const PsychologistsPage = ({ navigationProps }) => {
             <option value="Barranquilla">Barranquilla</option>
           </select>
 
-          {/* Filtro Especialidad */}
+          {/* Filtro por especialidad terapéutica */}
           <select
             value={filters.specialty}
             onChange={(e) => handleFilterChange('specialty', e.target.value)}
@@ -437,7 +492,7 @@ const PsychologistsPage = ({ navigationProps }) => {
             <option value="Autoestima">Autoestima</option>
           </select>
 
-          {/* Filtro Edad */}
+          {/* Filtro por rango de edad */}
           <select
             value={filters.age}
             onChange={(e) => handleFilterChange('age', e.target.value)}
@@ -458,7 +513,7 @@ const PsychologistsPage = ({ navigationProps }) => {
             <option value="46+">46+ años</option>
           </select>
 
-          {/* Filtro Enfoque */}
+          {/* Filtro por enfoque terapéutico */}
           <select
             value={filters.approach}
             onChange={(e) => handleFilterChange('approach', e.target.value)}
@@ -482,16 +537,19 @@ const PsychologistsPage = ({ navigationProps }) => {
         </div>
       </div>
 
-      {/* Sección de Resultados */}
+      {/* ========================================
+           SECCIÓN DE RESULTADOS DE BÚSQUEDA
+           ======================================== */}
       <div className="section-container" style={{
         padding: '3rem 2rem',
         maxWidth: 1300,
         margin: '0 auto'
       }}>
-        {/* Header de resultados */}
+        {/* Header de resultados con contador */}
         <div style={{
           marginBottom: '2rem'
         }}>
+          {/* Título con número de resultados */}
           <h2 style={{
             fontSize: '2rem',
             fontWeight: 700,
@@ -500,6 +558,8 @@ const PsychologistsPage = ({ navigationProps }) => {
           }}>
             Psicólogos disponibles (0)
           </h2>
+          
+          {/* Texto de verificación */}
           <p style={{
             fontSize: '1rem',
             color: '#666',
@@ -509,11 +569,14 @@ const PsychologistsPage = ({ navigationProps }) => {
           </p>
         </div>
 
-        {/* Mensaje de no resultados */}
+        {/* ========================================
+             MENSAJE DE NO RESULTADOS
+             ======================================== */}
         <div style={{
           textAlign: 'center',
           padding: '4rem 2rem'
         }}>
+          {/* Mensaje informativo */}
           <p style={{
             fontSize: '1.1rem',
             color: '#666',
@@ -522,6 +585,7 @@ const PsychologistsPage = ({ navigationProps }) => {
             No se encontraron psicólogos con los filtros seleccionados.
           </p>
           
+          {/* Botón para limpiar filtros */}
           <button
             onClick={clearFilters}
             style={{

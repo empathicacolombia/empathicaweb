@@ -1,7 +1,18 @@
 import React from 'react';
 import logoEmpathica from '../assets/Logoempathica.png';
 
+/**
+ * Componente de página de Orientación Gratuita
+ * Permite a los usuarios agendar sesiones gratuitas de orientación con especialistas
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación entre páginas
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ */
 const FreeOrientationPage = ({ navigationProps }) => {
+  /**
+   * Maneja la navegación entre diferentes páginas de la aplicación
+   * @param {string} page - Nombre de la página a la que navegar
+   */
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
@@ -10,10 +21,12 @@ const FreeOrientationPage = ({ navigationProps }) => {
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff' }}>
-      {/* Header */}
+      {/* ========================================
+           HEADER / BARRA DE NAVEGACIÓN
+           ======================================== */}
       <nav style={{ background: '#0057FF', color: '#fff', padding: '1.2rem 0', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <div style={{ maxWidth: 1300, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem' }}>
-          {/* Logo y nombre */}
+          {/* Logo y nombre de la empresa */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
             <span
               style={{
@@ -30,8 +43,10 @@ const FreeOrientationPage = ({ navigationProps }) => {
               Empathica
             </span>
           </div>
-          {/* Enlaces de navegación */}
+          
+          {/* Menú de navegación principal */}
           <ul style={{ display: 'flex', gap: '2.5rem', listStyle: 'none', margin: 0, padding: 0, fontSize: 18, fontWeight: 500 }}>
+            {/* Enlace a página de psicólogos */}
             <li>
               <button
                 onClick={() => handleNavigation('psychologists')}
@@ -53,6 +68,8 @@ const FreeOrientationPage = ({ navigationProps }) => {
                 Psicólogos
               </button>
             </li>
+            
+            {/* Enlace a página de empresas */}
             <li>
               <button
                 onClick={() => handleNavigation('business')}
@@ -74,6 +91,8 @@ const FreeOrientationPage = ({ navigationProps }) => {
                 Empresas
               </button>
             </li>
+            
+            {/* Enlace a página "Acerca de" */}
             <li>
               <button
                 onClick={() => handleNavigation('about-us')}
@@ -95,6 +114,8 @@ const FreeOrientationPage = ({ navigationProps }) => {
                 Acerca de
               </button>
             </li>
+            
+            {/* Enlace a página de precios */}
             <li>
               <button
                 onClick={() => handleNavigation('pricing')}
@@ -117,8 +138,10 @@ const FreeOrientationPage = ({ navigationProps }) => {
               </button>
             </li>
           </ul>
-          {/* Botones */}
+          
+          {/* Botones de autenticación */}
           <div style={{ display: 'flex', gap: '1.2rem' }}>
+            {/* Botón de inicio de sesión */}
             <button
               onClick={() => handleNavigation('login')}
               style={{
@@ -144,6 +167,8 @@ const FreeOrientationPage = ({ navigationProps }) => {
             >
               Iniciar sesión
             </button>
+            
+            {/* Botón de registro */}
             <button
               onClick={() => handleNavigation('register')}
               style={{
@@ -173,10 +198,16 @@ const FreeOrientationPage = ({ navigationProps }) => {
         </div>
       </nav>
 
-      {/* Contenido principal */}
+      {/* ========================================
+           CONTENIDO PRINCIPAL DE LA PÁGINA
+           ======================================== */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '3rem 2rem' }}>
-        {/* Título y descripción */}
+        
+        {/* ========================================
+             SECCIÓN DE TÍTULO Y DESCRIPCIÓN
+             ======================================== */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          {/* Título principal de la página */}
           <h1 style={{ 
             fontSize: 48, 
             fontWeight: 800, 
@@ -187,6 +218,8 @@ const FreeOrientationPage = ({ navigationProps }) => {
           }}>
             Orientación Gratuita
           </h1>
+          
+          {/* Descripción del servicio */}
           <p style={{ 
             color: '#555', 
             fontSize: 20, 
@@ -200,7 +233,9 @@ const FreeOrientationPage = ({ navigationProps }) => {
           </p>
         </div>
 
-        {/* Tarjeta de calendario */}
+        {/* ========================================
+             TARJETA PRINCIPAL DEL CALENDARIO
+             ======================================== */}
         <div style={{ 
           background: '#fff', 
           borderRadius: 16, 
@@ -210,7 +245,10 @@ const FreeOrientationPage = ({ navigationProps }) => {
           margin: '0 auto',
           border: '1px solid #e0e7ef'
         }}>
-          {/* Sección superior de la tarjeta */}
+          
+          {/* ========================================
+               SECCIÓN SUPERIOR DE INFORMACIÓN
+               ======================================== */}
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -219,12 +257,16 @@ const FreeOrientationPage = ({ navigationProps }) => {
             paddingBottom: '1.5rem',
             borderBottom: '1px solid #e0e7ef'
           }}>
-            {/* Lado izquierdo */}
+            
+            {/* Lado izquierdo - Información de la cita */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Duración de las citas */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#666', fontSize: 16 }}>
                 <span style={{ fontSize: 20 }}>🕐</span>
                 Citas de 45 min
               </div>
+              
+              {/* Información de videoconferencia */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#666', fontSize: 16 }}>
                 <div style={{ 
                   width: 24, 
@@ -243,7 +285,7 @@ const FreeOrientationPage = ({ navigationProps }) => {
               </div>
             </div>
 
-            {/* Lado derecho */}
+            {/* Lado derecho - Mensaje de bienvenida */}
             <div style={{ textAlign: 'right' }}>
               <div style={{ 
                 display: 'flex', 
@@ -261,7 +303,9 @@ const FreeOrientationPage = ({ navigationProps }) => {
             </div>
           </div>
 
-          {/* Área del calendario */}
+          {/* ========================================
+               ÁREA DE INTEGRACIÓN DEL CALENDARIO
+               ======================================== */}
           <div style={{ 
             background: '#f8f9fa', 
             borderRadius: 12, 
@@ -274,7 +318,10 @@ const FreeOrientationPage = ({ navigationProps }) => {
             flexDirection: 'column',
             gap: '1rem'
           }}>
+            {/* Icono del calendario */}
             <div style={{ fontSize: 48, color: '#0057FF' }}>📅</div>
+            
+            {/* Título del calendario */}
             <h3 style={{ 
               fontSize: 24, 
               fontWeight: 700, 
@@ -284,6 +331,8 @@ const FreeOrientationPage = ({ navigationProps }) => {
             }}>
               Calendario de Google
             </h3>
+            
+            {/* Descripción de la integración */}
             <p style={{ 
               color: '#666', 
               fontSize: 16, 
@@ -293,6 +342,8 @@ const FreeOrientationPage = ({ navigationProps }) => {
             }}>
               Aquí se integrará el calendario de Google para agendar tu sesión de orientación gratuita
             </p>
+            
+            {/* Placeholder de integración */}
             <div style={{ 
               background: '#e3f2fd', 
               border: '1px solid #0057FF', 
@@ -310,13 +361,16 @@ const FreeOrientationPage = ({ navigationProps }) => {
             </div>
           </div>
 
-          {/* Footer de la tarjeta */}
+          {/* ========================================
+               FOOTER DE LA TARJETA
+               ======================================== */}
           <div style={{ 
             marginTop: '2rem', 
             paddingTop: '1.5rem', 
             borderTop: '1px solid #e0e7ef',
             textAlign: 'center'
           }}>
+            {/* Información legal y de privacidad */}
             <p style={{ 
               color: '#999', 
               fontSize: 14, 
@@ -331,6 +385,8 @@ const FreeOrientationPage = ({ navigationProps }) => {
             }}>
               El uso está sujeto a la Política de Privacidad y a las Condiciones del Servicio de Google.
             </p>
+            
+            {/* Enlace de comentarios */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 

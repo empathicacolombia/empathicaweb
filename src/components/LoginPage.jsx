@@ -2,12 +2,39 @@ import React, { useState } from 'react';
 import logoEmpathica from '../assets/Logoempathica.png';
 import { Eye, EyeOff } from 'lucide-react';
 
+/**
+ * Componente de página de Inicio de Sesión (Login)
+ * Permite a los usuarios autenticarse en la plataforma Empathica
+ * Incluye formulario de login, navegación y funcionalidades de seguridad
+ * 
+ * @param {Object} navigationProps - Propiedades para navegación entre páginas
+ * @param {Function} navigationProps.onNavigate - Función para cambiar de página
+ */
 const LoginPage = ({ navigationProps }) => {
+  /**
+   * Estado para controlar la visibilidad de la contraseña
+   */
   const [showPassword, setShowPassword] = useState(false);
+  
+  /**
+   * Estado para almacenar el email del usuario
+   */
   const [email, setEmail] = useState('');
+  
+  /**
+   * Estado para almacenar la contraseña del usuario
+   */
   const [password, setPassword] = useState('');
+  
+  /**
+   * Estado para controlar el menú móvil
+   */
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  /**
+   * Maneja la navegación entre diferentes páginas de la aplicación
+   * @param {string} page - Nombre de la página a la que navegar
+   */
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
       navigationProps.onNavigate(page);
@@ -15,6 +42,11 @@ const LoginPage = ({ navigationProps }) => {
     setMobileMenuOpen(false);
   };
 
+  /**
+   * Maneja el envío del formulario de login
+   * Actualmente redirige al dashboard del psicólogo (funcionalidad temporal)
+   * @param {Event} e - Evento del formulario
+   */
   const handleLogin = (e) => {
     e.preventDefault();
     // Redirigir al dashboard del psicólogo con datos en duro por ahora
@@ -28,7 +60,9 @@ const LoginPage = ({ navigationProps }) => {
       background: 'linear-gradient(180deg, #fff 0%, #fff3e0 100%)',
       position: 'relative'
     }}>
-      {/* Header */}
+      {/* ========================================
+           HEADER / BARRA DE NAVEGACIÓN
+           ======================================== */}
       <nav style={{ 
         background: '#0057FF', 
         color: '#fff', 
@@ -44,7 +78,7 @@ const LoginPage = ({ navigationProps }) => {
           justifyContent: 'space-between',
           padding: '0 20px'
         }}>
-          {/* Logo */}
+          {/* Logo de la empresa */}
           <span
             style={{
               fontWeight: 'bold',
@@ -60,13 +94,13 @@ const LoginPage = ({ navigationProps }) => {
             Empathica
           </span>
 
-          {/* Desktop Navigation */}
+          {/* Navegación de escritorio */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center',
             gap: '1.5rem'
           }}>
-            {/* Enlaces de navegación - Desktop */}
+            {/* Enlaces de navegación - Solo visible en desktop */}
             <ul style={{ 
               display: 'none',
               gap: '2rem', 
@@ -79,6 +113,7 @@ const LoginPage = ({ navigationProps }) => {
                 display: 'flex'
               }
             }}>
+              {/* Enlace a página de psicólogos */}
               <li>
                 <button
                   onClick={() => handleNavigation('individuals')}
@@ -100,6 +135,8 @@ const LoginPage = ({ navigationProps }) => {
                   Psicólogos
                 </button>
               </li>
+              
+              {/* Enlace a página de empresas */}
               <li>
                 <button
                   onClick={() => handleNavigation('business')}
@@ -121,6 +158,8 @@ const LoginPage = ({ navigationProps }) => {
                   Empresas
                 </button>
               </li>
+              
+              {/* Enlace a página "Acerca de" */}
               <li>
                 <button
                   onClick={() => handleNavigation('about')}
@@ -142,6 +181,8 @@ const LoginPage = ({ navigationProps }) => {
                   Acerca de
                 </button>
               </li>
+              
+              {/* Enlace a página de precios */}
               <li>
                 <button
                   onClick={() => handleNavigation('pricing')}
@@ -165,7 +206,7 @@ const LoginPage = ({ navigationProps }) => {
               </li>
             </ul>
 
-            {/* Botones - Desktop */}
+            {/* Botones de autenticación - Solo visible en desktop */}
             <div style={{ 
               display: 'none',
               gap: '1rem',
@@ -173,6 +214,7 @@ const LoginPage = ({ navigationProps }) => {
                 display: 'flex'
               }
             }}>
+              {/* Botón de inicio de sesión */}
               <button
                 onClick={() => handleNavigation('login')}
                 style={{
@@ -199,6 +241,8 @@ const LoginPage = ({ navigationProps }) => {
               >
                 Iniciar sesión
               </button>
+              
+              {/* Botón de registro */}
               <button
                 onClick={() => handleNavigation('register')}
                 style={{
@@ -220,7 +264,9 @@ const LoginPage = ({ navigationProps }) => {
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* ========================================
+               BOTÓN DE MENÚ HAMBURGUESA MÓVIL
+               ======================================== */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
@@ -237,6 +283,7 @@ const LoginPage = ({ navigationProps }) => {
               }
             }}
           >
+            {/* Línea superior del menú hamburguesa */}
             <div style={{
               width: '24px',
               height: '2px',
@@ -245,6 +292,7 @@ const LoginPage = ({ navigationProps }) => {
               transition: '0.3s',
               transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none'
             }} />
+            {/* Línea central del menú hamburguesa */}
             <div style={{
               width: '24px',
               height: '2px',
@@ -253,6 +301,7 @@ const LoginPage = ({ navigationProps }) => {
               transition: '0.3s',
               opacity: mobileMenuOpen ? '0' : '1'
             }} />
+            {/* Línea inferior del menú hamburguesa */}
             <div style={{
               width: '24px',
               height: '2px',
@@ -264,7 +313,9 @@ const LoginPage = ({ navigationProps }) => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* ========================================
+             MENÚ MÓVIL DESPLEGABLE
+             ======================================== */}
         {mobileMenuOpen && (
           <div style={{
             position: 'absolute',
@@ -276,6 +327,7 @@ const LoginPage = ({ navigationProps }) => {
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
             zIndex: 1000
           }}>
+            {/* Enlaces de navegación móvil */}
             <ul style={{
               listStyle: 'none',
               margin: 0,
@@ -284,6 +336,7 @@ const LoginPage = ({ navigationProps }) => {
               flexDirection: 'column',
               gap: '16px'
             }}>
+              {/* Enlace a página de psicólogos */}
               <li>
                 <button
                   onClick={() => handleNavigation('individuals')}
@@ -306,6 +359,8 @@ const LoginPage = ({ navigationProps }) => {
                   Psicólogos
                 </button>
               </li>
+              
+              {/* Enlace a página de empresas */}
               <li>
                 <button
                   onClick={() => handleNavigation('business')}
@@ -328,6 +383,8 @@ const LoginPage = ({ navigationProps }) => {
                   Empresas
                 </button>
               </li>
+              
+              {/* Enlace a página "Acerca de" */}
               <li>
                 <button
                   onClick={() => handleNavigation('about')}
@@ -350,6 +407,8 @@ const LoginPage = ({ navigationProps }) => {
                   Acerca de
                 </button>
               </li>
+              
+              {/* Enlace a página de precios */}
               <li>
                 <button
                   onClick={() => handleNavigation('pricing')}
@@ -373,6 +432,8 @@ const LoginPage = ({ navigationProps }) => {
                 </button>
               </li>
             </ul>
+            
+            {/* Botones de autenticación móvil */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -381,6 +442,7 @@ const LoginPage = ({ navigationProps }) => {
               paddingTop: '20px',
               borderTop: '1px solid rgba(255,255,255,0.2)'
             }}>
+              {/* Botón de inicio de sesión móvil */}
               <button
                 onClick={() => handleNavigation('login')}
                 style={{
@@ -405,6 +467,8 @@ const LoginPage = ({ navigationProps }) => {
               >
                 Iniciar sesión
               </button>
+              
+              {/* Botón de registro móvil */}
               <button
                 onClick={() => handleNavigation('register')}
                 style={{
@@ -425,7 +489,9 @@ const LoginPage = ({ navigationProps }) => {
         )}
       </nav>
 
-      {/* Contenido principal */}
+      {/* ========================================
+           CONTENIDO PRINCIPAL - FORMULARIO DE LOGIN
+           ======================================== */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
@@ -433,7 +499,9 @@ const LoginPage = ({ navigationProps }) => {
         minHeight: 'calc(100vh - 80px)',
         padding: '2rem'
       }}>
-        {/* Tarjeta de login */}
+        {/* ========================================
+             TARJETA PRINCIPAL DEL FORMULARIO
+             ======================================== */}
         <div style={{
           background: '#fff',
           borderRadius: 20,
@@ -443,7 +511,9 @@ const LoginPage = ({ navigationProps }) => {
           maxWidth: 450,
           position: 'relative'
         }}>
-          {/* Icono superior (logo) */}
+          {/* ========================================
+               LOGO SUPERIOR
+               ======================================== */}
           <div style={{
             width: 70,
             height: 70,
@@ -459,7 +529,9 @@ const LoginPage = ({ navigationProps }) => {
             <img src={logoEmpathica} alt="Logo Empathica" style={{ width: 56, height: 56, objectFit: 'contain', display: 'block' }} />
           </div>
 
-          {/* Título */}
+          {/* ========================================
+               TÍTULO PRINCIPAL
+               ======================================== */}
           <h1 style={{
             fontSize: 32,
             fontWeight: 800,
@@ -480,7 +552,9 @@ const LoginPage = ({ navigationProps }) => {
             </span>
           </h1>
 
-          {/* Subtítulo */}
+          {/* ========================================
+               SUBTÍTULO DESCRIPTIVO
+               ======================================== */}
           <p style={{
             color: '#666',
             fontSize: 16,
@@ -490,9 +564,13 @@ const LoginPage = ({ navigationProps }) => {
             Ingresa a tu cuenta de Empathica
           </p>
 
-          {/* Formulario */}
+          {/* ========================================
+               FORMULARIO DE LOGIN
+               ======================================== */}
           <form onSubmit={handleLogin}>
-            {/* Campo de email */}
+            {/* ========================================
+                 CAMPO DE CORREO ELECTRÓNICO
+                 ======================================== */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
                 display: 'block',
@@ -523,7 +601,9 @@ const LoginPage = ({ navigationProps }) => {
               />
             </div>
 
-            {/* Campo de contraseña */}
+            {/* ========================================
+                 CAMPO DE CONTRASEÑA
+                 ======================================== */}
             <div style={{ marginBottom: '1rem' }}>
               <label style={{
                 display: 'block',
@@ -554,6 +634,7 @@ const LoginPage = ({ navigationProps }) => {
                   onFocus={(e) => e.target.style.borderColor = '#0057FF'}
                   onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                 />
+                {/* Botón para mostrar/ocultar contraseña */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -577,7 +658,9 @@ const LoginPage = ({ navigationProps }) => {
               </div>
             </div>
 
-            {/* Link de contraseña olvidada */}
+            {/* ========================================
+                 ENLACE DE CONTRASEÑA OLVIDADA
+                 ======================================== */}
             <div style={{
               textAlign: 'right',
               marginBottom: '2rem'
@@ -592,7 +675,9 @@ const LoginPage = ({ navigationProps }) => {
               </a>
             </div>
 
-            {/* Botón de iniciar sesión */}
+            {/* ========================================
+                 BOTÓN DE INICIAR SESIÓN
+                 ======================================== */}
             <button
               type="submit"
               style={{
@@ -620,7 +705,9 @@ const LoginPage = ({ navigationProps }) => {
               Iniciar sesión
             </button>
 
-            {/* Link de registro */}
+            {/* ========================================
+                 ENLACE DE REGISTRO
+                 ======================================== */}
             <div style={{
               textAlign: 'center',
               fontSize: 14,
