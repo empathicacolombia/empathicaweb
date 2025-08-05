@@ -14,7 +14,12 @@ const API_BASE_URL = 'https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:84
 const handleResponse = async (response) => {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Error HTTP: ${response.status}`);
+    console.error('Error response:', {
+      status: response.status,
+      statusText: response.statusText,
+      errorData: errorData
+    });
+    throw new Error(errorData.message || errorData.error || `Error HTTP: ${response.status} - ${response.statusText}`);
   }
   return response.json();
 };
@@ -61,16 +66,21 @@ export const authService = {
           */
          login: async (credentials) => {
            try {
-             // Preparar datos para el backend según la estructura requerida
+             // Preparar datos para el backend según la documentación de Swagger
              const loginData = {
-               id: 0, // Campo requerido por el backend
-               username: credentials.email, // Usar email como username
-               name: '', // Campo requerido pero no usado en login
-               lastName: '', // Campo requerido pero no usado en login
+               id: 0,
+               username: credentials.email,
+               name: '',
+               lastName: '',
                email: credentials.email,
                password: credentials.password,
-               role: '' // Campo requerido pero no usado en login
+               role: ''
              };
+
+             console.log('Enviando datos de login:', {
+               url: `${API_BASE_URL}/api/auth/login`,
+               data: { ...loginData, password: '[HIDDEN]' }
+             });
 
              const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                method: 'POST',
@@ -78,6 +88,12 @@ export const authService = {
                  'Content-Type': 'application/json',
                },
                body: JSON.stringify(loginData)
+             });
+
+             console.log('Respuesta del servidor:', {
+               status: response.status,
+               statusText: response.statusText,
+               headers: Object.fromEntries(response.headers.entries())
              });
 
              return await handleResponse(response);
