@@ -103,7 +103,7 @@ function BusinessHeaderBar({ sectionTitle, navigationProps, sidebarOpen, toggleS
           <div style={{ color: '#222', fontWeight: 800, fontSize: 22, marginTop: 2 }}>Panel Empresarial</div>
         </div>
       </div>
-      <div style={{ background: '#fff', borderRadius: 18, padding: '0.5rem 1.2rem', fontWeight: 600, color: '#222', fontSize: 15, boxShadow: '0 2px 8px #e0e7ef' }}>TechCorp Solutions</div>
+      <div style={{ background: '#fff', borderRadius: 18, padding: '0.5rem 1.2rem', fontWeight: 600, color: '#222', fontSize: 15, boxShadow: '0 2px 8px #e0e7ef' }}>Telemed</div>
     </div>
   );
 }
@@ -303,7 +303,7 @@ const availableToolkits = [
 ];
 
   // Estados para configuración
-  const [companyEmail, setCompanyEmail] = useState('contacto@techcorp.com');
+  const [companyEmail, setCompanyEmail] = useState('contacto@telemed.com');
   const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
   const [newDepartment, setNewDepartment] = useState('');
   const [showDeleteDepartmentModal, setShowDeleteDepartmentModal] = useState(false);
@@ -805,7 +805,7 @@ const availableToolkits = [
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 32, padding: '0 2rem' }}>
             <div>
-              <div style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>TechCorp Solutions</div>
+              <div style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>Telemed</div>
               <div style={{ color: '#7a8bbd', fontSize: 13 }}>Empresa</div>
             </div>
           </div>
@@ -1771,7 +1771,7 @@ const availableToolkits = [
               <div style={{ flex: 1, background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '2rem 2.5rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 18 }}>
                 <div style={{ color: '#222', fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Información de la Empresa</div>
                 <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15 }}>Nombre de la empresa</div>
-                <input value="TechCorp Solutions" readOnly style={{ width: '100%', fontSize: 18, padding: '0.7rem 1.2rem', borderRadius: 14, border: '1.5px solid #e0e7ef', background: '#fafbfc', color: '#222', fontWeight: 700, marginBottom: 10 }} />
+                <input value="Telemed" readOnly style={{ width: '100%', fontSize: 18, padding: '0.7rem 1.2rem', borderRadius: 14, border: '1.5px solid #e0e7ef', background: '#fafbfc', color: '#222', fontWeight: 700, marginBottom: 10 }} />
                 <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Correo de la empresa</div>
                 <input 
                   value={companyEmail} 
@@ -2450,9 +2450,193 @@ const availableToolkits = [
               </button>
             </div>
           </div>
+                </div>
+      )}
+
+      {/* ========================================
+           MODAL SUBIR CSV DE EMPLEADOS
+           ======================================== 
+           Permite subir un archivo CSV con información de empleados
+           Incluye validación de archivo y progreso de subida
+      */}
+      {showUploadModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 18,
+            padding: '2rem',
+            width: '90%',
+            maxWidth: 500,
+            boxShadow: '0 4px 32px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+              <h3 style={{ color: '#222', fontWeight: 800, fontSize: 24, margin: 0 }}>Subir CSV de Empleados</h3>
+              <button 
+                onClick={closeUploadModal}
+                style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#7a8bbd' }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {/* Información del formato */}
+              <div style={{ background: '#f8f9fa', borderRadius: 12, padding: '1rem', border: '1px solid #e0e7ef' }}>
+                <div style={{ color: '#222', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+                  📋 Formato requerido del CSV:
+                </div>
+                <div style={{ color: '#666', fontSize: 14, lineHeight: 1.5 }}>
+                  El archivo debe contener las siguientes columnas:<br/>
+                  <strong>nombre, email, departamento, cargo, estado</strong><br/>
+                  Ejemplo: "Juan Pérez, juan@empresa.com, Ventas, Representante, Activo"
+                </div>
+              </div>
+
+              {/* Área de subida */}
+              <div style={{
+                border: '2px dashed #e0e7ef',
+                borderRadius: 12,
+                padding: '2rem',
+                textAlign: 'center',
+                background: uploadedFile ? '#f0f8ff' : '#fafbfc',
+                transition: 'all 0.2s',
+                cursor: 'pointer'
+              }}
+              onClick={() => document.getElementById('csv-file-input').click()}
+              >
+                <input
+                  id="csv-file-input"
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
+                
+                {uploadedFile ? (
+                  <div>
+                    <div style={{ fontSize: 48, marginBottom: 16 }}>📄</div>
+                    <div style={{ color: '#222', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
+                      {uploadedFile.name}
+                    </div>
+                    <div style={{ color: '#2ecc71', fontSize: 14, fontWeight: 600 }}>
+                      Archivo seleccionado ✓
+                    </div>
+                    <div style={{ color: '#7a8bbd', fontSize: 12, marginTop: 8 }}>
+                      Tamaño: {(uploadedFile.size / 1024).toFixed(1)} KB
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 48, marginBottom: 16 }}>📁</div>
+                    <div style={{ color: '#222', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
+                      Selecciona un archivo CSV
+                    </div>
+                    <div style={{ color: '#7a8bbd', fontSize: 14 }}>
+                      Arrastra y suelta o haz clic para seleccionar
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mensaje de error */}
+              {uploadError && (
+                <div style={{
+                  background: '#ffeaea',
+                  color: '#ff4444',
+                  padding: '0.8rem 1rem',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  border: '1px solid #ffb3b3'
+                }}>
+                  ⚠️ {uploadError}
+                </div>
+              )}
+
+              {/* Barra de progreso */}
+              {isUploading && (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ color: '#222', fontWeight: 600, fontSize: 14 }}>
+                      Procesando archivo...
+                    </span>
+                    <span style={{ color: '#7a8bbd', fontSize: 14 }}>
+                      {uploadProgress}%
+                    </span>
+                  </div>
+                  <div style={{
+                    width: '100%',
+                    height: 8,
+                    background: '#e0e7ef',
+                    borderRadius: 4,
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      width: `${uploadProgress}%`,
+                      height: '100%',
+                      background: '#2ecc71',
+                      borderRadius: 4,
+                      transition: 'width 0.3s ease'
+                    }}></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Botones */}
+              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                <button
+                  onClick={handleUploadCSV}
+                  disabled={!uploadedFile || isUploading}
+                  style={{
+                    flex: 1,
+                    background: uploadedFile && !isUploading ? '#2ecc71' : '#e0e7ef',
+                    color: uploadedFile && !isUploading ? '#fff' : '#7a8bbd',
+                    border: 'none',
+                    borderRadius: 12,
+                    padding: '1rem',
+                    fontWeight: 700,
+                    fontSize: 16,
+                    cursor: uploadedFile && !isUploading ? 'pointer' : 'not-allowed',
+                    opacity: uploadedFile && !isUploading ? 1 : 0.6
+                  }}
+                >
+                  {isUploading ? 'Procesando...' : 'Subir y Procesar'}
+                </button>
+                <button
+                  onClick={closeUploadModal}
+                  disabled={isUploading}
+                  style={{
+                    flex: 1,
+                    background: '#fff',
+                    color: '#7a8bbd',
+                    border: '1.5px solid #e0e7ef',
+                    borderRadius: 12,
+                    padding: '1rem',
+                    fontWeight: 700,
+                    fontSize: 16,
+                    cursor: isUploading ? 'not-allowed' : 'pointer',
+                    opacity: isUploading ? 0.6 : 1
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
-      
+
       {/* ========================================
            MODAL CREAR EMPLEADO
            ======================================== 

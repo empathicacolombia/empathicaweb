@@ -77,7 +77,15 @@ const QuestionnaireMatch = ({ navigationProps }) => {
     } else if (currentSection === 5 && answers.section5.question12) {
       // Terminar cuestionario
       if (navigationProps && navigationProps.onNavigate) {
-        navigationProps.onNavigate('test-results', { testAnswers: answers });
+        // Determinar si viene del dashboard o del landing
+        const isFromDashboard = navigationProps.location && navigationProps.location.pathname && 
+                               (navigationProps.location.pathname.includes('dashboard') || 
+                                navigationProps.location.pathname.includes('client-'));
+        
+        navigationProps.onNavigate('test-results', { 
+          testAnswers: answers,
+          fromDashboard: isFromDashboard
+        });
       }
     }
   };

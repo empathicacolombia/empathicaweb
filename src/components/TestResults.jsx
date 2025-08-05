@@ -434,6 +434,9 @@ const TestResults = ({ navigationProps, testAnswers }) => {
 
   const isUserRegistered = navigationProps && navigationProps.isUserRegistered;
 
+  // Determinar si el usuario viene del dashboard (registrado) o del landing (no registrado)
+  const isFromDashboard = isUserRegistered || (navigationProps && navigationProps.location && navigationProps.location.state && navigationProps.location.state.fromDashboard);
+
   if (!patientProfile) {
     return (
       <div style={{ 
@@ -518,6 +521,26 @@ const TestResults = ({ navigationProps, testAnswers }) => {
             }}>
               Encuentra tu psicólogo ideal con nuestro sistema de matching emocional
             </p>
+            {!isFromDashboard && (
+              <div style={{
+                background: '#f0f8ff',
+                border: '1px solid #0057FF',
+                borderRadius: 12,
+                padding: '16px',
+                marginTop: '20px',
+                maxWidth: '600px',
+                margin: '20px auto 0 auto'
+              }}>
+                <p style={{
+                  color: '#0057FF',
+                  fontSize: 'clamp(14px, 2.5vw, 16px)',
+                  margin: 0,
+                  fontWeight: 500
+                }}>
+                  💡 <strong>Próximo paso:</strong> Para acceder a tu psicólogo recomendado y comenzar tu proceso terapéutico, necesitas crear una cuenta gratuita.
+                </p>
+              </div>
+            )}
           </div>
 
                      {/* Perfil del usuario */}
@@ -836,76 +859,151 @@ const TestResults = ({ navigationProps, testAnswers }) => {
              textAlign: 'center', 
              marginTop: '48px' 
            }}>
-             <div style={{ 
-               display: 'flex', 
-               flexDirection: 'column',
-               gap: '16px',
-               alignItems: 'center',
-               '@media (min-width: 768px)': {
-                 flexDirection: 'row',
-                 justifyContent: 'center',
-                 gap: '16px'
-               }
-             }}>
-               <button 
-                 onClick={() => handleNavigation('client-dashboard')}
-                 style={{ 
-                   background: '#0057FF', 
-                   color: '#fff', 
-                   border: 'none', 
-                   borderRadius: 14, 
-                   padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
-                   fontWeight: 700, 
-                   fontSize: 'clamp(16px, 3vw, 18px)', 
-                   cursor: 'pointer', 
-                   boxShadow: '0 4px 16px rgba(0, 87, 255, 0.3)',
-                   transition: 'all 0.2s ease',
-                   width: '100%',
-                   maxWidth: '300px',
-                   '@media (min-width: 768px)': {
-                     width: 'auto'
-                   }
-                 }}
-                 onMouseEnter={(e) => {
-                   e.currentTarget.style.transform = 'scale(1.05)';
-                   e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 87, 255, 0.4)';
-                 }}
-                 onMouseLeave={(e) => {
-                   e.currentTarget.style.transform = 'scale(1)';
-                   e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 87, 255, 0.3)';
-                 }}
-               >
-                 Ir a mi dashboard
-               </button>
-               
-               <button 
-                 onClick={() => handleNavigation('psychologists')}
-                 style={{ 
-                   background: '#fff', 
-                   color: '#0057FF', 
-                   border: '2px solid #0057FF', 
-                   borderRadius: 14, 
-                   padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
-                   fontWeight: 700, 
-                   fontSize: 'clamp(16px, 3vw, 18px)', 
-                   cursor: 'pointer',
-                   transition: 'all 0.2s ease',
-                   width: '100%',
-                   maxWidth: '300px',
-                   '@media (min-width: 768px)': {
-                     width: 'auto'
-                   }
-                 }}
-                 onMouseEnter={(e) => {
-                   e.currentTarget.style.background = '#f0f4ff';
-                 }}
-                 onMouseLeave={(e) => {
-                   e.currentTarget.style.background = '#fff';
-                 }}
-               >
-                 Ver más psicólogos
-               </button>
-             </div>
+             {isFromDashboard ? (
+               // Flujo para usuarios registrados (desde dashboard)
+               <div style={{ 
+                 display: 'flex', 
+                 flexDirection: 'column',
+                 gap: '16px',
+                 alignItems: 'center',
+                 '@media (min-width: 768px)': {
+                   flexDirection: 'row',
+                   justifyContent: 'center',
+                   gap: '16px'
+                 }
+               }}>
+                 <button 
+                   onClick={() => handleNavigation('client-dashboard')}
+                   style={{ 
+                     background: '#0057FF', 
+                     color: '#fff', 
+                     border: 'none', 
+                     borderRadius: 14, 
+                     padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
+                     fontWeight: 700, 
+                     fontSize: 'clamp(16px, 3vw, 18px)', 
+                     cursor: 'pointer', 
+                     boxShadow: '0 4px 16px rgba(0, 87, 255, 0.3)',
+                     transition: 'all 0.2s ease',
+                     width: '100%',
+                     maxWidth: '300px',
+                     '@media (min-width: 768px)': {
+                       width: 'auto'
+                     }
+                   }}
+                   onMouseEnter={(e) => {
+                     e.currentTarget.style.transform = 'scale(1.05)';
+                     e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 87, 255, 0.4)';
+                   }}
+                   onMouseLeave={(e) => {
+                     e.currentTarget.style.transform = 'scale(1)';
+                     e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 87, 255, 0.3)';
+                   }}
+                 >
+                   Ir a mi dashboard
+                 </button>
+                 
+                 <button 
+                   onClick={() => handleNavigation('psychologists')}
+                   style={{ 
+                     background: '#fff', 
+                     color: '#0057FF', 
+                     border: '2px solid #0057FF', 
+                     borderRadius: 14, 
+                     padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
+                     fontWeight: 700, 
+                     fontSize: 'clamp(16px, 3vw, 18px)', 
+                     cursor: 'pointer',
+                     transition: 'all 0.2s ease',
+                     width: '100%',
+                     maxWidth: '300px',
+                     '@media (min-width: 768px)': {
+                       width: 'auto'
+                     }
+                   }}
+                   onMouseEnter={(e) => {
+                     e.currentTarget.style.background = '#f0f4ff';
+                   }}
+                   onMouseLeave={(e) => {
+                     e.currentTarget.style.background = '#fff';
+                   }}
+                 >
+                   Ver más psicólogos
+                 </button>
+               </div>
+             ) : (
+               // Flujo para usuarios no registrados (desde landing)
+               <div style={{ 
+                 display: 'flex', 
+                 flexDirection: 'column',
+                 gap: '16px',
+                 alignItems: 'center',
+                 '@media (min-width: 768px)': {
+                   flexDirection: 'row',
+                   justifyContent: 'center',
+                   gap: '16px'
+                 }
+               }}>
+                 <button 
+                   onClick={() => handleNavigation('register')}
+                   style={{ 
+                     background: '#0057FF', 
+                     color: '#fff', 
+                     border: 'none', 
+                     borderRadius: 14, 
+                     padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
+                     fontWeight: 700, 
+                     fontSize: 'clamp(16px, 3vw, 18px)', 
+                     cursor: 'pointer', 
+                     boxShadow: '0 4px 16px rgba(0, 87, 255, 0.3)',
+                     transition: 'all 0.2s ease',
+                     width: '100%',
+                     maxWidth: '300px',
+                     '@media (min-width: 768px)': {
+                       width: 'auto'
+                     }
+                   }}
+                   onMouseEnter={(e) => {
+                     e.currentTarget.style.transform = 'scale(1.05)';
+                     e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 87, 255, 0.4)';
+                   }}
+                   onMouseLeave={(e) => {
+                     e.currentTarget.style.transform = 'scale(1)';
+                     e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 87, 255, 0.3)';
+                   }}
+                 >
+                   Registrarme para continuar
+                 </button>
+                 
+                 <button 
+                   onClick={() => handleNavigation('psychologists')}
+                   style={{ 
+                     background: '#fff', 
+                     color: '#0057FF', 
+                     border: '2px solid #0057FF', 
+                     borderRadius: 14, 
+                     padding: 'clamp(12px, 2.5vw, 16px) clamp(20px, 4vw, 40px)', 
+                     fontWeight: 700, 
+                     fontSize: 'clamp(16px, 3vw, 18px)', 
+                     cursor: 'pointer',
+                     transition: 'all 0.2s ease',
+                     width: '100%',
+                     maxWidth: '300px',
+                     '@media (min-width: 768px)': {
+                       width: 'auto'
+                     }
+                   }}
+                   onMouseEnter={(e) => {
+                     e.currentTarget.style.background = '#f0f4ff';
+                   }}
+                   onMouseLeave={(e) => {
+                     e.currentTarget.style.background = '#fff';
+                   }}
+                 >
+                   Ver más psicólogos
+                 </button>
+               </div>
+             )}
            </div>
         </div>
     </div>
