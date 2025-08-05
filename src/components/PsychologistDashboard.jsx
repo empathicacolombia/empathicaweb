@@ -103,6 +103,11 @@ const PsychologistDashboard = ({ navigationProps }) => {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [activeSection, setActiveSection] = useState('Dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showClinicalNotes, setShowClinicalNotes] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  
+  // Estados para filtrado
+  const [statusFilter, setStatusFilter] = useState('');
 
   /**
    * Maneja el cierre de sesión del psicólogo
@@ -113,6 +118,111 @@ const PsychologistDashboard = ({ navigationProps }) => {
       navigationProps.onNavigate('individuals');
     }
   };
+
+  /**
+   * Maneja la visualización de notas clínicas
+   * @param {Object} patient - Datos del paciente seleccionado
+   */
+  const handleViewNotes = (patient) => {
+    setSelectedPatient(patient);
+    setShowClinicalNotes(true);
+  };
+
+  /**
+   * Cierra la vista de notas clínicas
+   */
+  const handleCloseNotes = () => {
+    setShowClinicalNotes(false);
+    setSelectedPatient(null);
+  };
+
+  // Datos de pacientes basados en el historial
+  const allPatients = [
+    {
+      name: 'Jorge Martínez',
+      status: 'Activo',
+      email: 'jorge.martinez@email.com',
+      phone: '+57 300 456 7890',
+      lastSession: '23/07/2025',
+      totalSessions: 8,
+      attendance: 'Asistió',
+      avatar: 'JM',
+      tags: ['Burnout', 'Estrés laboral'],
+      tagIntensities: { 'Burnout': 75, 'Estrés laboral': 60 },
+      notes: 'Sesión completada exitosamente'
+    },
+    {
+      name: 'Sofía Castillo',
+      status: 'Inactivo',
+      email: 'sofia.castillo@email.com',
+      phone: '+57 300 678 9012',
+      lastSession: '22/07/2025',
+      totalSessions: 5,
+      attendance: 'No asistió',
+      avatar: 'SC',
+      tags: ['Depresión'],
+      tagIntensities: { 'Depresión': 85 },
+      notes: 'Cancelada por el paciente'
+    },
+    {
+      name: 'Ricardo Mendoza',
+      status: 'Activo',
+      email: 'ricardo.mendoza@email.com',
+      phone: '+57 300 890 1234',
+      lastSession: '21/07/2025',
+      totalSessions: 12,
+      attendance: 'Asistió',
+      avatar: 'RM',
+      tags: ['Trauma', 'Duelo'],
+      tagIntensities: { 'Trauma': 90, 'Duelo': 70 },
+      notes: 'Evaluación de progreso satisfactoria'
+    },
+    {
+      name: 'Carmen Silva',
+      status: 'Inactivo',
+      email: 'carmen.silva@email.com',
+      phone: '+57 300 234 5678',
+      lastSession: '20/07/2025',
+      totalSessions: 3,
+      attendance: 'No asistió',
+      avatar: 'CS',
+      tags: ['Adicciones'],
+      tagIntensities: { 'Adicciones': 95 },
+      notes: 'Paciente no se presentó'
+    },
+    {
+      name: 'Ana García',
+      status: 'Activo',
+      email: 'ana.garcia@email.com',
+      phone: '+57 300 345 6789',
+      lastSession: '19/07/2025',
+      totalSessions: 15,
+      attendance: 'Asistió',
+      avatar: 'AG',
+      tags: ['Ansiedad', 'Estrés'],
+      tagIntensities: { 'Ansiedad': 65, 'Estrés': 55 },
+      notes: 'Trabajo en técnicas de relajación'
+    },
+    {
+      name: 'Carlos Mendoza',
+      status: 'Activo',
+      email: 'carlos.mendoza@email.com',
+      phone: '+57 300 456 7890',
+      lastSession: '18/07/2025',
+      totalSessions: 9,
+      attendance: 'Asistió',
+      avatar: 'CM',
+      tags: ['Autoestima', 'Comunicación'],
+      tagIntensities: { 'Autoestima': 45, 'Comunicación': 80 },
+      notes: 'Seguimiento de objetivos terapéuticos'
+    }
+  ];
+
+  // Filtrar pacientes
+  const filteredPatients = allPatients.filter(patient => {
+    const matchesStatus = !statusFilter || patient.status.toLowerCase() === statusFilter.toLowerCase();
+    return matchesStatus;
+  });
 
   return (
     <div className="dashboard-container psychologist-dashboard" style={{
@@ -242,15 +352,177 @@ const PsychologistDashboard = ({ navigationProps }) => {
         {/* Sección Dashboard - Vista principal */}
         {activeSection === 'Dashboard' && (
           <div className="dashboard-section">
+            {/* ========================================
+                 ENCABEZADO DEL DASHBOARD
+                 ======================================== */}
+            <div style={{ marginBottom: '2rem' }}>
+              <h1 style={{ color: '#2050c7', fontSize: 28, fontWeight: 800, marginBottom: '0.5rem' }}>
+                Lista de Pacientes
+              </h1>
+              <p style={{ color: '#7a8bbd', fontSize: 16 }}>
+                Panel de control - Psicología Laboral
+              </p>
+            </div>
+
+            {/* ========================================
+                 FILTROS Y CONTADOR
+                 ======================================== */}
             <div style={{
-              padding: '2rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <span style={{ color: '#7a8bbd', fontSize: 14 }}>Filtrar por:</span>
+                <select 
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: 8,
+                    border: '1px solid #e0e7ef',
+                    background: '#fff',
+                    color: '#2050c7',
+                    fontSize: 14,
+                    fontWeight: 600
+                  }}
+                >
+                  <option value="">Todos los estados</option>
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                </select>
+              </div>
+              <div style={{ color: '#7a8bbd', fontSize: 14 }}>
+                Mostrando {filteredPatients.length} de {allPatients.length} pacientes
+              </div>
+            </div>
+
+            {/* ========================================
+                 TABLA DE PACIENTES
+                 ======================================== */}
+            <div style={{
               background: '#fff',
               borderRadius: 12,
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              textAlign: 'center'
+              overflow: 'hidden'
             }}>
-              <h2 style={{ color: '#333', marginBottom: '1rem' }}>Bienvenido al Dashboard</h2>
-              <p style={{ color: '#666' }}>Selecciona una sección del menú lateral para comenzar.</p>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#f8f9fb', borderBottom: '1px solid #e0e7ef' }}>
+                    <th style={{ padding: '1rem', textAlign: 'left', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Paciente</th>
+                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Estado</th>
+                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Última Sesión</th>
+                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Total Sesiones</th>
+                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Última Asistencia</th>
+                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPatients.map((patient, index) => (
+                    <tr key={index} style={{ 
+                      borderBottom: '1px solid #f0f0f0',
+                      background: index % 2 === 0 ? '#fafbfc' : '#fff'
+                    }}>
+                                             <td style={{ padding: '1rem' }}>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                           <div style={{
+                             width: 40,
+                             height: 40,
+                             borderRadius: '50%',
+                             background: '#0057FF',
+                             display: 'flex',
+                             alignItems: 'center',
+                             justifyContent: 'center',
+                             color: '#fff',
+                             fontWeight: 600,
+                             fontSize: 14
+                           }}>
+                             {patient.avatar}
+                           </div>
+                           <div>
+                             <div style={{ color: '#2050c7', fontWeight: 600, fontSize: 14 }}>
+                               {patient.name}
+                             </div>
+                             <div style={{ color: '#7a8bbd', fontSize: 12 }}>
+                               {patient.email}
+                             </div>
+                           </div>
+                         </div>
+                       </td>
+                       <td style={{ padding: '1rem', textAlign: 'center' }}>
+                         <span style={{
+                           padding: '0.25rem 0.75rem',
+                           borderRadius: 20,
+                           fontSize: 12,
+                           fontWeight: 600,
+                           background: patient.status === 'Activo' ? '#e3f2fd' : '#f5f5f5',
+                           color: patient.status === 'Activo' ? '#2050c7' : '#7a8bbd'
+                         }}>
+                           {patient.status}
+                         </span>
+                       </td>
+                       <td style={{ padding: '1rem', textAlign: 'center', color: '#7a8bbd', fontSize: 14 }}>
+                         {patient.lastSession}
+                       </td>
+                       <td style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 600, fontSize: 14 }}>
+                         {patient.totalSessions}
+                       </td>
+                       <td style={{ padding: '1rem', textAlign: 'center' }}>
+                         <span style={{
+                           padding: '0.25rem 0.75rem',
+                           borderRadius: 20,
+                           fontSize: 12,
+                           fontWeight: 600,
+                           background: patient.attendance === 'Asistió' ? '#e3f2fd' : '#ffebee',
+                           color: patient.attendance === 'Asistió' ? '#2050c7' : '#f44336'
+                         }}>
+                           {patient.attendance}
+                         </span>
+                       </td>
+                       <td style={{ padding: '1rem', textAlign: 'center' }}>
+                         <button 
+                           onClick={() => handleViewNotes(patient)}
+                           style={{
+                             padding: '0.5rem 1rem',
+                             borderRadius: 8,
+                             border: 'none',
+                             background: '#2050c7',
+                             color: '#fff',
+                             fontSize: 12,
+                             fontWeight: 600,
+                             cursor: 'pointer'
+                           }}
+                         >
+                           Ver Notas
+                         </button>
+                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ========================================
+                 BOTÓN MOSTRAR MÁS
+                 ======================================== */}
+            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+              <button style={{
+                padding: '0.75rem 2rem',
+                borderRadius: 8,
+                border: 'none',
+                background: '#2050c7',
+                color: '#fff',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                margin: '0 auto'
+              }}>
+                ➕ Mostrar más pacientes ({Math.max(0, allPatients.length - filteredPatients.length)} restantes)
+              </button>
             </div>
           </div>
         )}
@@ -287,6 +559,194 @@ const PsychologistDashboard = ({ navigationProps }) => {
         )}
         {/* Otros tabs pueden ir aquí */}
       </main>
+
+      {/* ========================================
+           MODAL DE NOTAS CLÍNICAS
+           ======================================== */}
+      {showClinicalNotes && selectedPatient && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '2rem'
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 12,
+            width: '100%',
+            maxWidth: '800px',
+            maxHeight: '80vh',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Header del modal */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '1.5rem',
+              borderBottom: '1px solid #e0e7ef',
+              background: '#f8f9fb'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: 20 }}>📄</span>
+                <h3 style={{ color: '#2050c7', fontSize: 18, fontWeight: 700, margin: 0 }}>
+                  Notas Clínicas - {selectedPatient.name}
+                </h3>
+              </div>
+              <button 
+                onClick={handleCloseNotes}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: 8,
+                  border: '1px solid #2050c7',
+                  background: '#fff',
+                  color: '#2050c7',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+
+            {/* Instrucciones */}
+            <div style={{ padding: '1rem 1.5rem', background: '#f8f9fb', borderBottom: '1px solid #e0e7ef' }}>
+              <p style={{ color: '#7a8bbd', fontSize: 14, margin: 0 }}>
+                Haga clic en cualquier nota para ver el detalle completo en formato SOAP
+              </p>
+            </div>
+
+            {/* Información del paciente */}
+            <div style={{ padding: '1rem 1.5rem', background: '#fff', borderBottom: '1px solid #e0e7ef' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
+                <div style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: '50%',
+                  background: '#0057FF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: 18
+                }}>
+                  {selectedPatient.avatar}
+                </div>
+                <div>
+                  <div style={{ color: '#2050c7', fontWeight: 600, fontSize: 16 }}>
+                    {selectedPatient.name}
+                  </div>
+                  <div style={{ color: '#7a8bbd', fontSize: 14 }}>
+                    {selectedPatient.email}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Tags del paciente */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {selectedPatient.tags.map((tag, index) => {
+                  const intensity = selectedPatient.tagIntensities?.[tag] || 50;
+                  return (
+                    <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{
+                        background: '#0057FF',
+                        color: '#fff',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '20px',
+                        fontSize: 12,
+                        fontWeight: 600
+                      }}>
+                        {tag}
+                      </span>
+                      <span style={{
+                        fontSize: 12,
+                        color: '#7a8bbd',
+                        fontWeight: 600
+                      }}>
+                        {intensity}%
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Contenido de las notas */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+              {[
+                {
+                  session: selectedPatient.totalSessions,
+                  date: `lunes, ${selectedPatient.lastSession}`,
+                  duration: '50 min',
+                  summary: selectedPatient.notes,
+                  isSelected: true
+                },
+                {
+                  session: selectedPatient.totalSessions - 1,
+                  date: `lunes, ${selectedPatient.lastSession.split('/')[0]}/${parseInt(selectedPatient.lastSession.split('/')[1]) - 1}/${selectedPatient.lastSession.split('/')[2]}`,
+                  duration: '45 min',
+                  summary: 'Sesión anterior. Trabajo en técnicas de manejo emocional y seguimiento de objetivos terapéuticos.',
+                  isSelected: false
+                }
+              ].map((note, index) => (
+                <div key={index} style={{
+                  border: '1px solid #e0e7ef',
+                  borderRadius: 8,
+                  padding: '1.5rem',
+                  marginBottom: '1rem',
+                  background: note.isSelected ? '#f8f9fb' : '#fff',
+                  borderLeft: note.isSelected ? '4px solid #2050c7' : '1px solid #e0e7ef',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <span style={{
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: 20,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        background: '#e3f2fd',
+                        color: '#2050c7',
+                        border: '1px solid #2050c7'
+                      }}>
+                        Sesión #{note.session}
+                      </span>
+                      <span style={{ color: '#7a8bbd', fontSize: 14 }}>
+                        {note.date}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#7a8bbd', fontSize: 14 }}>
+                      <span>🕐</span>
+                      {note.duration}
+                    </div>
+                  </div>
+                  
+                  <p style={{ color: '#333', fontSize: 14, lineHeight: 1.6, marginBottom: '1rem' }}>
+                    {note.summary}
+                  </p>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2050c7', fontSize: 14, fontWeight: 600 }}>
+                    <span>🩺</span>
+                    Ver nota clínica completa →
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

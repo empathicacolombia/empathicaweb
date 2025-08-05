@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import logoEmpathica from '../assets/Logoempathica.png';
 import { Eye, EyeOff } from 'lucide-react';
+import { authService } from '../services/api';
 
 /**
  * Componente de página de Inicio de Sesión (Login)
@@ -32,6 +33,16 @@ const LoginPage = ({ navigationProps }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   /**
+   * Estado para controlar el loading durante el login
+   */
+  const [isLoading, setIsLoading] = useState(false);
+
+  /**
+   * Estado para manejar errores del login
+   */
+  const [error, setError] = useState('');
+
+  /**
    * Maneja la navegación entre diferentes páginas de la aplicación
    * @param {string} page - Nombre de la página a la que navegar
    */
@@ -44,14 +55,75 @@ const LoginPage = ({ navigationProps }) => {
 
   /**
    * Maneja el envío del formulario de login
-   * Actualmente redirige al dashboard del psicólogo (funcionalidad temporal)
+   * Integra con el backend para autenticar al usuario
    * @param {Event} e - Evento del formulario
    */
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Redirigir al dashboard del psicólogo con datos en duro por ahora
-    console.log('Login attempt:', { email, password });
-    handleNavigation('psychologist-dashboard');
+    
+    // Validaciones básicas
+    if (!email || !password) {
+      setError('Por favor, completa todos los campos');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Preparar datos para el backend
+      const loginData = {
+        email: email,
+        password: password
+      };
+
+      // Llamar al servicio de autenticación
+      const response = await authService.login(loginData);
+      
+      console.log('Login exitoso:', response);
+      
+      // Guardar el token en localStorage
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('userData', JSON.stringify(response.user));
+      }
+
+      // Redirigir según el rol del usuario
+      if (response.user && response.user.role) {
+        if (response.user.role === 'PSICOLOGO') {
+          handleNavigation('psychologist-dashboard');
+        } else if (response.user.role === 'PATIENT') {
+          handleNavigation('client-dashboard');
+        } else {
+          // Rol no reconocido, redirigir a página principal
+          handleNavigation('individuals');
+        }
+      } else {
+        // Sin rol específico, redirigir al dashboard del psicólogo por defecto
+        handleNavigation('psychologist-dashboard');
+      }
+
+    } catch (error) {
+      console.error('Error en login:', error);
+      
+      // Manejar diferentes tipos de errores
+      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        setError('Credenciales incorrectas. Verifica tu email y contraseña.');
+      } else if (error.message.includes('404')) {
+        setError('Usuario no encontrado. Verifica tu email.');
+      } else if (error.message.includes('500')) {
+        setError('Error del servidor. Intenta nuevamente más tarde.');
+      } else {
+        setError('Error al iniciar sesión. Verifica tu conexión e intenta nuevamente.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -565,6 +637,24 @@ const LoginPage = ({ navigationProps }) => {
           </p>
 
           {/* ========================================
+               MENSAJE DE ERROR
+               ======================================== */}
+          {error && (
+            <div style={{
+              background: '#fee',
+              border: '1px solid #fcc',
+              color: '#c33',
+              padding: '1rem',
+              borderRadius: 8,
+              marginBottom: '1.5rem',
+              fontSize: 14,
+              textAlign: 'center'
+            }}>
+              {error}
+            </div>
+          )}
+
+          {/* ========================================
                FORMULARIO DE LOGIN
                ======================================== */}
           <form onSubmit={handleLogin}>
@@ -688,29 +778,52 @@ const LoginPage = ({ navigationProps }) => {
                  ======================================== */}
             <button
               type="submit"
+              disabled={isLoading}
               style={{
                 width: '100%',
-                background: '#0057FF',
+                background: isLoading ? '#ccc' : '#0057FF',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 12,
                 padding: '1rem',
                 fontSize: 16,
                 fontWeight: 700,
-                cursor: 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                marginBottom: '2rem'
+                marginBottom: '2rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 87, 255, 0.3)';
+                if (!isLoading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 87, 255, 0.3)';
+                }
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                if (!isLoading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
               }}
             >
-              Iniciar sesión
+              {isLoading ? (
+                <>
+                  <div style={{
+                    width: 20,
+                    height: 20,
+                    border: '2px solid #fff',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  Iniciando sesión...
+                </>
+              ) : (
+                'Iniciar sesión'
+              )}
             </button>
 
             {/* ========================================
@@ -741,6 +854,18 @@ const LoginPage = ({ navigationProps }) => {
           </form>
         </div>
       </div>
+
+      {/* ========================================
+           ESTILOS CSS PARA ANIMACIONES
+           ======================================== */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 };

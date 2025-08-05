@@ -26,6 +26,7 @@ export const authService = {
   /**
    * Registra un nuevo usuario
    * @param {Object} userData - Datos del usuario a registrar
+   * @param {number} userData.id - ID del usuario (usar 0 para nuevos registros)
    * @param {string} userData.username - Nombre de usuario
    * @param {string} userData.name - Nombre del usuario
    * @param {string} userData.lastName - Apellido del usuario

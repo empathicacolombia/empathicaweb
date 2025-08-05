@@ -93,6 +93,7 @@ const RegisterPage = ({ navigationProps }) => {
 
       // Preparar datos para el backend
       const userData = {
+        id: 0, // Campo requerido por el backend
         username: formData.email, // Usar email como username
         name: formData.firstName,
         lastName: formData.lastName,
