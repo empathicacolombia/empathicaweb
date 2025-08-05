@@ -186,7 +186,7 @@ const ClientDashboard = ({ navigationProps }) => {
               fontWeight: 800,
               margin: '0 0 0.5rem 0'
             }}>
-              Hola Chris, ¿cómo estás hoy?
+              Hola Valentina Guevara, ¿cómo estás hoy?
             </h1>
             
             {/* Mensaje motivacional */}
