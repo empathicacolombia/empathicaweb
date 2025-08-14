@@ -3,6 +3,9 @@ import logoEmpathica from '../assets/Logoempathica.png';
 import brochurePdf from '../assets/brochure empathica.pdf';
 
 const BusinessDemoSection = ({ navigationProps }) => {
+  console.log('=== BUSINESS DEMO SECTION LOADED ===');
+  console.log('Navigation props:', navigationProps);
+  
   const [showContactModal, setShowContactModal] = useState(false);
 
   const handleNavigation = (page) => {

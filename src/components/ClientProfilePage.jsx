@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   FileText,
@@ -14,15 +14,77 @@ import {
 import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
 import MobileDashboardNav from './MobileDashboardNav';
+import { userService, apiConfig } from '../services/api';
 
 const ClientProfilePage = ({ navigationProps, testAnswers }) => {
-  const [profileData] = useState({
-    firstName: 'Chris',
-    lastName: 'Martínez',
-    email: 'chris.martinez@email.com',
-    phone: '+52 55 1234 5678',
+  /**
+   * Estado para almacenar la información del usuario desde el backend
+   */
+  const [userInfo, setUserInfo] = useState(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [userError, setUserError] = useState('');
+
+  /**
+   * Estado para los datos del perfil (combinación de backend + datos locales)
+   */
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
     age: 28
   });
+
+  /**
+   * Obtiene la información del usuario desde el backend
+   */
+  const fetchUserInfo = async () => {
+    try {
+      setIsLoadingUser(true);
+      setUserError('');
+
+      const { token, userId } = apiConfig.getAuthData();
+      
+      if (!token || !userId) {
+        throw new Error('No se encontraron datos de autenticación');
+      }
+
+      const patientData = await userService.getPatientById(userId, token);
+      console.log('Información del paciente obtenida en perfil:', patientData);
+      
+      // Actualizar el estado con la información del backend
+      setUserInfo(patientData);
+      setProfileData({
+        firstName: patientData.name || '',
+        lastName: patientData.lastName || '',
+        email: patientData.email || '',
+        phone: patientData.phone || '',
+        age: 28 // Mantener edad por defecto ya que no viene del backend
+      });
+
+    } catch (error) {
+      console.error('Error obteniendo información del usuario en perfil:', error);
+      setUserError(error.message || 'Error al cargar información del usuario');
+      
+      // Usar datos por defecto en caso de error
+      setProfileData({
+        firstName: 'Usuario',
+        lastName: '',
+        email: 'usuario@email.com',
+        phone: '+52 55 1234 5678',
+        age: 28
+      });
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
+
+  /**
+   * Carga la información del usuario al montar el componente
+   */
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
 
   const [testResults] = useState({
     completed: testAnswers ? true : false,
@@ -211,6 +273,21 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                 </h2>
               </div>
 
+              {/* Indicador de error si hay problemas al cargar información */}
+              {userError && (
+                <div style={{
+                  background: '#fee',
+                  border: '1px solid #fcc',
+                  borderRadius: 8,
+                  padding: '0.75rem',
+                  marginBottom: '1rem',
+                  color: '#c33',
+                  fontSize: 14
+                }}>
+                  ⚠️ {userError}
+                </div>
+              )}
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
                   <label style={{
@@ -228,7 +305,11 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                     margin: 0,
                     fontWeight: '500'
                   }}>
-                    {profileData.firstName} {profileData.lastName}
+                    {isLoadingUser ? (
+                      'Cargando...'
+                    ) : (
+                      `${profileData.firstName} ${profileData.lastName}`
+                    )}
                   </p>
                 </div>
 
@@ -248,7 +329,7 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                     margin: 0,
                     fontWeight: '500'
                   }}>
-                    {profileData.email}
+                    {isLoadingUser ? 'Cargando...' : profileData.email}
                   </p>
                 </div>
 
@@ -268,7 +349,7 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                     margin: 0,
                     fontWeight: '500'
                   }}>
-                    {profileData.phone}
+                    {isLoadingUser ? 'Cargando...' : profileData.phone}
                   </p>
                 </div>
 

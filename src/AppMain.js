@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { usePageTitle } from './hooks/usePageTitle';
+import { useAuth } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import AccessDenied from './components/AccessDenied';
+import LoadingSpinner from './components/LoadingSpinner';
 import App from './App';
 import AppBusiness from './AppBusiness';
 import LoginPage from './components/LoginPage';
@@ -31,11 +35,22 @@ function AppMain() {
   
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, loading } = useAuth();
 
   // Hook para manejar el título dinámico de la página
   usePageTitle();
 
+  // Mostrar loading mientras se verifica la autenticación
+  if (loading) {
+    return <LoadingSpinner message="Verificando autenticación..." />;
+  }
+
   const handleNavigation = (page, additionalProps = {}) => {
+    console.log('=== NAVIGATION DEBUG ===');
+    console.log('Navegando a página:', page);
+    console.log('Usuario actual:', user);
+    console.log('Estado de loading:', loading);
+    
     // Si hay respuestas del test, guardarlas
     if (additionalProps.testAnswers) {
       setTestAnswers(additionalProps.testAnswers);
@@ -77,27 +92,62 @@ function AppMain() {
         <Route path="/register" element={<RegisterPage navigationProps={navigationProps} />} />
         <Route path="/quick-register" element={<QuickRegisterPage navigationProps={navigationProps} />} />
         
-        {/* Rutas del dashboard de clientes */}
-        <Route path="/client-dashboard" element={<ClientDashboard navigationProps={navigationProps} />} />
-        <Route path="/appointments" element={<AppointmentsPage navigationProps={navigationProps} />} />
-        <Route path="/for-you" element={<ForYouPage navigationProps={navigationProps} />} />
-        <Route path="/my-specialist" element={<MySpecialistPage navigationProps={navigationProps} />} />
-        <Route path="/support" element={<SupportPage navigationProps={navigationProps} />} />
-        <Route path="/client-profile" element={<ClientProfilePage navigationProps={navigationProps} testAnswers={testAnswers} />} />
+        {/* Rutas del dashboard de clientes - PROTEGIDAS */}
+        <Route path="/client-dashboard" element={
+          <ProtectedRoute user={user} userType="client">
+            <ClientDashboard navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
+        <Route path="/appointments" element={
+          <ProtectedRoute user={user} userType="client">
+            <AppointmentsPage navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
+        <Route path="/for-you" element={
+          <ProtectedRoute user={user} userType="client">
+            <ForYouPage navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-specialist" element={
+          <ProtectedRoute user={user} userType="client">
+            <MySpecialistPage navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
+        <Route path="/support" element={
+          <ProtectedRoute user={user} userType="client">
+            <SupportPage navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
+        <Route path="/client-profile" element={
+          <ProtectedRoute user={user} userType="client">
+            <ClientProfilePage navigationProps={navigationProps} testAnswers={testAnswers} />
+          </ProtectedRoute>
+        } />
         
-        {/* Rutas del dashboard de psicólogos */}
-        <Route path="/psychologist-dashboard" element={<PsychologistDashboard navigationProps={navigationProps} />} />
-        <Route path="/psychologist-profile-form" element={<PsychologistProfileForm navigationProps={navigationProps} />} />
+        {/* Rutas del dashboard de psicólogos - PROTEGIDAS */}
+        <Route path="/psychologist-dashboard" element={
+          <ProtectedRoute user={user} userType="psychologist">
+            <PsychologistDashboard navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
+        <Route path="/psychologist-profile-form" element={
+          <ProtectedRoute user={user} userType="psychologist">
+            <PsychologistProfileForm navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
         
-        {/* Rutas del dashboard empresarial */}
+        {/* Rutas del dashboard empresarial - PÚBLICAS */}
         <Route path="/business-demo-dashboard" element={<BusinessDemoDashboard navigationProps={navigationProps} />} />
-        <Route path="/business-demo" element={<BusinessDemoSection navigationProps={navigationProps} />} />
         
         {/* Otras rutas */}
         <Route path="/psychologists" element={<PsychologistsPage navigationProps={navigationProps} />} />
         <Route path="/about-us" element={<AboutUsPage navigationProps={navigationProps} />} />
         <Route path="/pricing" element={<PricingPage navigationProps={navigationProps} />} />
         <Route path="/free-orientation" element={<FreeOrientationPage navigationProps={navigationProps} />} />
+        <Route path="/business-demo" element={<BusinessDemoSection navigationProps={navigationProps} />} />
+        
+        {/* Ruta de acceso denegado */}
+        <Route path="/access-denied" element={<AccessDenied />} />
         <Route path="/questionnaire-match" element={<QuestionnaireMatch navigationProps={navigationProps} />} />
         <Route path="/test-results" element={<TestResults navigationProps={navigationProps} testAnswers={testAnswers} />} />
         <Route path="/faq" element={<FAQPage navigationProps={navigationProps} />} />

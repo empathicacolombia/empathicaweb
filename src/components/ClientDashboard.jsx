@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Home,
   CalendarDays,
@@ -16,6 +16,8 @@ import {
 import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
 import MobileDashboardNav from './MobileDashboardNav';
+import { userService, apiConfig } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Componente principal del Dashboard del Cliente/Paciente
@@ -28,6 +30,50 @@ import MobileDashboardNav from './MobileDashboardNav';
  * @param {boolean} navigationProps.sidebarOpen - Estado de apertura del sidebar
  */
 const ClientDashboard = ({ navigationProps }) => {
+  const { user } = useAuth();
+  
+  /**
+   * Estado para almacenar la información del usuario
+   */
+  const [userInfo, setUserInfo] = useState(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [userError, setUserError] = useState('');
+
+
+
+  /**
+   * Obtiene la información del usuario desde el backend
+   */
+  const fetchUserInfo = async () => {
+    try {
+      setIsLoadingUser(true);
+      setUserError('');
+
+      const { token, userId } = apiConfig.getAuthData();
+      
+      if (!token || !userId) {
+        throw new Error('No se encontraron datos de autenticación');
+      }
+
+      const patientData = await userService.getPatientById(userId, token);
+      console.log('Información del paciente obtenida:', patientData);
+      setUserInfo(patientData);
+
+    } catch (error) {
+      console.error('Error obteniendo información del usuario:', error);
+      setUserError(error.message || 'Error al cargar información del usuario');
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
+
+  /**
+   * Carga la información del usuario al montar el componente
+   */
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
+
   /**
    * Maneja la navegación entre diferentes páginas de la aplicación
    * @param {string} page - Nombre de la página a la que navegar
@@ -168,6 +214,8 @@ const ClientDashboard = ({ navigationProps }) => {
               Cerrar sesión
             </button>
           </div>
+
+
           
           {/* ========================================
                BANNER DE BIENVENIDA
@@ -186,7 +234,15 @@ const ClientDashboard = ({ navigationProps }) => {
               fontWeight: 800,
               margin: '0 0 0.5rem 0'
             }}>
-              Hola Valentina Guevara, ¿cómo estás hoy?
+              {isLoadingUser ? (
+                'Cargando información...'
+              ) : userError ? (
+                'Hola, ¿cómo estás hoy?'
+              ) : userInfo ? (
+                `Hola ${userInfo.name} ${userInfo.lastName}, ¿cómo estás hoy?`
+              ) : (
+                'Hola, ¿cómo estás hoy?'
+              )}
             </h1>
             
             {/* Mensaje motivacional */}
@@ -197,6 +253,21 @@ const ClientDashboard = ({ navigationProps }) => {
             }}>
               Es un nuevo día para cuidar tu bienestar emocional
             </p>
+
+            {/* Mensaje de error si hay problemas al cargar información */}
+            {userError && (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: 8,
+                padding: '0.75rem',
+                marginBottom: '1rem',
+                color: '#fff',
+                fontSize: 14
+              }}>
+                ⚠️ {userError}
+              </div>
+            )}
             
             {/* ========================================
                  BOTONES DE ACCIÓN PRINCIPALES

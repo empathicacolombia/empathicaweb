@@ -117,6 +117,8 @@ function BusinessHeaderBar({ sectionTitle, navigationProps, sidebarOpen, toggleS
  * @param {Function} navigationProps.onNavigate - Función para cambiar de página
  */
 const BusinessDemoDashboard = ({ navigationProps }) => {
+  console.log('=== BUSINESS DEMO DASHBOARD LOADED ===');
+  console.log('Navigation props:', navigationProps);
   // Estados para controlar la navegación y visualización
   const [activeSection, setActiveSection] = useState('Dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -1956,7 +1958,7 @@ const availableToolkits = [
                   border: '1.5px solid #e0e7ef'
                 }}>
                   No hay notificaciones para mostrar
-          </div>
+            </div>
         )}
             </div>
           </div>
@@ -2054,14 +2056,14 @@ const availableToolkits = [
                     }}>
                       {toolkit.icon}
                     </div>
-                    <div style={{ flex: 1 }}>
+                <div style={{ flex: 1 }}>
                       <div style={{ color: '#fff', fontWeight: 800, fontSize: 20, marginBottom: 4 }}>
                         {toolkit.name}
-                      </div>
+                </div>
                       <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 600 }}>
                         {toolkit.category}
-                      </div>
-                    </div>
+              </div>
+                </div>
                     <div style={{
                       background: 'rgba(255,255,255,0.2)',
                       color: '#fff',
@@ -2071,8 +2073,8 @@ const availableToolkits = [
                       fontWeight: 700
                     }}>
                       {toolkit.status}
-                    </div>
-                  </div>
+              </div>
+            </div>
 
                   {/* Contenido del toolkit */}
                   <div style={{ padding: '1.5rem' }}>
@@ -2089,7 +2091,7 @@ const availableToolkits = [
                     <div style={{ marginBottom: 16 }}>
                       <div style={{ color: '#222', fontWeight: 700, fontSize: 14, marginBottom: 8 }}>
                         Características principales:
-                      </div>
+          </div>
                       <ul style={{
                         listStyle: 'none',
                         padding: 0,

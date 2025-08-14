@@ -50,7 +50,7 @@ const BusinessSection = ({ navigationProps }) => {
         <div className="hero-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: 48 }}>
           <button
             style={{ background: '#fff', color: '#0057FF', border: 'none', borderRadius: 24, padding: '1rem 2.5rem', fontWeight: 700, fontSize: 18, cursor: 'pointer', boxShadow: '0 2px 8px #0057ff22', display: 'flex', alignItems: 'center', gap: 8 }}
-            onClick={() => handleNavigation('business-demo-dashboard')}
+            onClick={() => handleNavigation('business-demo')}
           >
             <span role="img" aria-label="rocket">🚀</span> Ver demo →
           </button>

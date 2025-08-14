@@ -5,6 +5,7 @@ import './index.css';
 import './responsive.css';
 import './mobile-utilities.css';
 import AppMain from './AppMain';
+import { AuthProvider } from './contexts/AuthContext';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
@@ -12,7 +13,9 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <AppMain />
+      <AuthProvider>
+        <AppMain />
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

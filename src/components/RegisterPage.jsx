@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import logoEmpathica from '../assets/Logoempathica.png';
-import { authService } from '../services/api';
+import { authService, userService } from '../services/api';
 
 /**
  * Componente de página de Registro
@@ -94,17 +94,39 @@ const RegisterPage = ({ navigationProps }) => {
       // Preparar datos para el backend
       const userData = {
         id: 0, // Campo requerido por el backend
-        username: formData.email, // Usar email como username
-        name: formData.firstName,
+        username: formData.email, // Usar email como username (como espera el backend)
+        name: formData.firstName, // Nombre real del usuario
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
         role: userType === 'patient' ? 'PATIENT' : 'PSICOLOGO'
       };
 
-      // Llamada al servicio de API
+      // Debug: Ver qué datos se envían al backend
+      console.log('Datos enviados al backend:', userData);
+
+      // Llamada al servicio de API para registro básico
       const result = await authService.signup(userData);
       console.log('Registro exitoso:', result);
+
+      // Si es paciente, completar información adicional
+      if (userType === 'patient' && result.id) {
+        try {
+          // Crear datos adicionales del paciente
+          const patientData = {
+            id: result.id,
+            phone: formData.phone,  // Se puede completar después
+            address: formData.gender  // Se puede completar después
+          };
+
+          // Llamada para completar información del paciente
+          const patientResult = await userService.createPatient(patientData);
+          console.log('Información de paciente completada:', patientResult);
+        } catch (error) {
+          console.warn('No se pudo completar información de paciente:', error);
+          // No es crítico, el usuario puede completar después
+        }
+      }
 
       // Marcar al usuario como registrado
       if (navigationProps && navigationProps.onUserRegistration) {
@@ -112,10 +134,13 @@ const RegisterPage = ({ navigationProps }) => {
       }
       
       // Redirigir según el tipo de usuario
+      console.log('Tipo de usuario registrado:', userType);
       if (userType === 'psychologist') {
-        handleNavigation('psychologist-profile-form');
+        console.log('Redirigiendo a psychologist-dashboard');
+        handleNavigation('psychologist-dashboard');
       } else {
         // Cliente va directo al dashboard
+        console.log('Redirigiendo a client-dashboard');
         handleNavigation('client-dashboard');
       }
 
