@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useSessionTimeout } from '../hooks/useSessionTimeout';
+import SessionTimeoutAlert from './SessionTimeoutAlert';
 import {
   Home,
   Clock,
@@ -7,6 +10,7 @@ import {
   FileText,
   BookOpen,
   CreditCard,
+  Settings,
   LogOut,
   CheckCircle,
   Activity
@@ -18,6 +22,7 @@ import PsychologistAppointments from './PsychologistAppointments';
 import PsychologistHistory from './PsychologistHistory';
 import PsychologistLibrary from './PsychologistLibrary';
 import PsychologistBilling from './PsychologistBilling';
+import PsychologistSettings from './PsychologistSettings';
 import MobileDashboardNav from './MobileDashboardNav';
 
 /**
@@ -32,6 +37,7 @@ const sidebarItems = [
   { icon: <FileText size={22} />, label: 'Historial', section: 'Historial' },
   { icon: <BookOpen size={22} />, label: 'Biblioteca', section: 'Biblioteca' },
   { icon: <CreditCard size={22} />, label: 'Facturación', section: 'Facturación' },
+  { icon: <Settings size={22} />, label: 'Configuración', section: 'Configuración' },
 ];
 
 /**
@@ -40,8 +46,9 @@ const sidebarItems = [
  * 
  * @param {boolean} sidebarOpen - Estado de apertura del sidebar
  * @param {Function} toggleSidebar - Función para mostrar/ocultar sidebar
+ * @param {Object} user - Datos del usuario autenticado
  */
-function HeaderBar({ sidebarOpen, toggleSidebar }) {
+function HeaderBar({ sidebarOpen, toggleSidebar, user }) {
   return (
     <div className="header-bar" style={{
       display: 'flex',
@@ -85,7 +92,9 @@ function HeaderBar({ sidebarOpen, toggleSidebar }) {
         </div>
       </div>
       {/* Información del usuario psicólogo */}
-      <div className="user-info" style={{ background: '#fff', borderRadius: 18, padding: '0.5rem 1.2rem', fontWeight: 600, color: '#222', fontSize: 15, boxShadow: '0 2px 8px #e0e7ef' }}>valentina prueba</div>
+      <div className="user-info" style={{ background: '#fff', borderRadius: 18, padding: '0.5rem 1.2rem', fontWeight: 600, color: '#222', fontSize: 15, boxShadow: '0 2px 8px #e0e7ef' }}>
+        {user ? `${user.name} ${user.lastName}` : 'Psicólogo'}
+      </div>
     </div>
   );
 }
@@ -99,6 +108,11 @@ function HeaderBar({ sidebarOpen, toggleSidebar }) {
  * @param {Function} navigationProps.onNavigate - Función para cambiar de página
  */
 const PsychologistDashboard = ({ navigationProps }) => {
+  const { user } = useAuth();
+  
+  // Hook para manejar timeout de sesión (60 minutos de inactividad)
+  useSessionTimeout(60);
+  
   // Estados para controlar la navegación y visualización
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [activeSection, setActiveSection] = useState('Dashboard');
@@ -273,8 +287,12 @@ const PsychologistDashboard = ({ navigationProps }) => {
           {/* Información del psicólogo logueado */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 32, padding: '0 2rem' }}>
             <div>
-              <div style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>Dr. valentina</div>
-              <div style={{ color: '#7a8bbd', fontSize: 13 }}>soy prueba</div>
+              <div style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>
+                {user ? `Dr. ${user.name}` : 'Dr. Psicólogo'}
+              </div>
+              <div style={{ color: '#7a8bbd', fontSize: 13 }}>
+                {user ? `${user.lastName}` : 'Especialista'}
+              </div>
             </div>
           </div>
         </div>
@@ -322,7 +340,7 @@ const PsychologistDashboard = ({ navigationProps }) => {
            ======================================== */}
       <main className="main-content" style={{ flex: 1, padding: '0 3.5rem', transition: 'margin-left 0.3s cubic-bezier(.4,2,.6,1)', height: '100vh', overflowY: 'auto', width: '100%' }}>
         {/* Barra de encabezado */}
-        <HeaderBar sidebarOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen((open) => !open)} />
+        <HeaderBar sidebarOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen((open) => !open)} user={user} />
         
         {/* ========================================
              NAVEGACIÓN MÓVIL
@@ -557,6 +575,12 @@ const PsychologistDashboard = ({ navigationProps }) => {
             <PsychologistBilling />
           </div>
         )}
+        {/* Sección Configuración - Información del psicólogo */}
+        {activeSection === 'Configuración' && (
+          <div className="dashboard-section">
+            <PsychologistSettings navigationProps={navigationProps} />
+          </div>
+        )}
         {/* Otros tabs pueden ir aquí */}
       </main>
 
@@ -747,6 +771,9 @@ const PsychologistDashboard = ({ navigationProps }) => {
           </div>
         </div>
       )}
+      
+      {/* Alerta de timeout de sesión */}
+      <SessionTimeoutAlert warningMinutes={5} timeoutMinutes={60} />
     </div>
   );
 };

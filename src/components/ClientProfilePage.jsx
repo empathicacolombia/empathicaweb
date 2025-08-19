@@ -14,14 +14,19 @@ import {
 import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
 import MobileDashboardNav from './MobileDashboardNav';
-import { userService, apiConfig } from '../services/api';
+import { userService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const ClientProfilePage = ({ navigationProps, testAnswers }) => {
+  const { user } = useAuth();
+  
+
+  
   /**
-   * Estado para almacenar la información del usuario desde el backend
+   * Estado para información adicional del paciente (si es necesaria)
    */
-  const [userInfo, setUserInfo] = useState(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [additionalUserInfo, setAdditionalUserInfo] = useState(null);
+  const [isLoadingAdditional, setIsLoadingAdditional] = useState(false);
   const [userError, setUserError] = useState('');
 
   /**
@@ -32,59 +37,70 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
     lastName: '',
     email: '',
     phone: '',
-    age: 28
+    age: 28,
+    gender: ''
   });
 
   /**
-   * Obtiene la información del usuario desde el backend
+   * Obtiene información adicional del paciente si es necesaria
    */
-  const fetchUserInfo = async () => {
+  const fetchAdditionalUserInfo = async () => {
     try {
-      setIsLoadingUser(true);
+      setIsLoadingAdditional(true);
       setUserError('');
 
-      const { token, userId } = apiConfig.getAuthData();
-      
-      if (!token || !userId) {
-        throw new Error('No se encontraron datos de autenticación');
-      }
-
-      const patientData = await userService.getPatientById(userId, token);
-      console.log('Información del paciente obtenida en perfil:', patientData);
-      
-      // Actualizar el estado con la información del backend
-      setUserInfo(patientData);
-      setProfileData({
-        firstName: patientData.name || '',
-        lastName: patientData.lastName || '',
-        email: patientData.email || '',
-        phone: patientData.phone || '',
-        age: 28 // Mantener edad por defecto ya que no viene del backend
-      });
+      const patientData = await userService.getPatientById(user.id);
+      console.log('Información adicional del paciente obtenida:', patientData);
+      setAdditionalUserInfo(patientData);
 
     } catch (error) {
-      console.error('Error obteniendo información del usuario en perfil:', error);
-      setUserError(error.message || 'Error al cargar información del usuario');
-      
-      // Usar datos por defecto en caso de error
-      setProfileData({
-        firstName: 'Usuario',
-        lastName: '',
-        email: 'usuario@email.com',
-        phone: '+52 55 1234 5678',
-        age: 28
-      });
+      console.error('Error obteniendo información adicional del paciente:', error);
+      setUserError(error.message || 'Error al cargar información adicional');
     } finally {
-      setIsLoadingUser(false);
+      setIsLoadingAdditional(false);
     }
   };
 
   /**
-   * Carga la información del usuario al montar el componente
+   * Calcula la edad basada en la fecha de nacimiento
+   * @param {string} dateOfBirth - Fecha de nacimiento en formato YYYY-MM-DD
+   * @returns {number} - Edad calculada
+   */
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return 28; // Valor por defecto
+    
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  /**
+   * Inicializa los datos del perfil con la información del usuario autenticado
    */
   useEffect(() => {
-    fetchUserInfo();
-  }, []);
+    if (user) {
+      const newProfileData = {
+        firstName: user.name || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phoneNumber || 'No disponible',
+        age: calculateAge(user.dateOfBirth),
+        gender: user.gender || 'No especificado'
+      };
+      
+      setProfileData(newProfileData);
+      
+      // Si necesitas información adicional específica del paciente
+      fetchAdditionalUserInfo();
+    }
+  }, [user]);
 
   const [testResults] = useState({
     completed: testAnswers ? true : false,
@@ -305,11 +321,7 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                     margin: 0,
                     fontWeight: '500'
                   }}>
-                    {isLoadingUser ? (
-                      'Cargando...'
-                    ) : (
-                      `${profileData.firstName} ${profileData.lastName}`
-                    )}
+                    {`${profileData.firstName} ${profileData.lastName}`}
                   </p>
                 </div>
 
@@ -329,7 +341,7 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                     margin: 0,
                     fontWeight: '500'
                   }}>
-                    {isLoadingUser ? 'Cargando...' : profileData.email}
+                    {profileData.email}
                   </p>
                 </div>
 
@@ -349,7 +361,7 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                     margin: 0,
                     fontWeight: '500'
                   }}>
-                    {isLoadingUser ? 'Cargando...' : profileData.phone}
+                    {profileData.phone}
                   </p>
                 </div>
 
@@ -370,6 +382,28 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                     fontWeight: '500'
                   }}>
                     {profileData.age} años
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#666',
+                    marginBottom: '4px',
+                    display: 'block'
+                  }}>
+                    Género
+                  </label>
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#333',
+                    margin: 0,
+                    fontWeight: '500'
+                  }}>
+                    {profileData.gender === 'MALE' ? 'Masculino' : 
+                     profileData.gender === 'FEMALE' ? 'Femenino' : 
+                     profileData.gender}
                   </p>
                 </div>
 

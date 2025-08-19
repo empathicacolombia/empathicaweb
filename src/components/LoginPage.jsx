@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import logoEmpathica from '../assets/Logoempathica.png';
 import { Eye, EyeOff } from 'lucide-react';
-import { authService, apiConfig } from '../services/api';
+
 
 /**
  * Componente de página de Inicio de Sesión (Login)
@@ -83,53 +83,23 @@ const LoginPage = ({ navigationProps }) => {
     setError('');
 
     try {
-      // Llamar al servicio de autenticación
-      const response = await authService.login({ email, password });
+      // Usar el contexto de autenticación para login
+      const userData = await login({ email, password });
       
-      console.log('Login exitoso - Respuesta completa:', response);
-      
-      // Preparar datos del usuario para el contexto de autenticación
-      const userData = {
-        id: response.id || response.userId,
-        email: email,
-        name: response.name || response.userName,
-        userType: response.role === 'PSICOLOGO' ? 'psychologist' : 
-                  response.role === 'EMPRESA' ? 'business' : 'client',
-        token: response.token
-      };
+      console.log('Login exitoso - Usuario:', userData);
 
-      console.log('Datos del usuario preparados:', userData);
-      console.log('Rol del backend:', response.role);
-      console.log('Tipo de usuario mapeado:', userData.userType);
-
-      // Guardar usuario en el contexto de autenticación
-      login(userData);
-      
-      // Guardar token si viene en la respuesta
-      if (response.token) {
-        apiConfig.setToken(response.token);
-      }
-
-      // Guardar ID del usuario si viene en la respuesta
-      if (response.id) {
-        apiConfig.setUserId(response.id);
-        console.log('ID del usuario guardado:', response.id);
-      }
-
-      // Redirigir según el rol del usuario o a la página de origen
-      const from = location.state?.from?.pathname || '/';
-      
+      // Redirigir según el tipo de usuario
       console.log('=== REDIRECCIÓN DESPUÉS DEL LOGIN ===');
-      console.log('Rol del backend:', response.role);
-      console.log('Tipo de usuario mapeado:', userData.userType);
-      console.log('Usuario guardado en contexto:', userData);
+      console.log('Tipo de usuario:', userData.userType);
+      console.log('Roles del usuario:', userData.roles);
+      console.log('Usuario completo:', userData);
       
-      if (response.role === 'PSICOLOGO') {
+      if (userData.userType === 'psychologist') {
         console.log('Redirigiendo a psychologist-dashboard');
         navigate('/psychologist-dashboard');
-      } else if (response.role === 'EMPRESA') {
-        console.log('Redirigiendo a business-demo-dashboard');
-        navigate('/business-demo-dashboard');
+      } else if (userData.userType === 'business') {
+        console.log('Redirigiendo a business-dashboard');
+        navigate('/business-dashboard');
       } else {
         console.log('Redirigiendo a client-dashboard');
         navigate('/client-dashboard');

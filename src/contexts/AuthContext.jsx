@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService, userService } from '../services/api';
 
 // Crear el contexto de autenticación
 const AuthContext = createContext();
@@ -25,19 +26,59 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Verificar si hay un usuario guardado en localStorage al cargar
+  /**
+   * Función helper para mapear roles del backend a userType del frontend
+   * @param {Object} userDetails - Datos del usuario del backend
+   * @returns {Object} - Usuario con userType agregado
+   */
+  const mapUserRolesToType = (userDetails) => {
+    let userType = 'client'; // Por defecto
+    if (userDetails.roles && userDetails.roles.length > 0) {
+      const role = userDetails.roles[0];
+      
+      if (role === 'PSYCHOLOGIST') {
+        userType = 'psychologist';
+      } else if (role === 'ADMIN') {
+        userType = 'business';
+      } else if (role === 'PATIENT') {
+        userType = 'client';
+      }
+    }
+    
+    // Estandarizar el ID del usuario
+    const standardizedUser = {
+      ...userDetails,
+      userType: userType,
+      id: userDetails.userId || userDetails.id // Usar userId si existe, sino id
+    };
+    
+    // Remover userId duplicado si existe
+    if (standardizedUser.userId && standardizedUser.id) {
+      delete standardizedUser.userId;
+    }
+    
+    return standardizedUser;
+  };
+
+  // Verificar si hay un token guardado en localStorage al cargar
   useEffect(() => {
-    const checkAuthStatus = () => {
+    const checkAuthStatus = async () => {
       try {
-        const savedUser = localStorage.getItem('empathica_user');
-        if (savedUser) {
-          const userData = JSON.parse(savedUser);
-          setUser(userData);
+        const token = localStorage.getItem('empathica_token');
+        if (token) {
+          // Obtener detalles del usuario usando el token
+          const userDetails = await userService.getUserDetails();
+          
+          // Mapear roles del backend a userType del frontend
+          const userWithType = mapUserRolesToType(userDetails);
+          
+          setUser(userWithType);
         }
-      } catch (error) {
-        console.error('Error al cargar datos de usuario:', error);
-        localStorage.removeItem('empathica_user');
-      } finally {
+              } catch (error) {
+          console.error('Error al verificar autenticación:', error);
+          // Si hay error, limpiar token y datos de usuario
+          clearSession();
+        } finally {
         setLoading(false);
       }
     };
@@ -45,26 +86,65 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
+  // Event listener para limpiar sesión cuando se cierra la ventana/pestaña
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Limpiar sesión al cerrar la ventana/pestaña
+      clearSession();
+    };
+
+    const handleVisibilityChange = () => {
+      // Si la página se oculta por más de 30 minutos, limpiar sesión
+               if (document.hidden) {
+           setTimeout(() => {
+             if (document.hidden) {
+               clearSession();
+             }
+           }, 30 * 60 * 1000); // 30 minutos
+         }
+    };
+
+    // Event listeners
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   /**
    * Función para iniciar sesión
-   * @param {Object} userData - Datos del usuario
-   * @param {string} userData.id - ID del usuario
-   * @param {string} userData.email - Email del usuario
-   * @param {string} userData.name - Nombre del usuario
-   * @param {string} userData.userType - Tipo de usuario ('client', 'psychologist', 'business')
-   * @param {string} userData.token - Token de autenticación
+   * @param {Object} credentials - Credenciales de login
+   * @param {string} credentials.email - Email del usuario
+   * @param {string} credentials.password - Contraseña del usuario
    */
-  const login = (userData) => {
+  const login = async (credentials) => {
     try {
-      // Guardar usuario en localStorage
-      localStorage.setItem('empathica_user', JSON.stringify(userData));
-      setUser(userData);
+      // Limpiar sesión anterior antes de hacer login
+      clearSession();
       
-      // Aquí podrías hacer una llamada al backend para validar el token
-      console.log('Usuario logueado:', userData);
+      // Llamar al servicio de autenticación
+      const response = await authService.login(credentials);
+      
+      // Obtener detalles del usuario usando el token
+      const userDetails = await userService.getUserDetails();
+      
+      // Mapear roles del backend a userType del frontend
+      const userWithType = mapUserRolesToType(userDetails);
+      
+      // Guardar usuario en localStorage
+      localStorage.setItem('empathica_user', JSON.stringify(userWithType));
+      setUser(userWithType);
+      
+      return userWithType;
     } catch (error) {
-      console.error('Error al guardar datos de usuario:', error);
-      throw new Error('Error al iniciar sesión');
+      console.error('Error al iniciar sesión:', error);
+      // Limpiar sesión en caso de error
+      clearSession();
+      throw error;
     }
   };
 
@@ -73,14 +153,30 @@ export const AuthProvider = ({ children }) => {
    */
   const logout = () => {
     try {
-      // Limpiar datos del usuario
-      localStorage.removeItem('empathica_user');
-      setUser(null);
+      // Usar el servicio de autenticación para logout
+      authService.logout();
       
-      // Aquí podrías hacer una llamada al backend para invalidar el token
-      console.log('Usuario deslogueado');
+      // Limpiar estado del usuario
+      setUser(null);
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
+    }
+  };
+
+  /**
+   * Función para limpiar completamente la sesión
+   * Se usa en casos de error o cuando se necesita limpiar todo
+   */
+  const clearSession = () => {
+    try {
+      // Limpiar localStorage
+      localStorage.removeItem('empathica_token');
+      localStorage.removeItem('empathica_user');
+      
+      // Limpiar estado
+      setUser(null);
+    } catch (error) {
+      console.error('Error limpiando sesión:', error);
     }
   };
 
@@ -103,7 +199,7 @@ export const AuthProvider = ({ children }) => {
    * @returns {boolean} - True si está autenticado
    */
   const isAuthenticated = () => {
-    return user !== null && user.id;
+    return user !== null && (user.id || user.userId);
   };
 
   /**
@@ -121,6 +217,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     logout,
+    clearSession,
     updateUser,
     isAuthenticated,
     isUserType

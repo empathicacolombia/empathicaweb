@@ -26,7 +26,7 @@ const ProtectedRoute = ({
   }
 
   // Verificar si el usuario está autenticado
-  const isAuthenticated = user && user.id;
+  const isAuthenticated = user && (user.id || user.userId);
 
   if (!isAuthenticated) {
     // Redirigir al login guardando la ubicación actual para volver después
@@ -35,14 +35,8 @@ const ProtectedRoute = ({
 
   // Si se especifica un tipo de usuario, verificar que coincida
   if (userType && user.userType !== userType) {
-    console.log('=== PROTECTED ROUTE - ACCESO DENEGADO ===');
-    console.log('Tipo de usuario requerido:', userType);
-    console.log('Tipo de usuario actual:', user.userType);
-    console.log('Usuario completo:', user);
-    
     // Redirigir a página de acceso denegado o dashboard correspondiente
     const accessDeniedRoute = getAccessDeniedRoute(user.userType);
-    console.log('Redirigiendo a:', accessDeniedRoute);
     return <Navigate to={accessDeniedRoute} replace />;
   }
 
@@ -62,7 +56,7 @@ const getAccessDeniedRoute = (userType) => {
     case 'psychologist':
       return '/psychologist-dashboard';
     case 'business':
-      return '/business-demo-dashboard';
+      return '/business-dashboard';
     default:
       return '/login';
   }

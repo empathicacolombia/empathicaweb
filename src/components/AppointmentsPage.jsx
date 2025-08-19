@@ -1116,7 +1116,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                       Evaluación por Áreas
                     </h5>
                   </div>
-                  
+
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -1151,7 +1151,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                           marginBottom: '0.5rem'
                         }}>
                           <span style={{
-                            fontSize: 18,
+                    fontSize: 18,
                             fontWeight: 700,
                             color: '#FF9800'
                           }}>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import logoEmpathica from '../assets/Logoempathica.png';
 import { authService, userService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Componente de página de Registro
@@ -12,6 +13,8 @@ import { authService, userService } from '../services/api';
  * @param {Function} navigationProps.onUserRegistration - Función para manejar registro exitoso
  */
 const RegisterPage = ({ navigationProps }) => {
+  const { login } = useAuth();
+  
   /**
    * Estado para controlar el tipo de usuario seleccionado
    * 'patient' = Paciente, 'psychologist' = Psicólogo
@@ -35,7 +38,7 @@ const RegisterPage = ({ navigationProps }) => {
     confirmPassword: '',
     phone: '',
     gender: '',
-    professionalLicense: '' // Campo específico para psicólogos
+    dateOfBirth: ''
   });
 
   /**
@@ -83,6 +86,8 @@ const RegisterPage = ({ navigationProps }) => {
         throw new Error('Por favor completa todos los campos obligatorios');
       }
 
+
+
       if (formData.password !== formData.confirmPassword) {
         throw new Error('Las contraseñas no coinciden');
       }
@@ -91,58 +96,92 @@ const RegisterPage = ({ navigationProps }) => {
         throw new Error('La contraseña debe tener al menos 6 caracteres');
       }
 
-      // Preparar datos para el backend
-      const userData = {
-        id: 0, // Campo requerido por el backend
-        username: formData.email, // Usar email como username (como espera el backend)
-        name: formData.firstName, // Nombre real del usuario
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        role: userType === 'patient' ? 'PATIENT' : 'PSICOLOGO'
-      };
-
-      // Debug: Ver qué datos se envían al backend
-      console.log('Datos enviados al backend:', userData);
-
-      // Llamada al servicio de API para registro básico
-      const result = await authService.signup(userData);
-      console.log('Registro exitoso:', result);
-
-      // Si es paciente, completar información adicional
-      if (userType === 'patient' && result.id) {
+      // Si es paciente, usar directamente el endpoint de pacientes
+      if (userType === 'patient') {
         try {
-          // Crear datos adicionales del paciente
+          // Crear datos del paciente según la estructura del endpoint
           const patientData = {
-            id: result.id,
-            phone: formData.phone,  // Se puede completar después
-            address: formData.gender  // Se puede completar después
+            name: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phoneNumber: formData.phone || '',
+            dateOfBirth: formData.dateOfBirth || null,
+            gender: formData.gender || ''
           };
 
-          // Llamada para completar información del paciente
-          const patientResult = await userService.createPatient(patientData);
-          console.log('Información de paciente completada:', patientResult);
+          // Debug: Ver qué datos se envían al backend
+          console.log('Datos enviados al backend:', patientData);
+
+          // Llamada directa al endpoint de pacientes
+          const result = await userService.createPatient(patientData);
+          console.log('Registro de paciente exitoso:', result);
         } catch (error) {
-          console.warn('No se pudo completar información de paciente:', error);
-          // No es crítico, el usuario puede completar después
+          console.error('Error en el registro de paciente:', error);
+          throw error;
         }
       }
 
-      // Marcar al usuario como registrado
-      if (navigationProps && navigationProps.onUserRegistration) {
-        navigationProps.onUserRegistration();
-      }
-      
-      // Redirigir según el tipo de usuario
-      console.log('Tipo de usuario registrado:', userType);
+      // Si es psicólogo, usar directamente el endpoint de psicólogos
       if (userType === 'psychologist') {
-        console.log('Redirigiendo a psychologist-dashboard');
-        handleNavigation('psychologist-dashboard');
-      } else {
-        // Cliente va directo al dashboard
-        console.log('Redirigiendo a client-dashboard');
-        handleNavigation('client-dashboard');
+        try {
+          // Crear datos del psicólogo según la estructura del endpoint
+          const psychologistData = {
+            name: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phoneNumber: formData.phone || '',
+            dateOfBirth: formData.dateOfBirth || null,
+            gender: formData.gender || ''
+          };
+
+          // Debug: Ver qué datos se envían al backend
+          console.log('Datos enviados al backend:', psychologistData);
+
+          // Llamada directa al endpoint de psicólogos
+          const result = await userService.createPsychologist(psychologistData);
+          console.log('Registro de psicólogo exitoso:', result);
+        } catch (error) {
+          console.error('Error en el registro de psicólogo:', error);
+          throw error;
+        }
       }
+
+      // Después del registro exitoso, hacer login automático con las credenciales del nuevo usuario
+      console.log('Registro exitoso, iniciando sesión automática...');
+      try {
+        const loginCredentials = {
+          email: formData.email,
+          password: formData.password
+        };
+        
+        console.log('Credenciales para login automático:', loginCredentials);
+        const userData = await login(loginCredentials);
+        console.log('Login automático exitoso:', userData);
+        
+        // Marcar al usuario como registrado
+        if (navigationProps && navigationProps.onUserRegistration) {
+          navigationProps.onUserRegistration();
+        }
+        
+        // Redirigir según el tipo de usuario
+        console.log('Tipo de usuario registrado:', userData.userType);
+        if (userData.userType === 'psychologist') {
+          console.log('Redirigiendo a psychologist-dashboard');
+          handleNavigation('psychologist-dashboard');
+        } else {
+          // Cliente va directo al dashboard
+          console.log('Redirigiendo a client-dashboard');
+          handleNavigation('client-dashboard');
+        }
+        
+      } catch (loginError) {
+        console.error('Error en login automático después del registro:', loginError);
+        // Si falla el login automático, mostrar mensaje pero no fallar el registro
+        setError('Usuario registrado exitosamente, pero hubo un problema al iniciar sesión automáticamente. Por favor, inicia sesión manualmente.');
+        return;
+      }
+
+
 
     } catch (error) {
       console.error('Error en el registro:', error);
@@ -843,40 +882,7 @@ const RegisterPage = ({ navigationProps }) => {
               />
             </div>
 
-            {/* ========================================
-                 CAMPO DE CÉDULA PROFESIONAL (SOLO PSICÓLOGOS)
-                 ======================================== */}
-            {userType === 'psychologist' && (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#333',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  marginBottom: '0.5rem'
-                }}>
-                  Cédula profesional <span style={{ color: '#ff4444' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.professionalLicense}
-                  onChange={(e) => handleInputChange('professionalLicense', e.target.value)}
-                  placeholder="Número de cédula profesional"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '2px solid #e0e0e0',
-                    borderRadius: 8,
-                    fontSize: 14,
-                    outline: 'none',
-                    transition: 'border-color 0.2s',
-                    boxSizing: 'border-box'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#0057FF'}
-                  onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
-                />
-              </div>
-            )}
+
 
             {/* ========================================
                  CAMPOS DE CONTRASEÑA - DOS COLUMNAS
@@ -1009,7 +1015,7 @@ const RegisterPage = ({ navigationProps }) => {
             {/* ========================================
                  CAMPO DE GÉNERO
                  ======================================== */}
-            <div style={{ marginBottom: '2rem' }}>
+            <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
                 display: 'block',
                 color: '#333',
@@ -1034,11 +1040,42 @@ const RegisterPage = ({ navigationProps }) => {
                 }}
               >
                 <option value="">Selecciona tu género</option>
-                <option value="masculino">Masculino</option>
-                <option value="femenino">Femenino</option>
-                <option value="no-binario">No binario</option>
-                <option value="prefiero-no-decir">Prefiero no decir</option>
+                <option value="MALE">Masculino</option>
+                <option value="FEMALE">Femenino</option>
+                <option value="OTHER">Otro</option>
               </select>
+            </div>
+
+            {/* ========================================
+                 CAMPO DE FECHA DE NACIMIENTO
+                 ======================================== */}
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{
+                display: 'block',
+                color: '#333',
+                fontSize: 14,
+                fontWeight: 600,
+                marginBottom: '0.5rem'
+              }}>
+                Fecha de nacimiento
+              </label>
+              <input
+                type="date"
+                value={formData.dateOfBirth}
+                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+              />
             </div>
 
             {/* ========================================

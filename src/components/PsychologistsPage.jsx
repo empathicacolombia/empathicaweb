@@ -848,39 +848,39 @@ const PsychologistsPage = ({ navigationProps }) => {
           /* ========================================
                MENSAJE DE NO RESULTADOS
                ======================================== */
-          <div style={{
-            textAlign: 'center',
-            padding: '4rem 2rem'
-          }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '4rem 2rem'
+        }}>
             {/* Mensaje informativo */}
-            <p style={{
-              fontSize: '1.1rem',
-              color: '#666',
-              margin: '0 0 2rem 0'
-            }}>
-              No se encontraron psicólogos con los filtros seleccionados.
-            </p>
-            
+          <p style={{
+            fontSize: '1.1rem',
+            color: '#666',
+            margin: '0 0 2rem 0'
+          }}>
+            No se encontraron psicólogos con los filtros seleccionados.
+          </p>
+          
             {/* Botón para limpiar filtros */}
-            <button
-              onClick={clearFilters}
-              style={{
-                background: '#fff',
-                color: '#333',
-                border: '1px solid #e0e0e0',
-                borderRadius: 8,
-                padding: '0.75rem 1.5rem',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f5f5f5'}
-              onMouseLeave={e => e.currentTarget.style.background = '#fff'}
-            >
-              Limpiar filtros
-            </button>
-          </div>
+          <button
+            onClick={clearFilters}
+            style={{
+              background: '#fff',
+              color: '#333',
+              border: '1px solid #e0e0e0',
+              borderRadius: 8,
+              padding: '0.75rem 1.5rem',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f5f5f5'}
+            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+          >
+            Limpiar filtros
+          </button>
+        </div>
         )}
       </div>
     </div>

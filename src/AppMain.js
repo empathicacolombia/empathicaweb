@@ -20,6 +20,7 @@ import AboutUsPage from './components/AboutUsPage';
 import PricingPage from './components/PricingPage';
 import PsychologistDashboard from './components/PsychologistDashboard';
 import BusinessDemoDashboard from './components/BusinessDemoDashboard';
+import BusinessDashboard from './components/BusinessDashboard';
 import QuestionnaireMatch from './components/QuestionnaireMatch';
 import TestResults from './components/TestResults';
 import PsychologistProfileForm from './components/PsychologistProfileForm';
@@ -138,6 +139,18 @@ function AppMain() {
         
         {/* Rutas del dashboard empresarial - PÚBLICAS */}
         <Route path="/business-demo-dashboard" element={<BusinessDemoDashboard navigationProps={navigationProps} />} />
+        
+        {/* Rutas del dashboard empresarial real - PROTEGIDAS */}
+        <Route path="/business-dashboard" element={
+          <ProtectedRoute user={user} userType="business">
+            <BusinessDashboard navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
+        <Route path="/business-dashboard/*" element={
+          <ProtectedRoute user={user} userType="business">
+            <BusinessDashboard navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
         
         {/* Otras rutas */}
         <Route path="/psychologists" element={<PsychologistsPage navigationProps={navigationProps} />} />
