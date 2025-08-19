@@ -52,22 +52,14 @@ const ForYouPage = ({ navigationProps }) => {
    * En una implementación real, estos datos vendrían del backend
    */
   const monthlyActivities = {
-    sessions: { completed: 8, total: 12, percentage: 67 },
-    exercises: { completed: 15, total: 20, percentage: 75 },
-    readings: { completed: 6, total: 8, percentage: 75 },
-    meditations: { completed: 22, total: 30, percentage: 73 },
-    goals: { completed: 3, total: 5, percentage: 60 }
+    sessions: { completed: 0, total: 0, percentage: 0 }
   };
 
   /**
    * Etiquetas en español para las actividades
    */
   const activityLabels = {
-    sessions: 'Sesiones',
-    exercises: 'Ejercicios',
-    readings: 'Lecturas',
-    meditations: 'Meditaciones',
-    goals: 'Metas'
+    sessions: 'Sesiones'
   };
 
   /**

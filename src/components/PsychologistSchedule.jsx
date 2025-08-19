@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { CalendarDays, Clock, Save, Plus, X, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CalendarDays, Clock, Save, Plus, X, CheckCircle, Edit } from 'lucide-react';
+import { userService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Componente de Gestión de Horarios del Psicólogo
@@ -7,6 +9,8 @@ import { CalendarDays, Clock, Save, Plus, X, CheckCircle } from 'lucide-react';
  * Incluye gestión de franjas horarias, días laborables y configuración de disponibilidad
  */
 const PsychologistSchedule = () => {
+  const { user } = useAuth();
+  
   // Estados para controlar la configuración de horarios
   const [selectedDays, setSelectedDays] = useState(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']);
   const [timeSlots, setTimeSlots] = useState([
@@ -16,12 +20,48 @@ const PsychologistSchedule = () => {
     { day: 'Jueves', slots: ['09:00-10:00', '10:00-11:00', '15:00-16:00', '16:00-17:00'] },
     { day: 'Viernes', slots: ['09:00-10:00', '10:00-11:00', '15:00-16:00', '16:00-17:00'] }
   ]);
+
+  // Estados para controlar la UI
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [scheduleSaved, setScheduleSaved] = useState(false);
+  const [showEditMode, setShowEditMode] = useState(false);
+  
+  // Estados para manejar horarios existentes
+  const [existingSchedule, setExistingSchedule] = useState(null);
+  const [loadingSchedule, setLoadingSchedule] = useState(true);
 
   /**
    * Días de la semana disponibles para configuración
    */
   const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  
+  /**
+   * Mapeo de días en español a inglés para el backend
+   */
+  const dayMapping = {
+    'Lunes': 'MONDAY',
+    'Martes': 'TUESDAY',
+    'Miércoles': 'WEDNESDAY',
+    'Jueves': 'THURSDAY',
+    'Viernes': 'FRIDAY',
+    'Sábado': 'SATURDAY',
+    'Domingo': 'SUNDAY'
+  };
+  
+  /**
+   * Mapeo inverso de días en inglés a español para mostrar
+   */
+  const reverseDayMapping = {
+    'MONDAY': 'Lunes',
+    'TUESDAY': 'Martes',
+    'WEDNESDAY': 'Miércoles',
+    'THURSDAY': 'Jueves',
+    'FRIDAY': 'Viernes',
+    'SATURDAY': 'Sábado',
+    'SUNDAY': 'Domingo'
+  };
   
   /**
    * Opciones de horarios disponibles para selección
@@ -33,6 +73,42 @@ const PsychologistSchedule = () => {
   ];
 
   /**
+   * Carga los horarios existentes del psicólogo
+   */
+  const loadExistingSchedule = async () => {
+    if (!user?.id) {
+      setLoadingSchedule(false);
+      return;
+    }
+
+    try {
+      setLoadingSchedule(true);
+      const psychologistData = await userService.getPsychologistById(user.id);
+      
+      if (psychologistData && psychologistData.psychologistSchedule) {
+        setExistingSchedule(psychologistData.psychologistSchedule);
+        setScheduleSaved(true);
+      } else {
+        setExistingSchedule(null);
+        setScheduleSaved(false);
+      }
+    } catch (error) {
+      console.error('Error cargando horarios existentes:', error);
+      setExistingSchedule(null);
+      setScheduleSaved(false);
+    } finally {
+      setLoadingSchedule(false);
+    }
+  };
+
+  /**
+   * Carga los horarios al montar el componente
+   */
+  useEffect(() => {
+    loadExistingSchedule();
+  }, [user?.id]);
+
+  /**
    * Agrega un nuevo horario a un día específico
    * Permite expandir la disponibilidad del psicólogo
    * Evita duplicados en el mismo día
@@ -40,22 +116,37 @@ const PsychologistSchedule = () => {
    * @param {string} day - Día de la semana para agregar horario
    */
   const addTimeSlot = (day) => {
-    setTimeSlots(prev => 
-      prev.map(slot => {
-        if (slot.day === day) {
-          // Encontrar el primer horario disponible que no esté ya en uso
-          const availableTime = timeOptions.find(time => !slot.slots.includes(time));
-          
-          if (availableTime) {
-            return { ...slot, slots: [...slot.slots, availableTime] };
-          } else {
-            // Si todos los horarios están ocupados, no agregar nada
-            return slot;
-          }
+    setTimeSlots(prev => {
+      // Buscar si ya existe una entrada para este día
+      const existingDayIndex = prev.findIndex(slot => slot.day === day);
+      
+      if (existingDayIndex >= 0) {
+        // Si el día ya existe, agregar horario a ese día
+        const existingSlot = prev[existingDayIndex];
+        const availableTime = timeOptions.find(time => 
+          !existingSlot.slots.some(slotData => slotData.time === time)
+        );
+        
+        if (availableTime) {
+          const updatedSlots = [...prev];
+          updatedSlots[existingDayIndex] = {
+            ...existingSlot,
+            slots: [...existingSlot.slots, { time: availableTime, scheduleId: null }]
+          };
+          return updatedSlots;
+        } else {
+          // Si todos los horarios están ocupados, no agregar nada
+          return prev;
         }
-        return slot;
-      })
-    );
+      } else {
+        // Si el día no existe, crear nueva entrada con el primer horario disponible
+        const availableTime = timeOptions[0]; // Usar el primer horario disponible
+        return [...prev, {
+          day: day,
+          slots: [{ time: availableTime, scheduleId: null }]
+        }];
+      }
+    });
   };
 
   /**
@@ -64,8 +155,16 @@ const PsychologistSchedule = () => {
    * 
    * @param {string} day - Día de la semana
    * @param {number} index - Índice del horario a eliminar
+   * @param {number} scheduleId - ID del horario en el backend (opcional)
    */
-  const removeTimeSlot = (day, index) => {
+  const removeTimeSlot = async (day, index, scheduleId = null) => {
+    try {
+      // Si tenemos el scheduleId, eliminar del backend
+      if (scheduleId) {
+        await userService.deletePsychologistSchedule(scheduleId);
+      }
+      
+      // Actualizar el estado local
     setTimeSlots(prev => 
       prev.map(slot => 
         slot.day === day 
@@ -73,11 +172,15 @@ const PsychologistSchedule = () => {
           : slot
       )
     );
+    } catch (error) {
+      console.error('Error eliminando horario:', error);
+      setError('Error al eliminar el horario. Por favor, inténtalo de nuevo.');
+    }
   };
 
   /**
    * Cambia un horario específico por uno nuevo
-   * Permite modificar horarios existentes
+   * Permite editar horarios existentes
    * Evita duplicados en el mismo día
    * 
    * @param {string} day - Día de la semana
@@ -89,7 +192,9 @@ const PsychologistSchedule = () => {
       prev.map(slot => {
         if (slot.day === day) {
           // Verificar si el nuevo horario ya existe en otro slot del mismo día
-          const isDuplicate = slot.slots.some((time, i) => i !== index && time === newTime);
+          const isDuplicate = slot.slots.some((slotData, i) => 
+            i !== index && slotData.time === newTime
+          );
           
           if (isDuplicate) {
             // Si es duplicado, no cambiar el horario
@@ -97,8 +202,10 @@ const PsychologistSchedule = () => {
           } else {
             // Si no es duplicado, actualizar el horario
             return {
-              ...slot,
-              slots: slot.slots.map((time, i) => i === index ? newTime : time)
+              ...slot, 
+              slots: slot.slots.map((slotData, i) => 
+                i === index ? { ...slotData, time: newTime } : slotData
+              )
             };
           }
         }
@@ -108,18 +215,232 @@ const PsychologistSchedule = () => {
   };
 
   /**
-   * Guarda la configuración de disponibilidad
-   * Muestra mensaje de éxito y simula guardado en backend
+   * Verifica si un horario está disponible para un día específico
+   * 
+   * @param {string} day - Día de la semana
+   * @param {string} time - Horario a verificar
+   * @param {number} excludeIndex - Índice a excluir de la verificación (para edición)
+   * @returns {boolean} - True si el horario está disponible
    */
-  const saveConfiguration = () => {
-    console.log('Guardando configuración de disponibilidad:', { selectedDays, timeSlots });
+  const isTimeAvailable = (day, time, excludeIndex = -1) => {
+    const daySlot = timeSlots.find(slot => slot.day === day);
+    if (!daySlot) return true;
     
-    // Simular guardado exitoso
-    setShowSaveSuccess(true);
-    setTimeout(() => setShowSaveSuccess(false), 3000);
-    
-    // TODO: Implementar guardado en backend y sincronización con calendarios
+    return !daySlot.slots.some((slotData, index) => 
+      index !== excludeIndex && slotData.time === time
+    );
   };
+
+  /**
+   * Parsea un horario en formato "HH:MM-HH:MM" y retorna las horas de inicio y fin
+   * 
+   * @param {string} timeSlot - Horario en formato "HH:MM-HH:MM"
+   * @returns {Object} - Objeto con startTime y endTime
+   */
+  const parseTimeSlot = (timeSlot) => {
+    const [startTime, endTime] = timeSlot.split('-');
+    return { startTime, endTime };
+  };
+
+  /**
+   * Guarda la configuración de horarios en el backend
+   * Usa POST para crear nuevos horarios o PUT para actualizar existentes
+   */
+  const saveConfiguration = async () => {
+    if (selectedDays.length === 0) {
+      setError('Debes seleccionar al menos un día de trabajo');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Preparar todos los horarios para enviar al backend
+      const scheduleData = [];
+      
+      timeSlots.forEach(daySlot => {
+        if (selectedDays.includes(daySlot.day)) {
+          daySlot.slots.forEach(slotData => {
+            const { startTime, endTime } = parseTimeSlot(slotData.time);
+            scheduleData.push({
+              day: dayMapping[daySlot.day],
+              startTime: startTime,
+              endTime: endTime
+            });
+          });
+        }
+      });
+
+      // Si está en modo edición, usar PUT para actualizar todos los horarios
+      if (showEditMode) {
+        await userService.updatePsychologistSchedule(user.id, scheduleData);
+      } else {
+        // Si es la primera vez, usar POST para crear horarios individuales
+        const promises = scheduleData.map(schedule => 
+          userService.createPsychologistSchedule(schedule)
+        );
+        await Promise.all(promises);
+      }
+
+      // Marcar como guardado exitosamente
+      setScheduleSaved(true);
+      setShowEditMode(false);
+      setShowSaveSuccess(true);
+      setTimeout(() => setShowSaveSuccess(false), 3000);
+
+      // Recargar los horarios para mostrar el resumen
+      await loadExistingSchedule();
+
+    } catch (error) {
+      setError('Error al guardar los horarios. Por favor, inténtalo de nuevo.');
+      console.error('Error guardando horarios:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Habilita el modo de edición para cambiar horarios
+   * Carga los horarios existentes en el formulario
+   */
+  const enableEditMode = () => {
+    setShowEditMode(true);
+    setScheduleSaved(false);
+    
+    // Cargar los horarios existentes en el formulario
+    if (existingSchedule) {
+      const newTimeSlots = [];
+      const newSelectedDays = [];
+      
+      // Procesar cada día del horario existente
+      Object.keys(existingSchedule).forEach(day => {
+        const daySlots = existingSchedule[day];
+        if (daySlots && daySlots.length > 0) {
+          const spanishDay = reverseDayMapping[day];
+          newSelectedDays.push(spanishDay);
+          
+          // Convertir los horarios del formato del backend al formato del formulario
+          // Mantener tanto el horario formateado como el ID del backend
+          const formattedSlots = daySlots.map(slot => ({
+            time: `${formatTime(slot.startTime)}-${formatTime(slot.endTime)}`,
+            scheduleId: slot.psychologistScheduleId
+          }));
+          
+          newTimeSlots.push({
+            day: spanishDay,
+            slots: formattedSlots
+          });
+        }
+      });
+      
+      // Actualizar el estado del formulario
+      setSelectedDays(newSelectedDays);
+      setTimeSlots(newTimeSlots);
+    }
+  };
+
+  /**
+   * Formatea una hora del formato HH:mm:ss a HH:mm
+   * @param {string} time - Hora en formato HH:mm:ss
+   * @returns {string} - Hora en formato HH:mm
+   */
+  const formatTime = (time) => {
+    if (!time) return '';
+    return time.substring(0, 5); // Toma solo HH:mm
+  };
+
+  /**
+   * Renderiza el resumen de disponibilidad
+   */
+  const renderAvailabilitySummary = () => {
+    if (!existingSchedule) return null;
+
+    const daysWithSlots = Object.keys(existingSchedule).filter(day => 
+      existingSchedule[day] && existingSchedule[day].length > 0
+    );
+
+    if (daysWithSlots.length === 0) return null;
+
+    return (
+      <div style={{
+        background: '#f8f9fa',
+        borderRadius: 12,
+        padding: '1.5rem',
+        marginBottom: '2rem'
+      }}>
+        <h3 style={{
+          fontSize: 18,
+          fontWeight: 700,
+          color: '#333',
+          margin: '0 0 1rem 0'
+        }}>
+          📅 Resumen de Disponibilidad
+        </h3>
+        
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          {daysWithSlots.map(day => (
+            <div key={day} style={{
+              background: '#fff',
+              borderRadius: 8,
+              padding: '1rem',
+              border: '1px solid #e0e7ef'
+            }}>
+              <div style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: '#0057FF',
+                marginBottom: '0.5rem'
+              }}>
+                {reverseDayMapping[day]}
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '0.5rem'
+              }}>
+                {existingSchedule[day].map((slot, index) => (
+                  <span key={index} style={{
+                    background: '#e6f0ff',
+                    color: '#0057FF',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: 16,
+                    fontSize: 14,
+                    fontWeight: 500
+                  }}>
+                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Mostrar loading mientras se cargan los horarios
+  if (loadingSchedule) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <div style={{
+          display: 'inline-block',
+          width: 40,
+          height: 40,
+          border: '4px solid #f3f3f3',
+          borderTop: '4px solid #0057FF',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{ marginTop: '1rem', color: '#666' }}>Cargando horarios...</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -158,9 +479,9 @@ const PsychologistSchedule = () => {
               <CalendarDays size={24} />
             </div>
             <div>
-              <h2 style={{
-                fontSize: 24,
-                fontWeight: 700,
+          <h2 style={{
+            fontSize: 24,
+            fontWeight: 700,
                 margin: '0 0 0.25rem 0',
                 color: '#333'
               }}>
@@ -169,36 +490,44 @@ const PsychologistSchedule = () => {
               <p style={{
                 fontSize: 16,
                 color: '#666',
-                margin: 0
+            margin: 0
               }}>
-                Configura tu disponibilidad semanal para recibir citas
+                {showEditMode ? 'Editando tu disponibilidad semanal' : 
+                 scheduleSaved ? 'Tu disponibilidad semanal configurada' : 
+                 'Configura tu disponibilidad semanal para recibir citas'}
               </p>
             </div>
           </div>
           
-          {/* Botón para guardar configuración */}
-          <button 
-            onClick={saveConfiguration}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: '#0057FF',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '0.75rem 1.5rem',
-              fontWeight: 600,
-              fontSize: 14,
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#0046cc'}
-            onMouseLeave={e => e.currentTarget.style.background = '#0057FF'}
-          >
-            <Save size={16} />
-            Guardar Horarios
-          </button>
+          {/* Botón para cambiar horario si ya está guardado */}
+          {scheduleSaved && !showEditMode && (
+            <button 
+              onClick={enableEditMode}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: '#22C55E',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '0.75rem 1.5rem',
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = '#16a34a';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = '#22C55E';
+              }}
+            >
+              <Edit size={16} />
+              Cambiar Horario
+            </button>
+          )}
         </div>
 
         {/* Mensaje de éxito */}
@@ -219,18 +548,114 @@ const PsychologistSchedule = () => {
             </span>
           </div>
         )}
+
+        {/* Mensaje de error */}
+        {error && (
+          <div style={{
+            background: '#f8d7da',
+            border: '1px solid #f5c6cb',
+            borderRadius: 8,
+            padding: '1rem',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <X size={16} color="#721c24" />
+            <span style={{ color: '#721c24', fontWeight: 600 }}>
+              {error}
+            </span>
+          </div>
+        )}
+
+        {/* Mostrar resumen de disponibilidad si hay horarios guardados */}
+        {scheduleSaved && !showEditMode && renderAvailabilitySummary()}
       </div>
 
       {/* ========================================
            SECCIÓN DE CONFIGURACIÓN DE DISPONIBILIDAD
            ======================================== */}
-      <div style={{
-        background: '#fff',
-        borderRadius: 12,
-        padding: '2rem',
-        marginBottom: '2rem',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-      }}>
+      {(!scheduleSaved || showEditMode) && (
+        <div style={{
+          background: '#fff',
+          borderRadius: 12,
+          padding: '2rem',
+          marginBottom: '2rem',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* Botones de acción */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '1rem',
+            marginBottom: '1.5rem'
+          }}>
+            {/* Botón para cancelar edición (solo en modo edición) */}
+            {showEditMode && (
+              <button 
+                onClick={() => {
+                  setShowEditMode(false);
+                  setScheduleSaved(true);
+                  // Recargar los horarios originales
+                  loadExistingSchedule();
+                }}
+                disabled={isLoading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#6c757d',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '0.75rem 1.5rem',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => {
+                  if (!isLoading) e.currentTarget.style.background = '#5a6268';
+                }}
+                onMouseLeave={e => {
+                  if (!isLoading) e.currentTarget.style.background = '#6c757d';
+                }}
+              >
+                <X size={16} />
+                Cancelar
+              </button>
+            )}
+            
+            {/* Botón para guardar configuración */}
+          <button 
+            onClick={saveConfiguration}
+              disabled={isLoading}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+                background: isLoading ? '#ccc' : '#0057FF',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+                padding: '0.75rem 1.5rem',
+              fontWeight: 600,
+              fontSize: 14,
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => {
+                if (!isLoading) e.currentTarget.style.background = '#0046cc';
+              }}
+              onMouseLeave={e => {
+                if (!isLoading) e.currentTarget.style.background = '#0057FF';
+              }}
+            >
+              <Save size={16} />
+              {isLoading ? 'Guardando...' : (showEditMode ? 'Actualizar Horarios' : 'Guardar Horarios')}
+          </button>
+        </div>
+
         {/* Días de la semana */}
         <div style={{
           marginBottom: '2rem'
@@ -295,7 +720,14 @@ const PsychologistSchedule = () => {
           </p>
 
           {selectedDays.map((day) => {
-            const daySlots = timeSlots.find(slot => slot.day === day)?.slots || [];
+              // Asegurar que existe una entrada para este día en timeSlots
+              let daySlots = timeSlots.find(slot => slot.day === day)?.slots || [];
+              
+              // Si el día está seleccionado pero no existe en timeSlots, crear entrada vacía
+              if (selectedDays.includes(day) && !timeSlots.find(slot => slot.day === day)) {
+                setTimeSlots(prev => [...prev, { day: day, slots: [] }]);
+                daySlots = [];
+              }
             
             return (
               <div
@@ -324,35 +756,35 @@ const PsychologistSchedule = () => {
                   </h4>
                   <button
                     onClick={() => addTimeSlot(day)}
-                    disabled={daySlots.length >= timeOptions.length}
+                      disabled={daySlots.length >= timeOptions.length}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      background: daySlots.length >= timeOptions.length ? '#ccc' : '#22C55E',
+                        background: daySlots.length >= timeOptions.length ? '#ccc' : '#0057FF',
                       color: '#fff',
                       border: 'none',
                       borderRadius: 6,
-                      padding: '0.5rem 0.75rem',
+                        padding: '0.5rem 1rem',
                       fontSize: 12,
                       fontWeight: 600,
-                      cursor: daySlots.length >= timeOptions.length ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.2s',
-                      opacity: daySlots.length >= timeOptions.length ? 0.6 : 1
-                    }}
-                    onMouseEnter={e => {
-                      if (daySlots.length < timeOptions.length) {
-                        e.currentTarget.style.background = '#16a34a';
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (daySlots.length < timeOptions.length) {
-                        e.currentTarget.style.background = '#22C55E';
-                      }
+                        cursor: daySlots.length >= timeOptions.length ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s',
+                        opacity: daySlots.length >= timeOptions.length ? 0.6 : 1
+                      }}
+                      onMouseEnter={e => {
+                        if (daySlots.length < timeOptions.length) {
+                          e.currentTarget.style.background = '#0046cc';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (daySlots.length < timeOptions.length) {
+                          e.currentTarget.style.background = '#0057FF';
+                        }
                     }}
                   >
                     <Plus size={14} />
-                    {daySlots.length >= timeOptions.length ? 'Sin horarios disponibles' : 'Agregar Horario'}
+                      {daySlots.length >= timeOptions.length ? 'Sin horarios disponibles' : 'Agregar Horario'}
                   </button>
                 </div>
 
@@ -362,22 +794,22 @@ const PsychologistSchedule = () => {
                     flexWrap: 'wrap',
                     gap: '0.5rem'
                   }}>
-                    {daySlots.map((time, index) => (
+                      {daySlots.map((slotData, index) => (
                       <div
                         key={index}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '0.5rem',
+                            gap: '8px',
                           background: '#fff',
                           border: '1px solid #e0e0e0',
                           borderRadius: 6,
                           padding: '0.5rem 0.75rem'
                         }}
                       >
-                        <Clock size={14} color="#0057FF" />
+                          <Clock size={14} color="#0057FF" />
                         <select
-                          value={time}
+                            value={slotData.time}
                           onChange={(e) => changeTimeSlot(day, index, e.target.value)}
                           style={{
                             border: 'none',
@@ -386,45 +818,40 @@ const PsychologistSchedule = () => {
                             fontWeight: 600,
                             color: '#333',
                             outline: 'none',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {timeOptions.map((option) => {
-                            // Verificar si esta opción ya está en uso en otro slot del mismo día
-                            const isUsed = daySlots.some((slotTime, slotIndex) => 
-                              slotIndex !== index && slotTime === option
-                            );
-                            
-                            return (
-                              <option 
-                                key={option} 
-                                value={option}
-                                disabled={isUsed}
-                                style={{
-                                  color: isUsed ? '#ccc' : '#333',
-                                  fontStyle: isUsed ? 'italic' : 'normal'
-                                }}
-                              >
-                                {option} {isUsed ? '(en uso)' : ''}
-                              </option>
-                            );
-                          })}
+                              cursor: 'pointer',
+                              minWidth: '120px'
+                            }}
+                          >
+                            {timeOptions.map((option) => {
+                              // Verificar si esta opción ya está en uso en otro slot del mismo día
+                              const isUsed = !isTimeAvailable(day, option, index);
+                              
+                              return (
+                                <option 
+                                  key={option} 
+                                  value={option}
+                                  disabled={isUsed}
+                                  style={{
+                                    color: isUsed ? '#ccc' : '#333',
+                                    fontStyle: isUsed ? 'italic' : 'normal'
+                                  }}
+                                >
+                                  {option} {isUsed ? '(en uso)' : ''}
+                            </option>
+                              );
+                            })}
                         </select>
                         <button
-                          onClick={() => removeTimeSlot(day, index)}
+                            onClick={() => removeTimeSlot(day, index, slotData.scheduleId)}
                           style={{
                             background: 'none',
                             border: 'none',
-                            color: '#EF4444',
+                              color: '#dc3545',
                             cursor: 'pointer',
-                            padding: '2px',
+                              padding: 0,
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s'
+                              alignItems: 'center'
                           }}
-                          onMouseEnter={e => e.currentTarget.style.color = '#dc2626'}
-                          onMouseLeave={e => e.currentTarget.style.color = '#EF4444'}
                         >
                           <X size={14} />
                         </button>
@@ -432,148 +859,31 @@ const PsychologistSchedule = () => {
                     ))}
                   </div>
                 ) : (
-                  <div style={{
-                    textAlign: 'center',
-                    padding: '2rem',
+                    <p style={{
+                      fontSize: 14,
                     color: '#666',
-                    fontSize: 14,
-                    background: '#fff',
-                    borderRadius: 6,
-                    border: '1px dashed #e0e0e0'
+                      fontStyle: 'italic',
+                      margin: 0
                   }}>
                     No hay horarios configurados para este día
-                  </div>
+                    </p>
                 )}
               </div>
             );
           })}
-
-          {selectedDays.length === 0 && (
-            <div style={{
-              textAlign: 'center',
-              padding: '3rem',
-              background: '#f8f9fa',
-              borderRadius: 8,
-              border: '1px solid #e0e0e0'
-            }}>
-              <CalendarDays size={48} color="#b0b8c9" style={{ marginBottom: '1rem' }} />
-              <h4 style={{
-                fontSize: 16,
-                fontWeight: 600,
-                color: '#333',
-                margin: '0 0 0.5rem 0'
-              }}>
-                No hay días seleccionados
-              </h4>
-              <p style={{
-                fontSize: 14,
-                color: '#666',
-                margin: 0
-              }}>
-                Selecciona los días de trabajo para configurar los horarios
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ========================================
-           RESUMEN DE CONFIGURACIÓN
-           ======================================== */}
-      <div style={{
-        background: '#fff',
-        borderRadius: 12,
-        padding: '2rem',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h3 style={{
-          fontSize: 20,
-          fontWeight: 700,
-          color: '#333',
-          margin: '0 0 1rem 0'
-        }}>
-          Resumen de Disponibilidad
-        </h3>
-        
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '1rem'
-        }}>
-          <div style={{
-            background: '#f8f9fa',
-            borderRadius: 8,
-            padding: '1rem'
-          }}>
-            <h4 style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#333',
-              margin: '0 0 0.5rem 0'
-            }}>
-              Días de Trabajo
-            </h4>
-            <p style={{
-              fontSize: 14,
-              color: '#666',
-              margin: 0
-            }}>
-              {selectedDays.length > 0 ? selectedDays.join(', ') : 'Ningún día seleccionado'}
-            </p>
-          </div>
-
-          <div style={{
-            background: '#f8f9fa',
-            borderRadius: 8,
-            padding: '1rem'
-          }}>
-            <h4 style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#333',
-              margin: '0 0 0.5rem 0'
-            }}>
-              Total de Horarios
-            </h4>
-            <p style={{
-              fontSize: 14,
-              color: '#666',
-              margin: 0
-            }}>
-              {timeSlots.reduce((total, day) => total + day.slots.length, 0)} horarios configurados
-            </p>
-          </div>
-
-          <div style={{
-            background: '#f8f9fa',
-            borderRadius: 8,
-            padding: '1rem'
-          }}>
-            <h4 style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#333',
-              margin: '0 0 0.5rem 0'
-            }}>
-              Estado
-            </h4>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              <CheckCircle size={16} color="#22C55E" />
-              <span style={{
-                fontSize: 14,
-                color: '#22C55E',
-                fontWeight: 600
-              }}>
-                Configuración Activa
-              </span>
-            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* CSS para animación de loading */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 };

@@ -22,18 +22,29 @@ apiClient.interceptors.request.use((config) => {
   const publicRoutes = [
     '/api/auth/login',
     '/api/patients',
-    '/api/psychologists' // Solo para POST (registro), no para GET
+    '/api/psychologists' // Solo para POST (registro)
   ];
   
   // Si es una ruta pública, no verificar token
-  // Solo considerar públicas las rutas POST de registro
-  if (publicRoutes.some(route => config.url.includes(route)) && config.method === 'post') {
+  // Solo considerar públicas las rutas POST de registro específicas
+  const isPublicRoute = publicRoutes.some(route => {
+    if (route === '/api/psychologists') {
+      // Para /api/psychologists, solo considerar público si es POST y NO es /schedule
+      return config.url.includes(route) && config.method === 'post' && !config.url.includes('/schedule');
+    }
+    if (route === '/api/patients') {
+      // Para /api/patients, solo considerar público si es POST exacto (registro) y NO es /psychologist
+      return config.url === route && config.method === 'post' && !config.url.includes('/psychologist');
+    }
+    return config.url.includes(route) && config.method === 'post';
+  });
+  
+  if (isPublicRoute) {
     return config;
   }
   
   // Verificar si el token ha expirado antes de hacer la petición
   if (isTokenExpired()) {
-    console.log('Token expirado, limpiando sesión...');
     localStorage.removeItem('empathica_token');
     localStorage.removeItem('empathica_user');
     
@@ -58,9 +69,11 @@ apiClient.interceptors.response.use(
   (error) => {
     // Rutas que no deben causar redirección automática al login
     const nonCriticalRoutes = [
+      '/api/auth/login', // Excluir login para no limpiar sesión en intentos fallidos
       '/api/psychologists/',
       '/api/patients/',
-      '/api/users/details' // Agregar también el endpoint de detalles de usuario
+      '/api/users/details', // Agregar también el endpoint de detalles de usuario
+      '/api/patients/' // Incluir actualizaciones de pacientes
     ];
     
     const isNonCriticalRoute = nonCriticalRoutes.some(route => 
@@ -68,18 +81,21 @@ apiClient.interceptors.response.use(
     );
     
     if (error.response && error.response.status === 401) {
-      // Token expirado o inválido
-      console.log('Token expirado o inválido, limpiando sesión...');
-      localStorage.removeItem('empathica_token');
-      localStorage.removeItem('empathica_user');
+      // Verificar si es un intento de login fallido
+      const isLoginAttempt = error.config?.url?.includes('/api/auth/login');
       
-      // Solo redirigir si no es una ruta no crítica
-      if (!isNonCriticalRoute && window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      if (!isLoginAttempt) {
+        // Token expirado o inválido en otras rutas
+        localStorage.removeItem('empathica_token');
+        localStorage.removeItem('empathica_user');
+        
+        // Solo redirigir si no es una ruta no crítica
+        if (!isNonCriticalRoute && window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     } else if (error.response && error.response.status === 403) {
       // Acceso denegado
-      console.log('Acceso denegado, limpiando sesión...');
       localStorage.removeItem('empathica_token');
       localStorage.removeItem('empathica_user');
       
@@ -113,7 +129,6 @@ const isTokenExpired = () => {
     // Verificar que el token tenga el formato correcto (3 partes separadas por puntos)
     const parts = token.split('.');
     if (parts.length !== 3) {
-      console.log('Token malformado, considerando como expirado');
       return true;
     }
     
@@ -122,15 +137,8 @@ const isTokenExpired = () => {
     const currentTime = Math.floor(Date.now() / 1000);
     
     // Verificar si el token ha expirado (con margen de 5 minutos)
-    const isExpired = payload.exp < (currentTime - 300);
-    
-    if (isExpired) {
-      console.log('Token expirado según verificación JWT');
-    }
-    
-    return isExpired;
+    return payload.exp < (currentTime - 300);
   } catch (error) {
-    console.error('Error verificando expiración del token:', error);
     return true; // Si hay error, considerar como expirado
   }
 };
@@ -170,32 +178,42 @@ export const authService = {
    */
   login: async (credentials) => {
     try {
-      console.log('Iniciando proceso de login...');
-      
       // Enviar solo email y password al backend
       const loginData = {
         email: credentials.email,
         password: credentials.password
       };
 
-      console.log('Enviando credenciales al backend...');
       const response = await apiClient.post('/api/auth/login', loginData);
       const data = handleResponse(response);
-      
-      console.log('Login exitoso, token recibido:', !!data.token);
       
       // Guardar el token en localStorage
       if (data.token) {
         localStorage.setItem('empathica_token', data.token);
-        console.log('Token guardado en localStorage');
-      } else {
-        console.warn('No se recibió token en la respuesta');
       }
       
       return data;
     } catch (error) {
-      console.error('Error en login:', error);
-      throw error;
+      // Manejar errores específicos de autenticación
+      if (error.response) {
+        if (error.response.status === 401) {
+          // Mostrar el mensaje específico del backend si está disponible
+          const backendMessage = error.response.data?.message || error.response.data?.error;
+          if (backendMessage) {
+            throw new Error(backendMessage);
+          } else {
+            throw new Error('Credenciales incorrectas. Verifica tu email y contraseña.');
+          }
+        } else if (error.response.status === 400) {
+          throw new Error('Datos de login incompletos. Verifica que hayas ingresado email y contraseña.');
+        } else if (error.response.status >= 500) {
+          throw new Error('Error del servidor. Inténtalo de nuevo más tarde.');
+        }
+      } else if (error.request) {
+        throw new Error('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+      }
+      
+      throw new Error('Error inesperado durante el login. Inténtalo de nuevo.');
     }
   },
 
@@ -323,6 +341,185 @@ export const userService = {
       return handleResponse(response);
     } catch (error) {
       console.error('Error obteniendo información del psicólogo:', error);
+      throw error;
+    }
+  },
+
+
+
+  /**
+   * Actualiza la información complementaria de un psicólogo
+   * @param {number} psychologistId - ID del psicólogo
+   * @param {Object} complementaryData - Datos complementarios del psicólogo
+   * @returns {Promise} - Respuesta del servidor
+   */
+  updatePsychologistComplementaryInfo: async (psychologistId, complementaryData) => {
+    try {
+      const response = await apiClient.put(`/api/psychologists/${psychologistId}`, complementaryData);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error actualizando información complementaria del psicólogo:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Crea un horario para el psicólogo
+   * @param {Object} scheduleData - Datos del horario
+   * @param {string} scheduleData.day - Día de la semana (MONDAY, TUESDAY, etc.)
+   * @param {string} scheduleData.startTime - Hora de inicio (HH:MM)
+   * @param {string} scheduleData.endTime - Hora de fin (HH:MM)
+   * @returns {Promise} - Respuesta del backend
+   */
+  createPsychologistSchedule: async (scheduleData) => {
+    try {
+      const response = await apiClient.post('/api/psychologists/schedule', scheduleData);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error creando horario:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Elimina un horario específico del psicólogo
+   * @param {number} scheduleId - ID del horario a eliminar
+   * @returns {Promise} - Respuesta del backend
+   */
+  deletePsychologistSchedule: async (scheduleId) => {
+    try {
+      const response = await apiClient.delete(`/api/psychologists/schedule/${scheduleId}`);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error eliminando horario:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualiza todos los horarios del psicólogo (reemplaza los existentes)
+   * @param {number} psychologistId - ID del psicólogo
+   * @param {Array} scheduleData - Array de horarios a actualizar
+   * @param {string} scheduleData[].day - Día de la semana (MONDAY, TUESDAY, etc.)
+   * @param {string} scheduleData[].startTime - Hora de inicio (HH:MM)
+   * @param {string} scheduleData[].endTime - Hora de fin (HH:MM)
+   * @returns {Promise} - Respuesta del backend
+   */
+  updatePsychologistSchedule: async (psychologistId, scheduleData) => {
+    try {
+      // Opción 1: Intentar PUT con datos completos del psicólogo
+      try {
+        // Primero obtener los datos actuales del psicólogo
+        const currentData = await userService.getPsychologistById(psychologistId);
+        
+        // Preparar los datos para el PUT (mantener datos existentes y actualizar horarios)
+        // Excluir el ID del objeto para no enviarlo
+        const { id, ...updateData } = currentData;
+        updateData.psychologistSchedule = scheduleData;
+        
+        const response = await apiClient.put(`/api/psychologists/${psychologistId}`, updateData);
+        return handleResponse(response);
+      } catch (putError) {
+        console.log('PUT falló, intentando con POST individual...');
+        
+        // Opción 2: Eliminar horarios existentes y crear nuevos
+        // Primero eliminar todos los horarios existentes (si existe endpoint DELETE)
+        try {
+          await apiClient.delete(`/api/psychologists/${psychologistId}/schedule`);
+        } catch (deleteError) {
+          console.log('Endpoint DELETE no disponible, continuando...');
+        }
+        
+        // Luego crear los nuevos horarios uno por uno
+        const promises = scheduleData.map(schedule => 
+          userService.createPsychologistSchedule(schedule)
+        );
+        await Promise.all(promises);
+        
+        return { success: true, message: 'Horarios actualizados exitosamente' };
+      }
+    } catch (error) {
+      console.error('Error actualizando horarios del psicólogo:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene los datos completos de un paciente por su ID
+   * @param {number} patientId - ID del paciente
+   * @returns {Promise} - Datos del paciente incluyendo psicólogo asignado
+   */
+  getPatientById: async (patientId) => {
+    try {
+      const response = await apiClient.get(`/api/patients/${patientId}`);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error obteniendo datos del paciente:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualiza los datos de un paciente (incluyendo tags del test)
+   * @param {number} patientId - ID del paciente
+   * @param {Object} patientData - Datos del paciente a actualizar
+   * @returns {Promise} - Respuesta del backend
+   */
+  updatePatient: async (patientId, patientData) => {
+    try {
+      const response = await apiClient.put(`/api/patients/${patientId}`, patientData);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error actualizando datos del paciente:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Asigna un psicólogo a un paciente
+   * @param {Object} assignmentData - Datos de la asignación
+   * @param {number} assignmentData.userId - ID del psicólogo a asignar
+   * @returns {Promise} - Respuesta del servidor
+   */
+  assignPsychologistToPatient: async (assignmentData) => {
+    try {
+      const response = await apiClient.post('/api/patients/psychologist', assignmentData);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error asignando psicólogo al paciente:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Sube los tags del paciente
+   * @param {Object} tagsData - Datos de los tags
+   * @param {Object} tagsData.tag1 - Primer tag con { name: "string" }
+   * @param {Object} tagsData.tag2 - Segundo tag con { name: "string" }
+   * @param {Object} tagsData.tag3 - Tercer tag con { name: "string" }
+   * @returns {Promise} - Respuesta del servidor
+   */
+  uploadPatientTags: async (tagsData) => {
+    try {
+      const response = await apiClient.post('/api/patients/tags', tagsData);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error subiendo tags del paciente:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene los datos completos de un psicólogo por su ID
+   * @param {number} psychologistId - ID del psicólogo
+   * @returns {Promise} - Datos del psicólogo incluyendo horarios
+   */
+  getPsychologistById: async (psychologistId) => {
+    try {
+      const response = await apiClient.get(`/api/psychologists/${psychologistId}`);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error obteniendo datos del psicólogo:', error);
       throw error;
     }
   }

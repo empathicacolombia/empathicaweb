@@ -4,7 +4,8 @@ import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
 import AppointmentCalendarModal from './AppointmentCalendarModal';
 import MobileDashboardNav from './MobileDashboardNav';
-import { userService, apiConfig } from '../services/api';
+import { userService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Componente de página de Citas del Cliente
@@ -17,6 +18,8 @@ import { userService, apiConfig } from '../services/api';
  * @param {boolean} navigationProps.sidebarOpen - Estado de apertura del sidebar
  */
 const AppointmentsPage = ({ navigationProps }) => {
+  const { user } = useAuth();
+  
   /**
    * Estado para almacenar la información del usuario desde el backend
    */
@@ -49,23 +52,20 @@ const AppointmentsPage = ({ navigationProps }) => {
    * Obtiene la información del usuario desde el backend
    */
   const fetchUserInfo = async () => {
+    if (!user?.id) {
+      setUserError('No se pudo identificar al usuario');
+      setIsLoadingUser(false);
+      return;
+    }
+
     try {
       setIsLoadingUser(true);
-      setUserError('');
-
-      const { token, userId } = apiConfig.getAuthData();
-      
-      if (!token || !userId) {
-        throw new Error('No se encontraron datos de autenticación');
-      }
-
-      const patientData = await userService.getPatientById(userId, token);
-      console.log('Información del paciente obtenida en citas:', patientData);
-      setUserInfo(patientData);
-
+      setUserError(null);
+      const data = await userService.getPatientById(user.id);
+      setUserInfo(data);
     } catch (error) {
-      console.error('Error obteniendo información del usuario en citas:', error);
-      setUserError(error.message || 'Error al cargar información del usuario');
+      console.error('Error obteniendo datos del paciente:', error);
+      setUserError('Error al cargar los datos del paciente');
     } finally {
       setIsLoadingUser(false);
     }
@@ -76,7 +76,7 @@ const AppointmentsPage = ({ navigationProps }) => {
    */
   useEffect(() => {
     fetchUserInfo();
-  }, []);
+  }, [user?.id]);
 
   /**
    * Abre el modal de detalles de una sesión específica
@@ -129,68 +129,7 @@ const AppointmentsPage = ({ navigationProps }) => {
    * Datos de ejemplo de citas del historial
    * En una implementación real, estos datos vendrían del backend
    */
-  const historyAppointments = [
-    {
-      id: 101,
-      type: 'Sesión individual',
-      date: 'jueves, 11 de julio de 2024',
-      time: '10:00 AM',
-      specialist: 'Dra. María González',
-      status: 'Completada',
-      statusColor: '#e8f5e8',
-      statusTextColor: '#00C851'
-    },
-    {
-      id: 102,
-      type: 'Sesión de seguimiento',
-      date: 'jueves, 4 de julio de 2024',
-      time: '2:00 PM',
-      specialist: 'Dra. María González',
-      status: 'Completada',
-      statusColor: '#e8f5e8',
-      statusTextColor: '#00C851'
-    },
-    {
-      id: 103,
-      type: 'Sesión individual',
-      date: 'jueves, 27 de junio de 2024',
-      time: '11:00 AM',
-      specialist: 'Dra. María González',
-      status: 'Completada',
-      statusColor: '#e8f5e8',
-      statusTextColor: '#00C851'
-    },
-    {
-      id: 104,
-      type: 'Sesión de evaluación',
-      date: 'jueves, 20 de junio de 2024',
-      time: '3:00 PM',
-      specialist: 'Dra. María González',
-      status: 'Completada',
-      statusColor: '#e8f5e8',
-      statusTextColor: '#00C851'
-    },
-    {
-      id: 105,
-      type: 'Sesión individual',
-      date: 'jueves, 13 de junio de 2024',
-      time: '10:00 AM',
-      specialist: 'Dra. María González',
-      status: 'Completada',
-      statusColor: '#e8f5e8',
-      statusTextColor: '#00C851'
-    },
-    {
-      id: 106,
-      type: 'Sesión de seguimiento',
-      date: 'jueves, 6 de junio de 2024',
-      time: '2:00 PM',
-      specialist: 'Dra. María González',
-      status: 'Completada',
-      statusColor: '#e8f5e8',
-      statusTextColor: '#00C851'
-    }
-  ];
+  const historyAppointments = [];
 
   // Seleccionar las citas según la pestaña activa
   const appointments = activeTab === 'upcoming' ? upcomingAppointments : historyAppointments;
@@ -740,6 +679,47 @@ const AppointmentsPage = ({ navigationProps }) => {
                     </p>
                   </div>
                 </div>
+              </div>
+            ) : activeTab === 'history' && historyAppointments.length === 0 ? (
+              /* ========================================
+                   ESTADO: HISTORIAL VACÍO
+                   ======================================== */
+              <div style={{
+                textAlign: 'center',
+                padding: '3rem 1rem'
+              }}>
+                {/* Icono de historial vacío */}
+                <div style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  background: '#e9ecef',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1.5rem auto'
+                }}>
+                  <Calendar size={40} color="#6c757d" />
+                </div>
+                
+                {/* Texto principal */}
+                <h2 style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: '#495057',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  No hay historial de citas
+                </h2>
+                
+                {/* Texto secundario */}
+                <p style={{
+                  fontSize: 16,
+                  color: '#6c757d',
+                  margin: '0 0 2rem 0'
+                }}>
+                  Aquí aparecerán tus sesiones completadas
+                </p>
               </div>
             ) : (
               /* ========================================

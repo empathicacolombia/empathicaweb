@@ -6,10 +6,10 @@ import { FileText, Calendar, TrendingUp, Download, Eye, DollarSign, Clock, User 
  * Muestra estadísticas clave de ingresos, consultas y rendimiento
  */
 const metrics = [
-  { label: 'Consultas este mes', value: '25', icon: <Calendar size={22} />, change: '+8 vs mes anterior', color: '#0057FF' },
-  { label: 'Ingresos totales', value: '$12,500', icon: <DollarSign size={22} />, change: '+15% vs mes anterior', color: '#2ecc71' },
-  { label: 'Promedio por consulta', value: '$500', icon: <TrendingUp size={22} />, change: '+5% vs mes anterior', color: '#a259e6' },
-  { label: 'Horas de terapia', value: '20.8h', icon: <Clock size={22} />, change: '+12% vs mes anterior', color: '#6ea8fe' },
+  { label: 'Consultas este mes', value: '0', icon: <Calendar size={22} />, change: '0 vs mes anterior', color: '#0057FF' },
+  { label: 'Ingresos totales', value: '$0', icon: <DollarSign size={22} />, change: '0% vs mes anterior', color: '#2ecc71' },
+  { label: 'Promedio por consulta', value: '$0', icon: <TrendingUp size={22} />, change: '0% vs mes anterior', color: '#a259e6' },
+  { label: 'Horas de terapia', value: '0h', icon: <Clock size={22} />, change: '0% vs mes anterior', color: '#6ea8fe' },
 ];
 
 /**
@@ -35,96 +35,7 @@ const consultationPrices = {
  * Incluye información completa de sesiones, precios y estado de pago
  * TODO: Reemplazar con datos dinámicos del backend
  */
-const consultationHistory = [
-  {
-    id: 'CONS-001',
-    patientName: 'Ana García',
-    date: '2024-07-15',
-    time: '15:00',
-    duration: '50 min',
-    type: 'Virtual',
-    price: 450,
-    status: 'Completada',
-    notes: 'Sesión de TCC para manejo de ansiedad'
-  },
-  {
-    id: 'CONS-002',
-    patientName: 'Carlos Mendoza',
-    date: '2024-07-14',
-    time: '10:30',
-    duration: '45 min',
-    type: 'Virtual',
-    price: 450,
-    status: 'Completada',
-    notes: 'Continuación de terapia de autoestima'
-  },
-  {
-    id: 'CONS-003',
-    patientName: 'María López',
-    date: '2024-07-13',
-    time: '16:00',
-    duration: '60 min',
-    type: 'Evaluación',
-    price: 600,
-    status: 'Completada',
-    notes: 'Evaluación psicológica inicial'
-  },
-  {
-    id: 'CONS-004',
-    patientName: 'Pedro Ruiz',
-    date: '2024-07-12',
-    time: '14:00',
-    duration: '50 min',
-    type: 'Virtual',
-    price: 450,
-    status: 'Completada',
-    notes: 'Sesión de mindfulness y relajación'
-  },
-  {
-    id: 'CONS-005',
-    patientName: 'Laura Sánchez',
-    date: '2024-07-11',
-    time: '11:00',
-    duration: '45 min',
-    type: 'Virtual',
-    price: 450,
-    status: 'Completada',
-    notes: 'Trabajo en técnicas de comunicación'
-  },
-  {
-    id: 'CONS-006',
-    patientName: 'Diego Fernández',
-    date: '2024-07-10',
-    time: '17:30',
-    duration: '50 min',
-    type: 'Virtual',
-    price: 450,
-    status: 'Completada',
-    notes: 'Sesión de terapia cognitivo-conductual'
-  },
-  {
-    id: 'CONS-007',
-    patientName: 'Patricia Morales',
-    date: '2024-07-09',
-    time: '09:00',
-    duration: '60 min',
-    type: 'Crisis',
-    price: 700,
-    status: 'Completada',
-    notes: 'Intervención en crisis - manejo de emergencia'
-  },
-  {
-    id: 'CONS-008',
-    patientName: 'Roberto Jiménez',
-    date: '2024-07-08',
-    time: '13:00',
-    duration: '45 min',
-    type: 'Seguimiento',
-    price: 400,
-    status: 'Completada',
-    notes: 'Seguimiento de progreso en terapia'
-  }
-];
+const consultationHistory = [];
 
 /**
  * Componente de Facturación del Psicólogo
@@ -277,76 +188,115 @@ const PsychologistBilling = () => {
 
           {/* Lista de consultas */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-            {consultationHistory.map((consultation, idx) => (
-              <div key={idx} style={{ 
-                background: '#fff', 
-                borderRadius: 18, 
-                boxShadow: '0 2px 8px #e0e7ef', 
-                padding: '1.5rem 2rem', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 24, 
-                justifyContent: 'space-between' 
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-                  <div style={{ 
-                    width: 56, 
-                    height: 56, 
-                    borderRadius: '50%', 
-                    background: '#e6f0ff', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center' 
-                  }}>
-                    <User size={32} color="#6ea8fe" />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 20, color: '#222' }}>{consultation.patientName}</div>
-                    <div style={{ color: '#7a8bbd', fontSize: 15, marginBottom: 4 }}>{consultation.notes}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 18, color: '#7a8bbd', fontSize: 15 }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Calendar size={16} /> {consultation.date}
-                      </span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Clock size={16} /> {consultation.time} ({consultation.duration})
-                      </span>
-                      <span style={{
-                        background: '#f0f4ff',
-                        color: '#0057FF',
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        fontSize: 12,
-                        fontWeight: 600
-                      }}>
-                        {consultation.type}
-                      </span>
+            {consultationHistory.length > 0 ? (
+              consultationHistory.map((consultation, idx) => (
+                <div key={idx} style={{ 
+                  background: '#fff', 
+                  borderRadius: 18, 
+                  boxShadow: '0 2px 8px #e0e7ef', 
+                  padding: '1.5rem 2rem', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 24, 
+                  justifyContent: 'space-between' 
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+                    <div style={{ 
+                      width: 56, 
+                      height: 56, 
+                      borderRadius: '50%', 
+                      background: '#e6f0ff', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <User size={32} color="#6ea8fe" />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 20, color: '#222' }}>{consultation.patientName}</div>
+                      <div style={{ color: '#7a8bbd', fontSize: 15, marginBottom: 4 }}>{consultation.notes}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 18, color: '#7a8bbd', fontSize: 15 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Calendar size={16} /> {consultation.date}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Clock size={16} /> {consultation.time} ({consultation.duration})
+                        </span>
+                        <span style={{
+                          background: '#f0f4ff',
+                          color: '#0057FF',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          fontSize: 12,
+                          fontWeight: 600
+                        }}>
+                          {consultation.type}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+                    <span style={{ color: '#0057FF', fontWeight: 800, fontSize: 20 }}>
+                      ${consultation.price}
+                    </span>
+                    <span style={{ 
+                      background: '#e6ffe6', 
+                      color: '#2ecc71', 
+                      fontWeight: 700, 
+                      fontSize: 14, 
+                      borderRadius: 8, 
+                      padding: '0.2rem 1rem' 
+                    }}>
+                      {consultation.status}
+                    </span>
+                    <span style={{ 
+                      fontSize: 12, 
+                      color: '#666',
+                      fontWeight: 500
+                    }}>
+                      {consultation.id}
+                    </span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-                  <span style={{ color: '#0057FF', fontWeight: 800, fontSize: 20 }}>
-                    ${consultation.price}
-                  </span>
-                  <span style={{ 
-                    background: '#e6ffe6', 
-                    color: '#2ecc71', 
-                    fontWeight: 700, 
-                    fontSize: 14, 
-                    borderRadius: 8, 
-                    padding: '0.2rem 1rem' 
-                  }}>
-                    {consultation.status}
-                  </span>
-                  <span style={{ 
-                    fontSize: 12, 
-                    color: '#666',
-                    fontWeight: 500
-                  }}>
-                    {consultation.id}
-                  </span>
+              ))
+            ) : (
+              <div style={{
+                background: '#fff',
+                borderRadius: 16,
+                padding: '3rem',
+                marginBottom: '2rem',
+                textAlign: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '1rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  <FileText size={64} color="#6b7280" />
                 </div>
+                <h2 style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: '#374151',
+                  margin: '0 0 1rem 0'
+                }}>
+                  No hay consultas registradas
+                </h2>
+                <p style={{
+                  fontSize: 16,
+                  color: '#6b7280',
+                  lineHeight: 1.6,
+                  margin: 0,
+                  maxWidth: '500px',
+                  margin: '0 auto'
+                }}>
+                  El historial de consultas aparecerá aquí una vez que tengas sesiones completadas con tus pacientes.
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}

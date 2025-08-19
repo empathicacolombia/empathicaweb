@@ -28,6 +28,7 @@ import FreeOrientationPage from './components/FreeOrientationPage';
 import BusinessDemoSection from './components/BusinessDemoSection';
 import ClientProfilePage from './components/ClientProfilePage';
 import FAQPage from './components/FAQPage';
+import RegistrationSuccess from './components/RegistrationSuccess';
 
 function AppMain() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -53,7 +54,7 @@ function AppMain() {
     console.log('Estado de loading:', loading);
     
     // Si hay respuestas del test, guardarlas
-    if (additionalProps.testAnswers) {
+    if (additionalProps && additionalProps.testAnswers) {
       setTestAnswers(additionalProps.testAnswers);
     }
     
@@ -92,6 +93,7 @@ function AppMain() {
         <Route path="/login" element={<LoginPage navigationProps={navigationProps} />} />
         <Route path="/register" element={<RegisterPage navigationProps={navigationProps} />} />
         <Route path="/quick-register" element={<QuickRegisterPage navigationProps={navigationProps} />} />
+        <Route path="/registration-success" element={<RegistrationSuccess navigationProps={navigationProps} />} />
         
         {/* Rutas del dashboard de clientes - PROTEGIDAS */}
         <Route path="/client-dashboard" element={

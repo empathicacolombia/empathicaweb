@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../services/api';
+import ApprovalStatus from './ApprovalStatus';
+import ComplementaryInfoForm from './ComplementaryInfoForm';
 
 /**
  * Componente de configuración del psicólogo
@@ -9,7 +11,7 @@ import { userService } from '../services/api';
  * @returns {JSX.Element} - Componente de configuración
  */
 const PsychologistSettings = ({ navigationProps }) => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   
   // Estados para la información complementaria
   const [complementaryInfo, setComplementaryInfo] = useState({
@@ -29,6 +31,8 @@ const PsychologistSettings = ({ navigationProps }) => {
   // Estado de carga
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   /**
    * Calcula la edad del psicólogo basada en la fecha de nacimiento
@@ -76,14 +80,13 @@ const PsychologistSettings = ({ navigationProps }) => {
     
     try {
       const response = await userService.getPsychologistById(user.id);
-      console.log('Información complementaria obtenida:', response);
       
       // Actualizar estados con la información recibida
       if (response) {
         setComplementaryInfo({
-          timezone: response.timezone || '',
+          timezone: response.timezone || '', // El backend usa 'timezone'
           cedula: response.cedula || '',
-          oneLiner: response.oneLiner || '',
+          oneliner: response.oneliner || '', // Corregido: el backend usa 'oneliner'
           licenseNumber: response.licenseNumber || '',
           specialty: response.specialty || '',
           attendAges: response.attendAges || [],
@@ -122,6 +125,52 @@ const PsychologistSettings = ({ navigationProps }) => {
     }
   };
 
+  /**
+   * Verifica si el usuario tiene información complementaria
+   */
+  const hasComplementaryInfo = () => {
+    return complementaryInfo.timezone !== '' || 
+           complementaryInfo.cedula !== '' || 
+           complementaryInfo.oneliner !== '' ||
+           complementaryInfo.licenseNumber !== '' ||
+           complementaryInfo.specialty !== '';
+  };
+
+  /**
+   * Callback cuando se envía exitosamente el formulario
+   */
+  const handleFormSubmitSuccess = (backendResponse) => {
+    setShowForm(false);
+    setFormSubmitted(true);
+    
+    // Actualizar el estado del usuario
+    if (user) {
+      // Si el backend no devuelve userStatus, forzamos el cambio a PENDING_APPROVAL
+      const newUserStatus = backendResponse?.userStatus || 'PENDING_APPROVAL';
+      
+      const updatedUser = {
+        ...user,
+        userStatus: newUserStatus
+      };
+      
+      // Actualizar en localStorage
+      localStorage.setItem('empathica_user', JSON.stringify(updatedUser));
+      
+      // Actualizar el contexto de autenticación
+      if (setUser) {
+        setUser(updatedUser);
+      }
+      
+      // Recargar información complementaria para mostrar los datos actualizados
+      fetchComplementaryInfo();
+      
+      // Forzar re-render del componente después de un breve delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
+  };
+
   // Cargar información complementaria al montar el componente
   useEffect(() => {
     if (user?.id) {
@@ -134,6 +183,22 @@ const PsychologistSettings = ({ navigationProps }) => {
       <span style={{ color: '#222', fontWeight: 800, fontSize: 32, display: 'block', marginBottom: 24 }}>
         Configuración
       </span>
+
+      {/* Estado de aprobación */}
+      <ApprovalStatus 
+        userStatus={user?.userStatus || 'PENDING_FORM_FULFILLMENT'}
+        hasComplementaryInfo={hasComplementaryInfo()}
+        onShowForm={() => setShowForm(true)}
+        formSubmitted={formSubmitted}
+      />
+
+      {/* Formulario de información complementaria */}
+      {showForm && (
+        <ComplementaryInfoForm 
+          user={user}
+          onSubmitSuccess={handleFormSubmitSuccess}
+        />
+      )}
 
       <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', border: '1.5px solid #f2f2f2', padding: '2rem' }}>
         <div>

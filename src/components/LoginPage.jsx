@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { userService } from '../services/api';
 import logoEmpathica from '../assets/Logoempathica.png';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -85,28 +86,56 @@ const LoginPage = ({ navigationProps }) => {
     try {
       // Usar el contexto de autenticación para login
       const userData = await login({ email, password });
-      
-      console.log('Login exitoso - Usuario:', userData);
+
+      // Si es paciente, procesar tags del test si existen
+      if (userData.userType === 'client' || userData.userType === 'patient') {
+        try {
+          const storedTags = localStorage.getItem('empathica_test_tags');
+          if (storedTags) {
+            const tagsData = JSON.parse(storedTags);
+            console.log('Tags encontrados en localStorage durante login:', tagsData);
+            console.log('Estructura de tag1:', tagsData.tag1);
+            console.log('Estructura de tag2:', tagsData.tag2);
+            console.log('Estructura de tag3:', tagsData.tag3);
+            
+            // Preparar datos para el POST (solo los nombres de los tags)
+            const tagsPayload = {
+              tag1: { name: tagsData.tag1?.name || 'string' },
+              tag2: { name: tagsData.tag2?.name || 'string' },
+              tag3: { name: tagsData.tag3?.name || 'string' }
+            };
+            
+            console.log('Enviando tags al backend durante login:', tagsPayload);
+            console.log('Valor final de tag1:', tagsPayload.tag1);
+            console.log('Valor final de tag2:', tagsPayload.tag2);
+            console.log('Valor final de tag3:', tagsPayload.tag3);
+            
+            // Hacer POST para subir los tags del paciente
+            await userService.uploadPatientTags(tagsPayload);
+            console.log('Tags subidos exitosamente al perfil del paciente');
+            
+            // Eliminar tags de localStorage después del POST exitoso
+            localStorage.removeItem('empathica_test_tags');
+            console.log('Tags eliminados de localStorage después del login');
+          } else {
+            console.log('No hay tags en localStorage para procesar durante el login');
+          }
+        } catch (tagsError) {
+          console.error('Error actualizando tags del paciente durante login:', tagsError);
+          // No lanzar error aquí para no interrumpir el flujo de login
+        }
+      }
 
       // Redirigir según el tipo de usuario
-      console.log('=== REDIRECCIÓN DESPUÉS DEL LOGIN ===');
-      console.log('Tipo de usuario:', userData.userType);
-      console.log('Roles del usuario:', userData.roles);
-      console.log('Usuario completo:', userData);
-      
       if (userData.userType === 'psychologist') {
-        console.log('Redirigiendo a psychologist-dashboard');
         navigate('/psychologist-dashboard');
       } else if (userData.userType === 'business') {
-        console.log('Redirigiendo a business-dashboard');
         navigate('/business-dashboard');
       } else {
-        console.log('Redirigiendo a client-dashboard');
         navigate('/client-dashboard');
       }
 
     } catch (error) {
-      console.error('Error en login:', error);
       setError(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setIsLoading(false);

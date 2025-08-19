@@ -5,6 +5,7 @@ const TestResults = ({ navigationProps, testAnswers }) => {
   const [therapeuticApproaches, setTherapeuticApproaches] = useState([]);
   const [compatiblePsychologists, setCompatiblePsychologists] = useState([]);
   const [recommendedPsychologist, setRecommendedPsychologist] = useState(null);
+  const [otherOptions, setOtherOptions] = useState([]);
 
   // Determinar nivel de angustia basado en Q1 y Q12
   const determineNivelAngustia = (answers) => {
@@ -379,34 +380,52 @@ const TestResults = ({ navigationProps, testAnswers }) => {
 
   // Función para generar el psicólogo recomendado basado en las respuestas
   const generateRecommendedPsychologist = (answers) => {
-    // Lógica simple para determinar el tipo de especialización basado en las respuestas
-    const q1 = answers.section1?.id;
-    const q12 = answers.section5?.question12?.id;
-    
-    let specialization = 'Psicóloga especialista en ansiedad';
-    let description = 'Especializada en terapia cognitivo-conductual para el manejo de la ansiedad y el estrés.';
-    
-    if ((q1 === 'A' || q1 === 'B') && q12 === 'A') {
-      specialization = 'Psicóloga especialista en ansiedad';
-      description = 'Especializada en terapia cognitivo-conductual para el manejo de la ansiedad y el estrés.';
-    } else if (q1 === 'C' && q12 === 'B') {
-      specialization = 'Psicóloga especialista en depresión';
-      description = 'Experta en terapia de aceptación y compromiso para el tratamiento de la depresión.';
-    } else {
-      specialization = 'Psicóloga especialista en bienestar emocional';
-      description = 'Especializada en mindfulness y terapia integral para el equilibrio emocional.';
-    }
-
+    // Psicólogo recomendado real con datos de la imagen
     return {
-      nombre: 'Dra. María González',
-      especializacion: specialization,
-      descripcion: description,
-      imagen: '👩‍⚕️',
-      experiencia: '8 años de experiencia',
-      enfoque: 'Terapia Cognitivo-Conductual',
-      idiomas: 'Español, Inglés',
-      modalidad: 'Presencial y Online'
+      nombre: 'Christopher Vince Bravo Merino',
+      especializacion: 'Psicólogo Clínico',
+      descripcion: 'Especializado en terapia ACT (Acceptance and Commitment Therapy) y Mindfulness. Experto en el tratamiento de adultos y adolescentes con enfoque en arteterapia y técnicas de relajación.',
+      imagen: '👨‍⚕️',
+      experiencia: 'Psicólogo Clínico Certificado',
+      enfoque: 'ACT, Mindfulness',
+      idiomas: 'Español',
+      modalidad: 'Presencial y Online',
+      cedula: '545615skhs49684365',
+      edades: 'Adultos, Adolescentes',
+      modalidades: 'Arteterapia, Técnicas de relajación'
     };
+  };
+
+  // Función para generar otras opciones de psicólogos
+  const generateOtherOptions = () => {
+    return [
+      {
+        nombre: 'Dra. Ana María Rodríguez',
+        especializacion: 'Psicóloga Especialista en Ansiedad',
+        descripcion: 'Experta en terapia cognitivo-conductual para el manejo de la ansiedad y el estrés. Especializada en técnicas de respiración y mindfulness.',
+        imagen: '👩‍⚕️',
+        experiencia: '10 años de experiencia',
+        enfoque: 'Terapia Cognitivo-Conductual',
+        idiomas: 'Español, Inglés',
+        modalidad: 'Presencial y Online',
+        cedula: '12345678901234',
+        edades: 'Adultos, Adolescentes',
+        modalidades: 'Mindfulness, Técnicas de respiración'
+      },
+      {
+        nombre: 'Dr. Carlos Eduardo Mendoza',
+        especializacion: 'Psicólogo Especialista en Depresión',
+        descripcion: 'Especializado en terapia de aceptación y compromiso para el tratamiento de la depresión. Experto en técnicas de activación conductual.',
+        imagen: '👨‍⚕️',
+        experiencia: '12 años de experiencia',
+        enfoque: 'Terapia ACT, Activación Conductual',
+        idiomas: 'Español',
+        modalidad: 'Presencial y Online',
+        cedula: '98765432109876',
+        edades: 'Adultos',
+        modalidades: 'Activación conductual, Terapia grupal'
+      }
+    ];
   };
 
   useEffect(() => {
@@ -423,6 +442,40 @@ const TestResults = ({ navigationProps, testAnswers }) => {
       // Generar psicólogo recomendado basado en las respuestas del test
       const recommended = generateRecommendedPsychologist(testAnswers);
       setRecommendedPsychologist(recommended);
+
+      // Generar otras opciones de psicólogos
+      const otherPsychologists = generateOtherOptions();
+      setOtherOptions(otherPsychologists);
+
+      // Guardar los tags en localStorage para uso posterior en el registro
+      if (profile.tags && profile.tags.length > 0) {
+        const tagsForStorage = {
+          tag1: {
+            tagId: 0,
+            name: profile.tags[0] || "string",
+            percentage: 0.1,
+            patient: "string",
+            session: "string"
+          },
+          tag2: {
+            tagId: 0,
+            name: profile.tags[1] || "string",
+            percentage: 0.1,
+            patient: "string",
+            session: "string"
+          },
+          tag3: {
+            tagId: 0,
+            name: profile.tags[2] || "string",
+            percentage: 0.1,
+            patient: "string",
+            session: "string"
+          }
+        };
+        
+        localStorage.setItem('empathica_test_tags', JSON.stringify(tagsForStorage));
+        console.log('Tags guardados en localStorage:', tagsForStorage);
+      }
     }
   }, [testAnswers]);
 
@@ -850,7 +903,231 @@ const TestResults = ({ navigationProps, testAnswers }) => {
                 </div>
               </div>
 
+              {/* Información adicional del psicólogo recomendado */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '16px',
+                marginBottom: '24px'
+              }}>
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '4px'
+                  }}>
+                    Edades que atiende
+                  </div>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333'
+                  }}>
+                    {recommendedPsychologist.edades}
+                  </div>
+                </div>
+                
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '4px'
+                  }}>
+                    Modalidades adicionales
+                  </div>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333'
+                  }}>
+                    {recommendedPsychologist.modalidades}
+                  </div>
+                </div>
+                
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '4px'
+                  }}>
+                    Cédula Profesional
+                  </div>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333'
+                  }}>
+                    {recommendedPsychologist.cedula}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sección de Otras Opciones */}
+          {otherOptions.length > 0 && (
+            <div style={{ 
+              marginTop: '48px',
+              background: '#fff', 
+              borderRadius: 20, 
+              boxShadow: '0 4px 24px #0057ff11', 
+              padding: '32px'
+            }}>
+              <h2 style={{ 
+                fontWeight: 'bold', 
+                fontSize: 'clamp(20px, 4vw, 24px)', 
+                color: '#333', 
+                margin: '0 0 24px 0',
+                textAlign: 'center'
+              }}>
+                Otras Opciones
+              </h2>
               
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '24px'
+              }}>
+                {otherOptions.map((psychologist, index) => (
+                  <div key={index} style={{
+                    background: '#f8f9fa',
+                    borderRadius: '16px',
+                    padding: '24px',
+                    border: '2px solid #e9ecef'
+                  }}>
+                    {/* Información del psicólogo */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      marginBottom: '16px'
+                    }}>
+                      {/* Avatar */}
+                      <div style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        background: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '24px',
+                        flexShrink: 0
+                      }}>
+                        {psychologist.imagen}
+                      </div>
+                      
+                      {/* Información */}
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ 
+                          fontWeight: 'bold', 
+                          color: '#333', 
+                          margin: '0 0 4px 0',
+                          fontSize: '16px'
+                        }}>
+                          {psychologist.nombre}
+                        </h4>
+                        <p style={{ 
+                          color: '#666', 
+                          fontSize: '14px', 
+                          margin: 0,
+                          fontWeight: '500'
+                        }}>
+                          {psychologist.especializacion}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Descripción */}
+                    <p style={{ 
+                      color: '#666', 
+                      fontSize: '14px', 
+                      lineHeight: '1.5',
+                      margin: '0 0 16px 0'
+                    }}>
+                      {psychologist.descripcion}
+                    </p>
+
+                    {/* Detalles */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '12px',
+                      marginBottom: '16px'
+                    }}>
+                      <div style={{
+                        background: '#fff',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          marginBottom: '2px'
+                        }}>
+                          Enfoque
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: '#333'
+                        }}>
+                          {psychologist.enfoque}
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        background: '#fff',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          marginBottom: '2px'
+                        }}>
+                          Experiencia
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: '#333'
+                        }}>
+                          {psychologist.experiencia}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Información adicional */}
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#666',
+                      marginBottom: '12px'
+                    }}>
+                      <div><strong>Edades:</strong> {psychologist.edades}</div>
+                      <div><strong>Modalidades:</strong> {psychologist.modalidades}</div>
+                      <div><strong>Cédula:</strong> {psychologist.cedula}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

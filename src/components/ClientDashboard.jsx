@@ -4,6 +4,7 @@ import { useSessionTimeout } from '../hooks/useSessionTimeout';
 import {
   Home,
   CalendarDays,
+  Calendar,
   Heart,
   Users,
   LifeBuoy,
@@ -14,6 +15,8 @@ import {
   ArrowLeft,
   TrendingUp,
   Smile,
+  UserX,
+  UserCheck,
 } from 'lucide-react';
 import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
@@ -32,9 +35,56 @@ import { userService } from '../services/api';
  */
 const ClientDashboard = ({ navigationProps }) => {
   const { user } = useAuth();
+  const [patientData, setPatientData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // Hook para manejar timeout de sesión (60 minutos de inactividad)
   useSessionTimeout(60);
+
+  // Función para calcular la edad
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Función para obtener los datos del paciente
+  const fetchPatientData = async () => {
+    if (!user?.id) {
+      setError('No se pudo identificar al usuario');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await userService.getPatientById(user.id);
+      setPatientData(data);
+    } catch (error) {
+      console.error('Error obteniendo datos del paciente:', error);
+      setError('Error al cargar los datos del paciente');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    fetchPatientData();
+  }, [user?.id]);
+
+
   
 
   
@@ -70,6 +120,15 @@ const ClientDashboard = ({ navigationProps }) => {
       minHeight: '100vh',
       background: '#f8f9fa'
     }}>
+      {/* CSS para animación de loading */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
       {/* ========================================
            SIDEBAR DE NAVEGACIÓN
            ======================================== */}
@@ -202,11 +261,7 @@ const ClientDashboard = ({ navigationProps }) => {
               fontWeight: 800,
               margin: '0 0 0.5rem 0'
             }}>
-              {user ? (
-                `Hola ${user.name} ${user.lastName || ''}, ¿cómo estás hoy?`
-              ) : (
-                'Hola, ¿cómo estás hoy?'
-              )}
+              {loading ? 'Cargando...' : patientData ? `Hola ${patientData.name} ${patientData.lastName || ''}, ¿cómo estás hoy?` : 'Hola, ¿cómo estás hoy?'}
             </h1>
             
             {/* Mensaje motivacional */}
@@ -232,38 +287,6 @@ const ClientDashboard = ({ navigationProps }) => {
                 gap: '16px'
               }
             }}>
-              {/* Botón para realizar test de match */}
-              <button
-                onClick={() => handleNavigation('questionnaire-match')}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  color: '#fff',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '12px',
-                  padding: '12px 24px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backdropFilter: 'blur(10px)',
-                  flex: 1
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <TrendingUp size={20} />
-                Realizar Test de Match Perfecto
-              </button>
-
               {/* Botón para solicitar orientación */}
               <button
                 onClick={() => handleNavigation('free-orientation')}
@@ -294,6 +317,38 @@ const ClientDashboard = ({ navigationProps }) => {
               >
                 <Heart size={20} />
                 Solicitar Orientación
+              </button>
+
+              {/* Botón para agendar cita */}
+              <button
+                onClick={() => handleNavigation('appointments')}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  color: '#fff',
+                  border: '2px solid rgba(255, 255, 255, 0.25)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backdropFilter: 'blur(10px)',
+                  flex: 1
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <Calendar size={20} />
+                Agendar Cita
               </button>
             </div>
           </div>
@@ -358,7 +413,7 @@ const ClientDashboard = ({ navigationProps }) => {
                 color: '#0057FF',
                 marginBottom: '0.5rem'
               }}>
-                12
+                0
               </div>
               
               {/* Descripción del período */}
@@ -422,7 +477,7 @@ const ClientDashboard = ({ navigationProps }) => {
                 color: '#00C851',
                 marginBottom: '0.5rem'
               }}>
-                15
+                0
               </div>
               
               {/* Descripción del progreso */}
@@ -486,7 +541,7 @@ const ClientDashboard = ({ navigationProps }) => {
                 color: '#ff9800',
                 marginBottom: '0.5rem'
               }}>
-                85%
+                0%
               </div>
               
               {/* Descripción de la base del cálculo */}
@@ -501,11 +556,14 @@ const ClientDashboard = ({ navigationProps }) => {
           </div>
 
           {/* ========================================
-               SECCIÓN DE MI ESPECIALISTA
+               SECCIÓN DE MI ESPECIALISTA Y PRÓXIMA CITA
                ======================================== */}
           <div style={{
-            display: 'flex',
-            justifyContent: 'center'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '1.5rem',
+            width: '100%',
+            maxWidth: '1000px'
           }}>
             {/* ========================================
                  TARJETA DE MI ESPECIALISTA
@@ -515,7 +573,6 @@ const ClientDashboard = ({ navigationProps }) => {
               borderRadius: 12,
               padding: '1.5rem',
               boxShadow: '0 2px 8px #0057ff11',
-              maxWidth: '500px',
               width: '100%'
             }}>
               {/* Encabezado de la tarjeta */}
@@ -536,28 +593,225 @@ const ClientDashboard = ({ navigationProps }) => {
                 </h3>
               </div>
               
-              {/* Información del especialista */}
+              {/* Estado de carga */}
+              {loading && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '2rem',
+                  gap: '1rem'
+                }}>
+                  <div style={{
+                    width: 20,
+                    height: 20,
+                    border: '2px solid #f3f3f3',
+                    borderTop: '2px solid #0057FF',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <span style={{ fontSize: 14, color: '#666' }}>
+                    Cargando información...
+                  </span>
+                </div>
+              )}
+
+              {/* Error */}
+              {error && (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: 8,
+                  padding: '1rem',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <UserX size={16} color="#dc2626" />
+                  <span style={{ fontSize: 14, color: '#dc2626' }}>
+                    Error al cargar datos
+                  </span>
+                </div>
+              )}
+
+              {/* Contenido dinámico */}
+              {!loading && !error && (
+                <>
+                  {patientData?.psychologist ? (
+                    /* Psicólogo asignado */
+                    <>
+                      {/* Información del especialista */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        marginBottom: '1.5rem'
+                      }}>
+                        {/* Avatar del especialista */}
+                        <div style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: '50%',
+                          background: '#f0f4ff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 24
+                        }}>
+                          <User color="#0057FF" size={32} />
+                        </div>
+                        
+                        {/* Datos del especialista */}
+                        <div>
+                          <div style={{
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: '#333',
+                            marginBottom: '4px'
+                          }}>
+                            {patientData.psychologist.name} {patientData.psychologist.lastName}
+                          </div>
+                          <div style={{
+                            fontSize: 14,
+                            color: '#666'
+                          }}>
+                            Psicólogo {patientData.psychologist.specialty ? `- ${patientData.psychologist.specialty}` : 'Clínico'}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Botón para ver perfil completo */}
+                      <button
+                        onClick={() => handleNavigation('my-specialist')}
+                        style={{
+                          background: '#0057FF',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '0.75rem 1.5rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          width: '100%'
+                        }}
+                      >
+                        Ver perfil completo
+                      </button>
+                    </>
+                  ) : (
+                    /* Sin psicólogo asignado */
+                    <>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        marginBottom: '1.5rem'
+                      }}>
+                        {/* Icono de no asignado */}
+                        <div style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: '50%',
+                          background: '#fef3c7',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 24
+                        }}>
+                          <UserX color="#f59e0b" size={32} />
+                        </div>
+                        
+                        {/* Mensaje */}
+                        <div>
+                          <div style={{
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: '#333',
+                            marginBottom: '4px'
+                          }}>
+                            Sin especialista asignado
+                          </div>
+                          <div style={{
+                            fontSize: 14,
+                            color: '#666'
+                          }}>
+                            Ve a "Mi Especialista" para ver recomendaciones
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Botón para ir a Mi Especialista */}
+                      <button
+                        onClick={() => handleNavigation('my-specialist')}
+                        style={{
+                          background: '#0057FF',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '0.75rem 1.5rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          width: '100%'
+                        }}
+                      >
+                        Ver Mi Especialista
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* ========================================
+                 TARJETA DE PRÓXIMA CITA
+                 ======================================== */}
+            <div style={{
+              background: '#fff',
+              borderRadius: 12,
+              padding: '1.5rem',
+              boxShadow: '0 2px 8px #0057ff11',
+              width: '100%'
+            }}>
+              {/* Encabezado de la tarjeta */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '1.5rem'
+              }}>
+                <Calendar size={18} color="#0057FF" />
+                <h3 style={{
+                  fontSize: 18,
+                  fontWeight: 700,
+                  margin: 0,
+                  color: '#333'
+                }}>
+                  Próxima Cita
+                </h3>
+              </div>
+              
+              {/* Contenido de próxima cita */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1rem',
                 marginBottom: '1.5rem'
               }}>
-                {/* Avatar del especialista */}
+                {/* Icono de no hay citas */}
                 <div style={{
                   width: 60,
                   height: 60,
                   borderRadius: '50%',
-                  background: '#f0f4ff',
+                  background: '#f3f4f6',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: 24
                 }}>
-                  <User color="#0057FF" size={32} />
+                  <Calendar size={32} color="#9ca3af" />
                 </div>
                 
-                {/* Datos del especialista */}
+                {/* Mensaje de no hay citas */}
                 <div>
                   <div style={{
                     fontSize: 16,
@@ -565,20 +819,20 @@ const ClientDashboard = ({ navigationProps }) => {
                     color: '#333',
                     marginBottom: '4px'
                   }}>
-                    Dra. María González
+                    No hay citas programadas
                   </div>
                   <div style={{
                     fontSize: 14,
                     color: '#666'
                   }}>
-                    Psicóloga especialista en ansiedad
+                    Agenda tu primera sesión cuando estés listo
                   </div>
                 </div>
               </div>
               
-              {/* Botón para ver perfil completo */}
+              {/* Botón para agendar cita */}
               <button
-                onClick={() => handleNavigation('my-specialist')}
+                onClick={() => handleNavigation('appointments')}
                 style={{
                   background: '#0057FF',
                   color: '#fff',
@@ -590,7 +844,7 @@ const ClientDashboard = ({ navigationProps }) => {
                   width: '100%'
                 }}
               >
-                Ver perfil completo
+                Agendar Cita
               </button>
             </div>
           </div>

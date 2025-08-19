@@ -13,7 +13,8 @@ import {
   Settings,
   LogOut,
   CheckCircle,
-  Activity
+  Activity,
+  Users
 } from 'lucide-react';
 import logoEmpathica from '../assets/Logoempathica.png';
 
@@ -122,6 +123,29 @@ const PsychologistDashboard = ({ navigationProps }) => {
   
   // Estados para filtrado
   const [statusFilter, setStatusFilter] = useState('');
+
+  // Verificar si el dashboard debe estar bloqueado
+  const isDashboardBlocked = () => {
+    if (!user) return true;
+    
+    // Si el usuario no está activo, bloquear
+    // PENDING_FORM_FULFILLMENT y PENDING_APPROVAL deben estar bloqueados
+    if (user.userStatus !== 'ACTIVE') {
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Si el dashboard está bloqueado, solo mostrar configuración
+  const shouldShowOnlySettings = isDashboardBlocked();
+
+  // Forzar configuración si está bloqueado
+  React.useEffect(() => {
+    if (shouldShowOnlySettings && activeSection !== 'Configuración') {
+      setActiveSection('Configuración');
+    }
+  }, [shouldShowOnlySettings, activeSection]);
 
   /**
    * Maneja el cierre de sesión del psicólogo
@@ -304,13 +328,15 @@ const PsychologistDashboard = ({ navigationProps }) => {
           <div style={{ color: '#7a8bbd', fontWeight: 700, fontSize: 13, margin: '1.5rem 0 0.5rem 2rem', letterSpacing: 1 }}>NAVEGACIÓN</div>
           {/* Lista de elementos de navegación */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {sidebarItems.map((item, idx) => (
+            {(shouldShowOnlySettings ? sidebarItems.filter(item => item.section === 'Configuración') : sidebarItems).map((item, idx) => (
               <button key={item.label} onClick={() => setActiveSection(item.section)} style={{
                 display: 'flex', alignItems: 'center', gap: 12, padding: '0.7rem 2rem',
                 background: activeSection === item.section ? '#e6f0ff' : 'transparent',
                 color: activeSection === item.section ? '#2050c7' : '#7a8bbd',
                 border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 16, cursor: 'pointer',
                 transition: 'background 0.2s',
+                opacity: shouldShowOnlySettings && item.section !== 'Configuración' ? 0.5 : 1,
+                pointerEvents: shouldShowOnlySettings && item.section !== 'Configuración' ? 'none' : 'auto',
               }}>{item.icon} {item.label}</button>
             ))}
           </nav>
@@ -367,8 +393,46 @@ const PsychologistDashboard = ({ navigationProps }) => {
         {/* ========================================
              RENDERIZADO CONDICIONAL DE SECCIONES
              ======================================== */}
+        
+        {/* Mensaje de bloqueo si el dashboard está restringido */}
+        {shouldShowOnlySettings && activeSection !== 'Configuración' && (
+          <div style={{
+            background: '#fff3cd',
+            border: '1px solid #ffeaa7',
+            borderRadius: 12,
+            padding: 24,
+            marginBottom: 24,
+            textAlign: 'center'
+          }}>
+            <h3 style={{ color: '#856404', fontWeight: 700, fontSize: 20, marginBottom: 16 }}>
+              🔒 Acceso Restringido
+            </h3>
+            <p style={{ color: '#856404', fontSize: 16, lineHeight: 1.5, marginBottom: 20 }}>
+              {user?.userStatus === 'PENDING_FORM_FULFILLMENT' 
+                ? 'Debes completar tu información complementaria antes de acceder a esta funcionalidad.'
+                : 'Tu información está siendo validada por nuestro equipo administrativo. Una vez aprobada, podrás acceder a todas las funcionalidades.'
+              }
+            </p>
+            <button
+              onClick={() => setActiveSection('Configuración')}
+              style={{
+                background: '#856404',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 24px',
+                fontSize: 16,
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Ir a Configuración
+            </button>
+          </div>
+        )}
+
         {/* Sección Dashboard - Vista principal */}
-        {activeSection === 'Dashboard' && (
+        {activeSection === 'Dashboard' && !shouldShowOnlySettings && (
           <div className="dashboard-section">
             {/* ========================================
                  ENCABEZADO DEL DASHBOARD
@@ -383,194 +447,143 @@ const PsychologistDashboard = ({ navigationProps }) => {
             </div>
 
             {/* ========================================
-                 FILTROS Y CONTADOR
-                 ======================================== */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '1.5rem'
-            }}>
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                <span style={{ color: '#7a8bbd', fontSize: 14 }}>Filtrar por:</span>
-                <select 
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: 8,
-                    border: '1px solid #e0e7ef',
-                    background: '#fff',
-                    color: '#2050c7',
-                    fontSize: 14,
-                    fontWeight: 600
-                  }}
-                >
-                  <option value="">Todos los estados</option>
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
-                </select>
-              </div>
-              <div style={{ color: '#7a8bbd', fontSize: 14 }}>
-                Mostrando {filteredPatients.length} de {allPatients.length} pacientes
-              </div>
-            </div>
-
-            {/* ========================================
-                 TABLA DE PACIENTES
+                 MENSAJE DE NO HAY PACIENTES
                  ======================================== */}
             <div style={{
               background: '#fff',
-              borderRadius: 12,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              overflow: 'hidden'
+              borderRadius: 16,
+              padding: '3rem',
+              marginBottom: '2rem',
+              textAlign: 'center',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f8f9fb', borderBottom: '1px solid #e0e7ef' }}>
-                    <th style={{ padding: '1rem', textAlign: 'left', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Paciente</th>
-                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Estado</th>
-                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Última Sesión</th>
-                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Total Sesiones</th>
-                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Última Asistencia</th>
-                    <th style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 700, fontSize: 14 }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPatients.map((patient, index) => (
-                    <tr key={index} style={{ 
-                      borderBottom: '1px solid #f0f0f0',
-                      background: index % 2 === 0 ? '#fafbfc' : '#fff'
-                    }}>
-                                             <td style={{ padding: '1rem' }}>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                           <div style={{
-                             width: 40,
-                             height: 40,
-                             borderRadius: '50%',
-                             background: '#0057FF',
-                             display: 'flex',
-                             alignItems: 'center',
-                             justifyContent: 'center',
-                             color: '#fff',
-                             fontWeight: 600,
-                             fontSize: 14
-                           }}>
-                             {patient.avatar}
-                           </div>
-                           <div>
-                             <div style={{ color: '#2050c7', fontWeight: 600, fontSize: 14 }}>
-                               {patient.name}
-                             </div>
-                             <div style={{ color: '#7a8bbd', fontSize: 12 }}>
-                               {patient.email}
-                             </div>
-                           </div>
-                         </div>
-                       </td>
-                       <td style={{ padding: '1rem', textAlign: 'center' }}>
-                         <span style={{
-                           padding: '0.25rem 0.75rem',
-                           borderRadius: 20,
-                           fontSize: 12,
-                           fontWeight: 600,
-                           background: patient.status === 'Activo' ? '#e3f2fd' : '#f5f5f5',
-                           color: patient.status === 'Activo' ? '#2050c7' : '#7a8bbd'
-                         }}>
-                           {patient.status}
-                         </span>
-                       </td>
-                       <td style={{ padding: '1rem', textAlign: 'center', color: '#7a8bbd', fontSize: 14 }}>
-                         {patient.lastSession}
-                       </td>
-                       <td style={{ padding: '1rem', textAlign: 'center', color: '#2050c7', fontWeight: 600, fontSize: 14 }}>
-                         {patient.totalSessions}
-                       </td>
-                       <td style={{ padding: '1rem', textAlign: 'center' }}>
-                         <span style={{
-                           padding: '0.25rem 0.75rem',
-                           borderRadius: 20,
-                           fontSize: 12,
-                           fontWeight: 600,
-                           background: patient.attendance === 'Asistió' ? '#e3f2fd' : '#ffebee',
-                           color: patient.attendance === 'Asistió' ? '#2050c7' : '#f44336'
-                         }}>
-                           {patient.attendance}
-                         </span>
-                       </td>
-                       <td style={{ padding: '1rem', textAlign: 'center' }}>
-                         <button 
-                           onClick={() => handleViewNotes(patient)}
-                           style={{
-                             padding: '0.5rem 1rem',
-                             borderRadius: 8,
-                             border: 'none',
-                             background: '#2050c7',
-                             color: '#fff',
-                             fontSize: 12,
-                             fontWeight: 600,
-                             cursor: 'pointer'
-                           }}
-                         >
-                           Ver Notas
-                         </button>
-                       </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* ========================================
-                 BOTÓN MOSTRAR MÁS
-                 ======================================== */}
-            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-              <button style={{
-                padding: '0.75rem 2rem',
-                borderRadius: 8,
-                border: 'none',
-                background: '#2050c7',
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
+              <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
+                justifyContent: 'center',
+                gap: '1rem',
+                marginBottom: '1.5rem'
+              }}>
+                <Users size={64} color="#6b7280" />
+              </div>
+              <h2 style={{
+                fontSize: 24,
+                fontWeight: 700,
+                color: '#374151',
+                margin: '0 0 1rem 0'
+              }}>
+                No tiene pacientes
+              </h2>
+              <p style={{
+                fontSize: 16,
+                color: '#6b7280',
+                lineHeight: 1.6,
+                margin: 0,
+                maxWidth: '500px',
                 margin: '0 auto'
               }}>
-                ➕ Mostrar más pacientes ({Math.max(0, allPatients.length - filteredPatients.length)} restantes)
-              </button>
+                Aún no tienes pacientes asignados. Los pacientes aparecerán aquí una vez que se registren y te seleccionen como su psicólogo.
+              </p>
             </div>
           </div>
         )}
         {/* Sección Horarios - Gestión de disponibilidad */}
-        {activeSection === 'Horarios' && (
+        {activeSection === 'Horarios' && !shouldShowOnlySettings && (
           <div className="dashboard-section">
             <PsychologistSchedule />
           </div>
         )}
         {/* Sección Citas - Gestión de citas programadas */}
-        {activeSection === 'Citas' && (
+        {activeSection === 'Citas' && !shouldShowOnlySettings && (
           <div className="dashboard-section">
-            <PsychologistAppointments />
+            <div style={{
+              background: '#fff',
+              borderRadius: 16,
+              padding: '3rem',
+              marginBottom: '2rem',
+              textAlign: 'center',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '1rem',
+                marginBottom: '1.5rem'
+              }}>
+                <Calendar size={64} color="#6b7280" />
+              </div>
+              <h2 style={{
+                fontSize: 24,
+                fontWeight: 700,
+                color: '#374151',
+                margin: '0 0 1rem 0'
+              }}>
+                No se han asignado citas
+              </h2>
+              <p style={{
+                fontSize: 16,
+                color: '#6b7280',
+                lineHeight: 1.6,
+                margin: 0,
+                maxWidth: '500px',
+                margin: '0 auto'
+              }}>
+                Aún no tienes citas programadas. Las citas aparecerán aquí una vez que los pacientes las agenden contigo.
+              </p>
+            </div>
           </div>
         )}
 
         {/* Sección Historial - Registro de sesiones */}
-        {activeSection === 'Historial' && (
+        {activeSection === 'Historial' && !shouldShowOnlySettings && (
           <div className="dashboard-section">
-            <PsychologistHistory />
+            <div style={{
+              background: '#fff',
+              borderRadius: 16,
+              padding: '3rem',
+              marginBottom: '2rem',
+              textAlign: 'center',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '1rem',
+                marginBottom: '1.5rem'
+              }}>
+                <FileText size={64} color="#6b7280" />
+              </div>
+              <h2 style={{
+                fontSize: 24,
+                fontWeight: 700,
+                color: '#374151',
+                margin: '0 0 1rem 0'
+              }}>
+                No se han asignado citas
+              </h2>
+              <p style={{
+                fontSize: 16,
+                color: '#6b7280',
+                lineHeight: 1.6,
+                margin: 0,
+                maxWidth: '500px',
+                margin: '0 auto'
+              }}>
+                El historial de sesiones aparecerá aquí una vez que tengas citas completadas con tus pacientes.
+              </p>
+            </div>
           </div>
         )}
         {/* Sección Biblioteca - Recursos y materiales */}
-        {activeSection === 'Biblioteca' && (
+        {activeSection === 'Biblioteca' && !shouldShowOnlySettings && (
           <div className="dashboard-section">
             <PsychologistLibrary />
           </div>
         )}
         {/* Sección Facturación - Gestión financiera */}
-        {activeSection === 'Facturación' && (
+        {activeSection === 'Facturación' && !shouldShowOnlySettings && (
           <div className="dashboard-section">
             <PsychologistBilling />
           </div>

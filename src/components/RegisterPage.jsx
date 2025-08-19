@@ -44,10 +44,11 @@ const RegisterPage = ({ navigationProps }) => {
   /**
    * Maneja la navegación entre diferentes páginas de la aplicación
    * @param {string} page - Nombre de la página a la que navegar
+   * @param {Object} additionalData - Datos adicionales para pasar a la página
    */
-  const handleNavigation = (page) => {
+  const handleNavigation = (page, additionalData = null) => {
     if (navigationProps && navigationProps.onNavigate) {
-      navigationProps.onNavigate(page);
+      navigationProps.onNavigate(page, additionalData);
     }
     setMobileMenuOpen(false);
   };
@@ -115,9 +116,25 @@ const RegisterPage = ({ navigationProps }) => {
           // Llamada directa al endpoint de pacientes
           const result = await userService.createPatient(patientData);
           console.log('Registro de paciente exitoso:', result);
+          console.log('Estructura completa del resultado:', JSON.stringify(result, null, 2));
+          
+          // Los tags se mantendrán en localStorage para ser procesados durante el login
+          console.log('Registro exitoso. Los tags se procesarán durante el próximo login.');
         } catch (error) {
           console.error('Error en el registro de paciente:', error);
-          throw error;
+          
+          // Manejar errores específicos del backend
+          if (error.response && error.response.status === 409) {
+            throw new Error('El email ya está registrado. Por favor, usa un email diferente o inicia sesión si ya tienes una cuenta.');
+          } else if (error.response && error.response.status === 400) {
+            throw new Error('Datos inválidos. Por favor, verifica que todos los campos estén correctos.');
+          } else if (error.response && error.response.status === 500) {
+            throw new Error('Error del servidor. Por favor, intenta nuevamente más tarde.');
+          } else if (error.message) {
+            throw new Error(`Error de conexión: ${error.message}`);
+          } else {
+            throw new Error('Error inesperado. Por favor, intenta nuevamente.');
+          }
         }
       }
 
@@ -142,50 +159,79 @@ const RegisterPage = ({ navigationProps }) => {
           console.log('Registro de psicólogo exitoso:', result);
         } catch (error) {
           console.error('Error en el registro de psicólogo:', error);
-          throw error;
+          
+          // Manejar errores específicos del backend
+          if (error.response && error.response.status === 409) {
+            throw new Error('El email ya está registrado. Por favor, usa un email diferente o inicia sesión si ya tienes una cuenta.');
+          } else if (error.response && error.response.status === 400) {
+            throw new Error('Datos inválidos. Por favor, verifica que todos los campos estén correctos.');
+          } else if (error.response && error.response.status === 500) {
+            throw new Error('Error del servidor. Por favor, intenta nuevamente más tarde.');
+          } else if (error.message) {
+            throw new Error(`Error de conexión: ${error.message}`);
+          } else {
+            throw new Error('Error inesperado. Por favor, intenta nuevamente.');
+          }
         }
       }
 
-      // Después del registro exitoso, hacer login automático con las credenciales del nuevo usuario
-      console.log('Registro exitoso, iniciando sesión automática...');
-      try {
-        const loginCredentials = {
-          email: formData.email,
-          password: formData.password
-        };
-        
-        console.log('Credenciales para login automático:', loginCredentials);
-        const userData = await login(loginCredentials);
-        console.log('Login automático exitoso:', userData);
-        
-        // Marcar al usuario como registrado
-        if (navigationProps && navigationProps.onUserRegistration) {
-          navigationProps.onUserRegistration();
+      // Después del registro exitoso, redirigir a la pantalla de confirmación
+      console.log('=== INICIO DE REDIRECCIÓN ===');
+      console.log('Registro exitoso, redirigiendo a pantalla de confirmación...');
+      
+      // Marcar al usuario como registrado
+      if (navigationProps && navigationProps.onUserRegistration) {
+        console.log('Llamando a onUserRegistration...');
+        navigationProps.onUserRegistration();
+        console.log('onUserRegistration ejecutado');
+      } else {
+        console.log('onUserRegistration no disponible');
+      }
+      
+      // Redirigir a la pantalla de confirmación con los datos del usuario
+      const successData = {
+        userType: userType,
+        email: formData.email
+      };
+      
+      console.log('Redirigiendo a registration-success con datos:', successData);
+      console.log('navigationProps disponibles:', navigationProps);
+      
+      // Verificar que la navegación funcione
+      console.log('=== NAVEGACIÓN ===');
+      if (navigationProps && navigationProps.onNavigate) {
+        console.log('Llamando a onNavigate con:', 'registration-success', successData);
+        try {
+          navigationProps.onNavigate('registration-success', successData);
+          console.log('onNavigate ejecutado exitosamente');
+          return; // Evitar que el formulario se reinicie
+        } catch (navError) {
+          console.error('Error en onNavigate:', navError);
+          // Fallback: usar window.location
+          console.log('Usando fallback con window.location...');
+          window.location.href = '/registration-success';
+          return; // Evitar que el formulario se reinicie
         }
-        
-        // Redirigir según el tipo de usuario
-        console.log('Tipo de usuario registrado:', userData.userType);
-        if (userData.userType === 'psychologist') {
-          console.log('Redirigiendo a psychologist-dashboard');
-          handleNavigation('psychologist-dashboard');
-        } else {
-          // Cliente va directo al dashboard
-          console.log('Redirigiendo a client-dashboard');
-          handleNavigation('client-dashboard');
-        }
-        
-      } catch (loginError) {
-        console.error('Error en login automático después del registro:', loginError);
-        // Si falla el login automático, mostrar mensaje pero no fallar el registro
-        setError('Usuario registrado exitosamente, pero hubo un problema al iniciar sesión automáticamente. Por favor, inicia sesión manualmente.');
-        return;
+      } else {
+        console.error('navigationProps.onNavigate no está disponible');
+        // Fallback: usar window.location
+        console.log('Usando fallback con window.location...');
+        window.location.href = '/registration-success';
+        return; // Evitar que el formulario se reinicie
       }
 
 
 
     } catch (error) {
       console.error('Error en el registro:', error);
-      setError(error.message || 'Error al registrar usuario');
+      
+      // Si el error ya tiene un mensaje personalizado, usarlo
+      if (error.message && !error.message.includes('Request failed')) {
+        setError(error.message);
+      } else {
+        // Mensaje genérico para errores no manejados
+        setError('Error al registrar usuario. Por favor, intenta nuevamente.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -1091,7 +1137,38 @@ const RegisterPage = ({ navigationProps }) => {
                 color: '#c33',
                 fontSize: 14
               }}>
-                {error}
+                <div style={{ marginBottom: '0.5rem' }}>
+                  {error}
+                </div>
+                {error.includes('email ya está registrado') && (
+                  <div style={{
+                    marginTop: '0.5rem',
+                    padding: '0.5rem',
+                    background: '#fff',
+                    borderRadius: 4,
+                    border: '1px solid #fcc'
+                  }}>
+                    <span style={{ fontSize: 12, color: '#666' }}>
+                      💡 ¿Ya tienes una cuenta?{' '}
+                      <button
+                        type="button"
+                        onClick={() => handleNavigation('login')}
+                        style={{
+                          color: '#0057FF',
+                          textDecoration: 'underline',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          fontSize: 12
+                        }}
+                      >
+                        Inicia sesión aquí
+                      </button>
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
