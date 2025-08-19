@@ -8,6 +8,16 @@ const BusinessToolkits = ({ navigationProps }) => {
   const toolkits = [
     {
       id: 1,
+      title: 'SST Salud y Seguridad en el Trabajo',
+      description: 'Herramientas y protocolos para garantizar la salud y seguridad laboral',
+      category: 'Seguridad',
+      duration: '45 min',
+      sessions: 12,
+      status: 'Disponible',
+      color: '#e74c3c'
+    },
+    {
+      id: 2,
       title: 'Manejo del Estrés Laboral',
       description: 'Herramientas y técnicas para gestionar el estrés en el entorno laboral',
       category: 'Bienestar',
@@ -17,7 +27,7 @@ const BusinessToolkits = ({ navigationProps }) => {
       color: '#2ecc71'
     },
     {
-      id: 2,
+      id: 3,
       title: 'Comunicación Asertiva',
       description: 'Mejora tus habilidades de comunicación en el trabajo',
       category: 'Comunicación',
@@ -27,7 +37,7 @@ const BusinessToolkits = ({ navigationProps }) => {
       color: '#0057ff'
     },
     {
-      id: 3,
+      id: 4,
       title: 'Liderazgo Efectivo',
       description: 'Desarrolla habilidades de liderazgo y gestión de equipos',
       category: 'Liderazgo',
@@ -37,7 +47,7 @@ const BusinessToolkits = ({ navigationProps }) => {
       color: '#ff9800'
     },
     {
-      id: 4,
+      id: 5,
       title: 'Gestión del Tiempo',
       description: 'Optimiza tu productividad y organización personal',
       category: 'Productividad',
@@ -47,7 +57,7 @@ const BusinessToolkits = ({ navigationProps }) => {
       color: '#9c27b0'
     },
     {
-      id: 5,
+      id: 6,
       title: 'Resolución de Conflictos',
       description: 'Aprende a manejar y resolver conflictos en el trabajo',
       category: 'Comunicación',
@@ -55,16 +65,6 @@ const BusinessToolkits = ({ navigationProps }) => {
       sessions: 6,
       status: 'Disponible',
       color: '#0057ff'
-    },
-    {
-      id: 6,
-      title: 'Mindfulness en el Trabajo',
-      description: 'Técnicas de mindfulness para mejorar el bienestar laboral',
-      category: 'Bienestar',
-      duration: '35 min',
-      sessions: 20,
-      status: 'Disponible',
-      color: '#2ecc71'
     }
   ];
 
