@@ -6,7 +6,7 @@ import axios from 'axios';
  */
 
 // URL base del servidor backend
-const API_BASE_URL = 'https://local.julioperezag.com';
+const API_BASE_URL = 'https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443';
 
 // Crear instancia de axios con configuración base
 const apiClient = axios.create({
@@ -29,8 +29,10 @@ apiClient.interceptors.request.use((config) => {
   // Solo considerar públicas las rutas POST de registro específicas
   const isPublicRoute = publicRoutes.some(route => {
     if (route === '/api/psychologists') {
-      // Para /api/psychologists, solo considerar público si es POST y NO es /schedule
-      return config.url.includes(route) && config.method === 'post' && !config.url.includes('/schedule');
+      // Para /api/psychologists, considerar público si es POST (registro) o GET (listar todos)
+      return config.url.includes(route) && 
+             (config.method === 'post' && !config.url.includes('/schedule')) ||
+             (config.method === 'get' && config.url === '/api/psychologists');
     }
     if (route === '/api/patients') {
       // Para /api/patients, solo considerar público si es POST exacto (registro) y NO es /psychologist
@@ -200,6 +202,12 @@ export const authService = {
           // Mostrar el mensaje específico del backend si está disponible
           const backendMessage = error.response.data?.message || error.response.data?.error;
           if (backendMessage) {
+            // Si el mensaje del backend indica que es por estado pendiente, mostrar mensaje específico
+            if (backendMessage.toLowerCase().includes('pending') || 
+                backendMessage.toLowerCase().includes('aprobación') ||
+                backendMessage.toLowerCase().includes('approval')) {
+              throw new Error('Tu cuenta está pendiente de aprobación. Un administrador debe activar tu cuenta antes de que puedas acceder.');
+            }
             throw new Error(backendMessage);
           } else {
             throw new Error('Credenciales incorrectas. Verifica tu email y contraseña.');
@@ -344,6 +352,38 @@ export const userService = {
       throw error;
     }
   },
+
+  /**
+   * Obtiene todos los psicólogos registrados en la plataforma
+   * @returns {Promise} - Respuesta del servidor con lista de psicólogos
+   */
+      getAllPsychologists: async () => {
+      try {
+        const response = await apiClient.get('/api/psychologists');
+        return handleResponse(response);
+      } catch (error) {
+        console.error('Error obteniendo lista de psicólogos:', error);
+        throw error;
+      }
+    },
+    getPsychologistDetails: async (id) => {
+      try {
+        const response = await apiClient.get(`/api/psychologists/${id}`);
+        return handleResponse(response);
+      } catch (error) {
+        console.error('Error obteniendo detalles del psicólogo:', error);
+        throw error;
+      }
+    },
+    updatePsychologistStatus: async (id, userStatus) => {
+      try {
+        const response = await apiClient.put(`/api/psychologists/${id}`, { userStatus });
+        return handleResponse(response);
+      } catch (error) {
+        console.error('Error actualizando estado del psicólogo:', error);
+        throw error;
+      }
+    },
 
 
 
@@ -492,11 +532,11 @@ export const userService = {
   },
 
   /**
-   * Sube los tags del paciente
-   * @param {Object} tagsData - Datos de los tags
-   * @param {Object} tagsData.tag1 - Primer tag con { name: "string" }
-   * @param {Object} tagsData.tag2 - Segundo tag con { name: "string" }
-   * @param {Object} tagsData.tag3 - Tercer tag con { name: "string" }
+   * Sube los tags del paciente usando POST /api/patients/tags
+   * @param {Object} tagsData - Datos de los tags del paciente
+   * @param {Object} tagsData.tag1 - Primer tag con { tagId: 0, name: "string", percentage: 0.1, patient: "string" }
+   * @param {Object} tagsData.tag2 - Segundo tag con { tagId: 0, name: "string", percentage: 0.1, patient: "string" }
+   * @param {Object} tagsData.tag3 - Tercer tag con { tagId: 0, name: "string", percentage: 0.1, patient: "string" }
    * @returns {Promise} - Respuesta del servidor
    */
   uploadPatientTags: async (tagsData) => {

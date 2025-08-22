@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { userService } from '../services/api';
 
 const TestResults = ({ navigationProps, testAnswers }) => {
   const [patientProfile, setPatientProfile] = useState(null);
@@ -6,6 +7,8 @@ const TestResults = ({ navigationProps, testAnswers }) => {
   const [compatiblePsychologists, setCompatiblePsychologists] = useState([]);
   const [recommendedPsychologist, setRecommendedPsychologist] = useState(null);
   const [otherOptions, setOtherOptions] = useState([]);
+  const [psychologistsLoading, setPsychologistsLoading] = useState(false);
+  const [psychologistsError, setPsychologistsError] = useState(null);
 
   // Determinar nivel de angustia basado en Q1 y Q12
   const determineNivelAngustia = (answers) => {
@@ -378,10 +381,180 @@ const TestResults = ({ navigationProps, testAnswers }) => {
     });
   };
 
-  // Función para generar el psicólogo recomendado basado en las respuestas
+  // Función para obtener psicólogos activos del backend
+  const fetchActivePsychologists = async () => {
+    setPsychologistsLoading(true);
+    setPsychologistsError(null);
+    
+    try {
+      // Obtener el ID del psicólogo recomendado desde localStorage
+      const storedTags = localStorage.getItem('empathica_test_tags');
+      let recommendedPsychologistId = null;
+      
+      if (storedTags) {
+        try {
+          const tagsData = JSON.parse(storedTags);
+          recommendedPsychologistId = tagsData.recommendedPsychologistId;
+          console.log('ID del psicólogo recomendado encontrado:', recommendedPsychologistId);
+        } catch (parseError) {
+          console.error('Error al parsear tags del localStorage:', parseError);
+        }
+      }
+      
+      // Obtener todos los psicólogos activos
+      const response = await userService.getAllPsychologists();
+      const psychologists = response.content || response || [];
+      
+      // Filtrar solo psicólogos activos
+      const activePsychologists = psychologists.filter(psy => psy.userStatus === 'ACTIVE');
+      
+      if (activePsychologists.length >= 3) {
+        let recommended = null;
+        let otherPsychologists = [];
+        
+        if (recommendedPsychologistId) {
+          try {
+            // Obtener detalles específicos del psicólogo recomendado usando el endpoint privado
+            const recommendedPsychologistDetails = await userService.getPsychologistById(recommendedPsychologistId);
+            
+            if (recommendedPsychologistDetails) {
+              // Transformar el psicólogo recomendado con datos detallados
+              recommended = {
+                id: recommendedPsychologistDetails.userId || recommendedPsychologistDetails.id,
+                nombre: `${recommendedPsychologistDetails.name} ${recommendedPsychologistDetails.lastName}`,
+                especializacion: recommendedPsychologistDetails.specialty || 'Psicólogo Clínico',
+                descripcion: recommendedPsychologistDetails.oneliner || 'Psicólogo especializado en bienestar emocional y desarrollo personal.',
+                imagen: '👩‍⚕️',
+                experiencia: 'Psicólogo Clínico Certificado',
+                enfoque: recommendedPsychologistDetails.therapeuticStyle?.[0] || 'Cognitivo-Conductual',
+                idiomas: 'Español',
+                modalidad: 'Presencial y Online',
+                cedula: recommendedPsychologistDetails.cedula || 'N/A',
+                edades: recommendedPsychologistDetails.attendAges?.join(', ') || 'Adultos',
+                modalidades: recommendedPsychologistDetails.additionalModalities?.join(', ') || 'Terapia individual'
+              };
+              
+              console.log('Psicólogo recomendado específico cargado con detalles completos:', recommended);
+            } else {
+              throw new Error('No se encontraron detalles del psicólogo recomendado');
+            }
+          } catch (detailError) {
+            console.warn('Error obteniendo detalles del psicólogo recomendado, usando datos del listado:', detailError);
+            
+            // Fallback: buscar en el listado de psicólogos activos
+            const recommendedPsychologist = activePsychologists.find(psy => psy.userId === recommendedPsychologistId);
+            
+            if (recommendedPsychologist) {
+              // Transformar el psicólogo recomendado
+              recommended = {
+                id: recommendedPsychologist.userId,
+                nombre: `${recommendedPsychologist.name} ${recommendedPsychologist.lastName}`,
+                especializacion: recommendedPsychologist.specialty || 'Psicólogo Clínico',
+                descripcion: recommendedPsychologist.oneliner || 'Psicólogo especializado en bienestar emocional y desarrollo personal.',
+                imagen: '👩‍⚕️',
+                experiencia: 'Psicólogo Clínico Certificado',
+                enfoque: recommendedPsychologist.therapeuticStyle?.[0] || 'Cognitivo-Conductual',
+                idiomas: 'Español',
+                modalidad: 'Presencial y Online',
+                cedula: recommendedPsychologist.cedula || 'N/A',
+                edades: recommendedPsychologist.attendAges?.join(', ') || 'Adultos',
+                modalidades: recommendedPsychologist.additionalModalities?.join(', ') || 'Terapia individual'
+              };
+              
+              console.log('Psicólogo recomendado específico cargado (fallback):', recommended);
+            } else {
+              console.warn('No se encontró el psicólogo recomendado con ID:', recommendedPsychologistId);
+              // Usar el primer psicólogo activo como recomendado
+              const firstPsychologist = activePsychologists[0];
+              recommended = {
+                id: firstPsychologist.userId,
+                nombre: `${firstPsychologist.name} ${firstPsychologist.lastName}`,
+                especializacion: firstPsychologist.specialty || 'Psicólogo Clínico',
+                descripcion: firstPsychologist.oneliner || 'Psicólogo especializado en bienestar emocional y desarrollo personal.',
+                imagen: '👩‍⚕️',
+                experiencia: 'Psicólogo Clínico Certificado',
+                enfoque: firstPsychologist.therapeuticStyle?.[0] || 'Cognitivo-Conductual',
+                idiomas: 'Español',
+                modalidad: 'Presencial y Online',
+                cedula: firstPsychologist.cedula || 'N/A',
+                edades: firstPsychologist.attendAges?.join(', ') || 'Adultos',
+                modalidades: firstPsychologist.additionalModalities?.join(', ') || 'Terapia individual'
+              };
+            }
+          }
+        } else {
+          // Si no hay ID guardado, usar el primer psicólogo activo como recomendado
+          const firstPsychologist = activePsychologists[0];
+          recommended = {
+            id: firstPsychologist.userId,
+            nombre: `${firstPsychologist.name} ${firstPsychologist.lastName}`,
+            especializacion: firstPsychologist.specialty || 'Psicólogo Clínico',
+            descripcion: firstPsychologist.oneliner || 'Psicólogo especializado en bienestar emocional y desarrollo personal.',
+            imagen: '👩‍⚕️',
+            experiencia: 'Psicólogo Clínico Certificado',
+            enfoque: firstPsychologist.therapeuticStyle?.[0] || 'Cognitivo-Conductual',
+            idiomas: 'Español',
+            modalidad: 'Presencial y Online',
+            cedula: firstPsychologist.cedula || 'N/A',
+            edades: firstPsychologist.attendAges?.join(', ') || 'Adultos',
+            modalidades: firstPsychologist.additionalModalities?.join(', ') || 'Terapia individual'
+          };
+        }
+        
+        // Obtener otros 2 psicólogos (excluyendo el recomendado)
+        const otherActivePsychologists = activePsychologists.filter(psy => psy.userId !== recommended.id);
+        const selectedOthers = otherActivePsychologists.slice(0, 2);
+        
+        otherPsychologists = selectedOthers.map((psy, index) => ({
+          id: psy.userId || index + 1,
+          nombre: `${psy.name} ${psy.lastName}`,
+          especializacion: psy.specialty || 'Psicólogo Clínico',
+          descripcion: psy.oneliner || 'Psicólogo especializado en bienestar emocional y desarrollo personal.',
+          imagen: '👩‍⚕️',
+          experiencia: 'Psicólogo Clínico Certificado',
+          enfoque: psy.therapeuticStyle?.[0] || 'Cognitivo-Conductual',
+          idiomas: 'Español',
+          modalidad: 'Presencial y Online',
+          cedula: psy.cedula || 'N/A',
+          edades: psy.attendAges?.join(', ') || 'Adultos',
+          modalidades: psy.additionalModalities?.join(', ') || 'Terapia individual'
+        }));
+        
+        console.log('Otros psicólogos cargados:', otherPsychologists);
+        
+        setRecommendedPsychologist(recommended);
+        setOtherOptions(otherPsychologists);
+        
+      } else {
+        // Si no hay suficientes psicólogos activos, usar datos estáticos
+        console.warn('No hay suficientes psicólogos activos, usando datos estáticos');
+        const recommended = generateRecommendedPsychologist(testAnswers);
+        const others = generateOtherOptions();
+        
+        setRecommendedPsychologist(recommended);
+        setOtherOptions(others);
+      }
+      
+    } catch (error) {
+      console.error('Error al obtener psicólogos:', error);
+      setPsychologistsError('Error al cargar los psicólogos');
+      
+      // Usar datos estáticos como fallback
+      const recommended = generateRecommendedPsychologist(testAnswers);
+      const others = generateOtherOptions();
+      
+      setRecommendedPsychologist(recommended);
+      setOtherOptions(others);
+    } finally {
+      setPsychologistsLoading(false);
+    }
+  };
+
+  // Función para generar el psicólogo recomendado basado en las respuestas (fallback)
   const generateRecommendedPsychologist = (answers) => {
     // Psicólogo recomendado real con datos de la imagen
     return {
+      id: 14, // ID por defecto
       nombre: 'Christopher Vince Bravo Merino',
       especializacion: 'Psicólogo Clínico',
       descripcion: 'Especializado en terapia ACT (Acceptance and Commitment Therapy) y Mindfulness. Experto en el tratamiento de adultos y adolescentes con enfoque en arteterapia y técnicas de relajación.',
@@ -439,45 +612,43 @@ const TestResults = ({ navigationProps, testAnswers }) => {
       const psychologists = generateCompatiblePsychologists(profile, approaches);
       setCompatiblePsychologists(psychologists);
 
-      // Generar psicólogo recomendado basado en las respuestas del test
-      const recommended = generateRecommendedPsychologist(testAnswers);
-      setRecommendedPsychologist(recommended);
-
-      // Generar otras opciones de psicólogos
-      const otherPsychologists = generateOtherOptions();
-      setOtherOptions(otherPsychologists);
-
-      // Guardar los tags en localStorage para uso posterior en el registro
-      if (profile.tags && profile.tags.length > 0) {
-        const tagsForStorage = {
-          tag1: {
-            tagId: 0,
-            name: profile.tags[0] || "string",
-            percentage: 0.1,
-            patient: "string",
-            session: "string"
-          },
-          tag2: {
-            tagId: 0,
-            name: profile.tags[1] || "string",
-            percentage: 0.1,
-            patient: "string",
-            session: "string"
-          },
-          tag3: {
-            tagId: 0,
-            name: profile.tags[2] || "string",
-            percentage: 0.1,
-            patient: "string",
-            session: "string"
-          }
-        };
-        
-        localStorage.setItem('empathica_test_tags', JSON.stringify(tagsForStorage));
-        console.log('Tags guardados en localStorage:', tagsForStorage);
-      }
+      // Obtener psicólogos activos del backend
+      fetchActivePsychologists();
     }
   }, [testAnswers]);
+
+  // useEffect separado para manejar el guardado de tags cuando cambie el patientProfile
+  useEffect(() => {
+    if (patientProfile && patientProfile.tags && patientProfile.tags.length > 0 && recommendedPsychologist) {
+      const tagsForStorage = {
+        tag1: {
+          tagId: 0,
+          name: patientProfile.tags[0] || "string",
+          percentage: 0.1,
+          patient: "string",
+          session: "string"
+        },
+        tag2: {
+          tagId: 0,
+          name: patientProfile.tags[1] || "string",
+          percentage: 0.1,
+          patient: "string",
+          session: "string"
+        },
+        tag3: {
+          tagId: 0,
+          name: patientProfile.tags[2] || "string",
+          percentage: 0.1,
+          patient: "string",
+          session: "string"
+        },
+        recommendedPsychologistId: recommendedPsychologist.id
+      };
+      
+      localStorage.setItem('empathica_test_tags', JSON.stringify(tagsForStorage));
+      console.log('Tags y psicólogo recomendado guardados en localStorage:', tagsForStorage);
+    }
+  }, [patientProfile, recommendedPsychologist]);
 
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
@@ -513,6 +684,14 @@ const TestResults = ({ navigationProps, testAnswers }) => {
       background: 'linear-gradient(135deg, #f6f8ff 0%, #fff 100%)', 
       padding: '20px 0' 
     }}>
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
       {/* Header */}
       <nav style={{ 
         background: '#0057FF', 
@@ -760,7 +939,6 @@ const TestResults = ({ navigationProps, testAnswers }) => {
           </div>
 
           {/* Sección del Psicólogo Recomendado */}
-          {recommendedPsychologist && (
           <div style={{ 
               marginTop: '48px',
               background: '#fff', 
@@ -778,13 +956,71 @@ const TestResults = ({ navigationProps, testAnswers }) => {
                 Tu Psicólogo Recomendado
             </h2>
 
-              {/* Información del psicólogo */}
+            {/* Indicador de carga */}
+            {psychologistsLoading && (
+              <div style={{
+                textAlign: 'center',
+                padding: '40px 20px'
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  width: '40px',
+                  height: '40px',
+                  border: '4px solid #f3f3f3',
+                  borderTop: '4px solid #0057FF',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}></div>
+                <p style={{
+                  marginTop: '16px',
+                  color: '#666',
+                  fontSize: '16px'
+                }}>
+                  Cargando psicólogos recomendados...
+                </p>
+              </div>
+            )}
+
+            {/* Mensaje de error */}
+            {psychologistsError && (
+              <div style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                color: '#dc3545'
+              }}>
+                <p style={{
+                  fontSize: '16px',
+                  marginBottom: '16px'
+                }}>
+                  {psychologistsError}
+                </p>
+                <button
+                  onClick={fetchActivePsychologists}
+                  style={{
+                    background: '#0057FF',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '12px 24px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
+
+            {/* Contenido de psicólogos */}
+            {!psychologistsLoading && !psychologistsError && recommendedPsychologist && (
+              <>
+                {/* Información del psicólogo */}
             <div style={{ 
               display: 'flex', 
-                alignItems: 'center',
-                gap: '20px',
-                marginBottom: '24px'
-              }}>
+                  alignItems: 'center',
+                  gap: '20px',
+                  marginBottom: '24px'
+                }}>
                 {/* Avatar */}
                 <div style={{
                   width: '80px',
@@ -976,8 +1212,9 @@ const TestResults = ({ navigationProps, testAnswers }) => {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
           {/* Sección de Otras Opciones */}
           {otherOptions.length > 0 && (

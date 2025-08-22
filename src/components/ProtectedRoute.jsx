@@ -6,7 +6,7 @@ import { Navigate, useLocation } from 'react-router-dom';
  * @param {Object} props - Propiedades del componente
  * @param {React.ReactNode} props.children - Componentes hijos a renderizar si está autorizado
  * @param {boolean} props.requireAuth - Si requiere autenticación (default: true)
- * @param {string} props.userType - Tipo de usuario requerido ('client', 'psychologist', 'business')
+ * @param {string} props.userType - Tipo de usuario requerido ('client', 'psychologist', 'business', 'superadmin')
  * @param {string} props.redirectTo - Ruta a la que redirigir si no está autorizado (default: '/login')
  * @param {Object} props.user - Información del usuario actual
  * @returns {React.ReactNode} - Componente protegido o redirección
@@ -57,6 +57,8 @@ const getAccessDeniedRoute = (userType) => {
       return '/psychologist-dashboard';
     case 'business':
       return '/business-dashboard';
+    case 'superadmin':
+      return '/superadmin-dashboard';
     default:
       return '/login';
   }

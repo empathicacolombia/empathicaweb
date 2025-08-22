@@ -33,14 +33,19 @@ export const AuthProvider = ({ children }) => {
    */
   const mapUserRolesToType = (userDetails) => {
     let userType = 'client'; // Por defecto
+    
     if (userDetails.roles && userDetails.roles.length > 0) {
-      const role = userDetails.roles[0];
+      // Verificar si es super admin (ADMIN + Company:Empathica)
+      const hasAdminRole = userDetails.roles.includes('ADMIN');
+      const hasEmpathicaCompany = userDetails.roles.includes('Company:Empathica');
       
-      if (role === 'PSYCHOLOGIST') {
+      if (hasAdminRole && hasEmpathicaCompany) {
+        userType = 'superadmin';
+      } else if (userDetails.roles.includes('PSYCHOLOGIST')) {
         userType = 'psychologist';
-      } else if (role === 'ADMIN') {
+      } else if (userDetails.roles.includes('ADMIN')) {
         userType = 'business';
-      } else if (role === 'PATIENT') {
+      } else if (userDetails.roles.includes('PATIENT')) {
         userType = 'client';
       }
     }

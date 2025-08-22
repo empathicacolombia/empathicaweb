@@ -36,6 +36,29 @@ const ComplementaryInfoForm = ({ user, onSubmitSuccess }) => {
   const [error, setError] = useState(null);
 
   // Opciones predefinidas
+  const timezoneOptions = [
+    { value: 'America/Mexico_City', label: 'México (GMT-6)' },
+    { value: 'America/New_York', label: 'Nueva York, Estados Unidos (GMT-5)' },
+    { value: 'America/Chicago', label: 'Chicago, Estados Unidos (GMT-6)' },
+    { value: 'America/Denver', label: 'Denver, Estados Unidos (GMT-7)' },
+    { value: 'America/Los_Angeles', label: 'Los Ángeles, Estados Unidos (GMT-8)' },
+    { value: 'America/Toronto', label: 'Toronto, Canadá (GMT-5)' },
+    { value: 'America/Vancouver', label: 'Vancouver, Canadá (GMT-8)' },
+    { value: 'America/Bogota', label: 'Bogotá, Colombia (GMT-5)' },
+    { value: 'America/Lima', label: 'Lima, Perú (GMT-5)' },
+    { value: 'America/Santiago', label: 'Santiago, Chile (GMT-3)' },
+    { value: 'America/Buenos_Aires', label: 'Buenos Aires, Argentina (GMT-3)' },
+    { value: 'America/Sao_Paulo', label: 'São Paulo, Brasil (GMT-3)' },
+    { value: 'America/Caracas', label: 'Caracas, Venezuela (GMT-4)' },
+    { value: 'America/Guayaquil', label: 'Guayaquil, Ecuador (GMT-5)' },
+    { value: 'America/Guatemala', label: 'Guatemala (GMT-6)' },
+    { value: 'America/El_Salvador', label: 'El Salvador (GMT-6)' },
+    { value: 'America/Tegucigalpa', label: 'Tegucigalpa, Honduras (GMT-6)' },
+    { value: 'America/Managua', label: 'Managua, Nicaragua (GMT-6)' },
+    { value: 'America/San_Jose', label: 'San José, Costa Rica (GMT-6)' },
+    { value: 'America/Panama', label: 'Panamá (GMT-5)' }
+  ];
+  
   const ageOptions = ['Niños (0-12)', 'Adolescentes (13-17)', 'Adultos (18-64)', 'Adultos mayores (65+)'];
   const therapeuticStyleOptions = [
     'Terapia Cognitivo-Conductual (TCC)',
@@ -151,7 +174,7 @@ const ComplementaryInfoForm = ({ user, onSubmitSuccess }) => {
   };
 
   /**
-   * Envía el formulario
+   * Prepara y solicita confirmación para enviar el formulario
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -162,29 +185,19 @@ const ComplementaryInfoForm = ({ user, onSubmitSuccess }) => {
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    // Preparar los datos para enviar
+    const dataToSend = {
+      ...formData,
+      userStatus: 'PENDING_APPROVAL', // Forzar el cambio de estado
+      academicHistory: academicHistory.map(record => ({
+        ...record,
+        academicHistoryId: 0 // El backend asignará el ID
+      }))
+    };
 
-    try {
-      const dataToSend = {
-        ...formData,
-        userStatus: 'PENDING_APPROVAL', // Forzar el cambio de estado
-        academicHistory: academicHistory.map(record => ({
-          ...record,
-          academicHistoryId: 0 // El backend asignará el ID
-        }))
-      };
-
-      const response = await userService.updatePsychologistComplementaryInfo(user.id, dataToSend);
-      
-      // Actualizar el estado del usuario en el contexto
-      if (onSubmitSuccess) {
-        onSubmitSuccess(response);
-      }
-    } catch (error) {
-      setError('Error al guardar la información. Por favor, inténtalo de nuevo.');
-    } finally {
-      setLoading(false);
+    // Llamar a la función de confirmación en lugar de enviar directamente
+    if (onSubmitSuccess) {
+      onSubmitSuccess(dataToSend);
     }
   };
 
@@ -230,19 +243,25 @@ const ComplementaryInfoForm = ({ user, onSubmitSuccess }) => {
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 500, color: '#555' }}>
                 Zona Horaria *
               </label>
-              <input
-                type="text"
+              <select
                 value={formData.timezone}
                 onChange={(e) => handleInputChange('timezone', e.target.value)}
-                placeholder="Ej: America/Mexico_City"
                 style={{
                   width: '100%',
                   padding: 12,
                   border: '1px solid #ddd',
                   borderRadius: 8,
-                  fontSize: 14
+                  fontSize: 14,
+                  background: '#fff'
                 }}
-              />
+              >
+                <option value="">Selecciona tu zona horaria</option>
+                {timezoneOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

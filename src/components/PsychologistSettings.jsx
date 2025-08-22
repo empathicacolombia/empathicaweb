@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../services/api';
 import ApprovalStatus from './ApprovalStatus';
 import ComplementaryInfoForm from './ComplementaryInfoForm';
+import ConfirmationModal from './ConfirmationModal';
 
 /**
  * Componente de configuración del psicólogo
@@ -33,6 +34,11 @@ const PsychologistSettings = ({ navigationProps }) => {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+
+  // Estados para el modal de confirmación
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
+  const [confirmationLoading, setConfirmationLoading] = useState(false);
 
   /**
    * Calcula la edad del psicólogo basada en la fecha de nacimiento
@@ -137,6 +143,48 @@ const PsychologistSettings = ({ navigationProps }) => {
   };
 
   /**
+   * Abre el modal de confirmación antes de enviar la información
+   */
+  const handleFormSubmitRequest = (formData) => {
+    setPendingFormData(formData);
+    setIsConfirmationModalOpen(true);
+  };
+
+  /**
+   * Cierra el modal de confirmación
+   */
+  const handleCloseConfirmationModal = () => {
+    setIsConfirmationModalOpen(false);
+    setPendingFormData(null);
+    setConfirmationLoading(false);
+  };
+
+  /**
+   * Confirma el envío de la información complementaria
+   */
+  const handleConfirmSubmit = async () => {
+    if (!pendingFormData) return;
+
+    try {
+      setConfirmationLoading(true);
+      
+      // Llamar al servicio para enviar la información
+      const response = await userService.updatePsychologistComplementaryInfo(user.id, pendingFormData);
+      
+      // Si la petición es exitosa, ejecutar el callback de éxito
+      handleFormSubmitSuccess(response);
+      
+      // Cerrar el modal
+      handleCloseConfirmationModal();
+      
+    } catch (error) {
+      console.error('Error enviando información complementaria:', error);
+      setConfirmationLoading(false);
+      // Aquí podrías mostrar una notificación de error
+    }
+  };
+
+  /**
    * Callback cuando se envía exitosamente el formulario
    */
   const handleFormSubmitSuccess = (backendResponse) => {
@@ -196,7 +244,7 @@ const PsychologistSettings = ({ navigationProps }) => {
       {showForm && (
         <ComplementaryInfoForm 
           user={user}
-          onSubmitSuccess={handleFormSubmitSuccess}
+          onSubmitSuccess={handleFormSubmitRequest}
         />
       )}
 
@@ -691,6 +739,19 @@ const PsychologistSettings = ({ navigationProps }) => {
           )}
         </div>
       </div>
+
+      {/* Modal de confirmación */}
+      <ConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={handleCloseConfirmationModal}
+        onConfirm={handleConfirmSubmit}
+        title="Confirmar Envío de Información"
+        message="Al enviar tu información complementaria, serás desconectado de la sesión actual y no podrás acceder a tu cuenta hasta que recibas la aprobación por correo electrónico. ¿Estás seguro de que todos los datos son correctos?"
+        confirmText="Sí, Enviar Información"
+        cancelText="Revisar Datos"
+        type="warning"
+        loading={confirmationLoading}
+      />
     </div>
   );
 };

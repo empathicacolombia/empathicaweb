@@ -62,6 +62,100 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
   };
 
   /**
+   * Obtiene los resultados del test desde el backend
+   */
+  const fetchTestResults = async () => {
+    try {
+      setLoadingTestResults(true);
+      
+      const patientData = await userService.getPatientById(user.id);
+      console.log('Datos del paciente para test results:', patientData);
+      
+      // Verificar si el paciente tiene tags
+      const hasTags = patientData.tag1 || patientData.tag2 || patientData.tag3;
+      
+      if (hasTags) {
+        // Extraer tags del backend
+        const tags = [];
+        const tagPercentages = {};
+        
+        if (patientData.tag1 && patientData.tag1.name) {
+          tags.push(patientData.tag1.name);
+          tagPercentages[patientData.tag1.name] = patientData.tag1.percentage || 0;
+        }
+        
+        if (patientData.tag2 && patientData.tag2.name) {
+          tags.push(patientData.tag2.name);
+          tagPercentages[patientData.tag2.name] = patientData.tag2.percentage || 0;
+        }
+        
+        if (patientData.tag3 && patientData.tag3.name) {
+          tags.push(patientData.tag3.name);
+          tagPercentages[patientData.tag3.name] = patientData.tag3.percentage || 0;
+        }
+        
+        // Determinar fecha del test (usar fecha de la primera sesión si existe)
+        let testDate = null;
+        if (patientData.tag1 && patientData.tag1.session && patientData.tag1.session.sessionTime) {
+          const sessionDate = new Date(patientData.tag1.session.sessionTime);
+          testDate = sessionDate.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          });
+        }
+        
+        // Crear perfil basado en los tags
+        const profile = {
+          nivelAngustia: determineAngustiaLevel(tagPercentages),
+          disposicionCambio: determineDisposicionCambio(tagPercentages),
+          orientacionTemporal: determineOrientacionTemporal(tagPercentages),
+          estiloTrabajoPaciente: determineEstiloTrabajo(tagPercentages),
+          tags: tags,
+          tagPercentages: tagPercentages
+        };
+        
+        // Determinar enfoques terapéuticos basados en los tags
+        const therapeuticApproaches = determineTherapeuticApproaches(tagPercentages);
+        
+        setTestResults({
+          completed: true,
+          date: testDate || 'Fecha no disponible',
+          profile: profile,
+          therapeuticApproaches: therapeuticApproaches
+        });
+        
+        console.log('Test results cargados desde backend:', {
+          tags,
+          tagPercentages,
+          profile,
+          therapeuticApproaches
+        });
+        
+      } else {
+        // No hay tags, marcar como no completado
+        setTestResults({
+          completed: false,
+          date: null,
+          profile: null,
+          therapeuticApproaches: []
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error obteniendo resultados del test:', error);
+      setTestResults({
+        completed: false,
+        date: null,
+        profile: null,
+        therapeuticApproaches: []
+      });
+    } finally {
+      setLoadingTestResults(false);
+    }
+  };
+
+  /**
    * Calcula la edad basada en la fecha de nacimiento
    * @param {string} dateOfBirth - Fecha de nacimiento en formato YYYY-MM-DD
    * @returns {number} - Edad calculada
@@ -82,6 +176,120 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
   };
 
   /**
+   * Determina el nivel de angustia basado en los tags
+   */
+  const determineAngustiaLevel = (tagPercentages) => {
+    const anxietyTags = ['Ansiedad', 'Depresión', 'Estrés', 'Pánico', 'Preocupación'];
+    const anxietyScore = anxietyTags.reduce((score, tag) => {
+      return score + (tagPercentages[tag] || 0);
+    }, 0);
+    
+    if (anxietyScore > 70) return 'Alto';
+    if (anxietyScore > 40) return 'Moderado';
+    return 'Bajo';
+  };
+
+  /**
+   * Determina la disposición al cambio basada en los tags
+   */
+  const determineDisposicionCambio = (tagPercentages) => {
+    const changeTags = ['Motivación', 'Crecimiento', 'Desarrollo personal', 'Objetivos'];
+    const changeScore = changeTags.reduce((score, tag) => {
+      return score + (tagPercentages[tag] || 0);
+    }, 0);
+    
+    if (changeScore > 60) return 'Alta';
+    if (changeScore > 30) return 'Moderada';
+    return 'Baja';
+  };
+
+  /**
+   * Determina la orientación temporal basada en los tags
+   */
+  const determineOrientacionTemporal = (tagPercentages) => {
+    const presentTags = ['Presente', 'Aquí y ahora', 'Mindfulness'];
+    const futureTags = ['Futuro', 'Planificación', 'Objetivos'];
+    
+    const presentScore = presentTags.reduce((score, tag) => {
+      return score + (tagPercentages[tag] || 0);
+    }, 0);
+    
+    const futureScore = futureTags.reduce((score, tag) => {
+      return score + (tagPercentages[tag] || 0);
+    }, 0);
+    
+    if (presentScore > futureScore) return 'Presente';
+    if (futureScore > presentScore) return 'Futuro';
+    return 'Equilibrado';
+  };
+
+  /**
+   * Determina el estilo de trabajo del paciente basado en los tags
+   */
+  const determineEstiloTrabajo = (tagPercentages) => {
+    const collaborativeTags = ['Colaboración', 'Trabajo en equipo', 'Comunicación'];
+    const independentTags = ['Independencia', 'Autonomía', 'Liderazgo'];
+    
+    const collaborativeScore = collaborativeTags.reduce((score, tag) => {
+      return score + (tagPercentages[tag] || 0);
+    }, 0);
+    
+    const independentScore = independentTags.reduce((score, tag) => {
+      return score + (tagPercentages[tag] || 0);
+    }, 0);
+    
+    if (collaborativeScore > independentScore) return 'Colaborativo';
+    if (independentScore > collaborativeScore) return 'Independiente';
+    return 'Adaptativo';
+  };
+
+  /**
+   * Determina los enfoques terapéuticos recomendados basados en los tags
+   */
+  const determineTherapeuticApproaches = (tagPercentages) => {
+    const approaches = [];
+    
+    // Verificar diferentes tipos de tags para recomendar enfoques
+    const anxietyTags = ['Ansiedad', 'Estrés', 'Pánico'];
+    const depressionTags = ['Depresión', 'Tristeza', 'Desesperanza'];
+    const growthTags = ['Crecimiento', 'Desarrollo personal', 'Objetivos'];
+    const relationshipTags = ['Relaciones', 'Comunicación', 'Familia'];
+    
+    const hasAnxiety = anxietyTags.some(tag => tagPercentages[tag] > 30);
+    const hasDepression = depressionTags.some(tag => tagPercentages[tag] > 30);
+    const hasGrowth = growthTags.some(tag => tagPercentages[tag] > 30);
+    const hasRelationships = relationshipTags.some(tag => tagPercentages[tag] > 30);
+    
+    if (hasAnxiety) {
+      approaches.push('Terapia Cognitivo-Conductual (TCC)');
+      approaches.push('Mindfulness');
+    }
+    
+    if (hasDepression) {
+      approaches.push('Terapia Cognitivo-Conductual (TCC)');
+      approaches.push('Terapia de Activación Conductual');
+    }
+    
+    if (hasGrowth) {
+      approaches.push('Terapia de Aceptación y Compromiso (ACT)');
+      approaches.push('Coaching de Vida');
+    }
+    
+    if (hasRelationships) {
+      approaches.push('Terapia Sistémica');
+      approaches.push('Terapia Familiar');
+    }
+    
+    // Si no hay enfoques específicos, agregar enfoques generales
+    if (approaches.length === 0) {
+      approaches.push('Terapia Cognitivo-Conductual (TCC)');
+      approaches.push('Terapia Humanista');
+    }
+    
+    return approaches;
+  };
+
+  /**
    * Inicializa los datos del perfil con la información del usuario autenticado
    */
   useEffect(() => {
@@ -97,27 +305,19 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
       
       setProfileData(newProfileData);
       
-      // Si necesitas información adicional específica del paciente
+      // Obtener información adicional del paciente y resultados del test
       fetchAdditionalUserInfo();
+      fetchTestResults();
     }
   }, [user]);
 
-  const [testResults] = useState({
-    completed: testAnswers ? true : false,
-    date: testAnswers ? '15 de Julio, 2024' : null,
-    profile: testAnswers ? {
-      nivelAngustia: 'Moderado',
-      disposicionCambio: 'Alta',
-      orientacionTemporal: 'Presente',
-      estiloTrabajoPaciente: 'Colaborativo',
-      tags: ['Ansiedad', 'Estrés laboral', 'Búsqueda de propósito']
-    } : null,
-    therapeuticApproaches: testAnswers ? [
-      'Terapia Cognitivo-Conductual (TCC)',
-      'Mindfulness',
-      'Terapia de Aceptación y Compromiso (ACT)'
-    ] : []
+  const [testResults, setTestResults] = useState({
+    completed: false,
+    date: null,
+    profile: null,
+    therapeuticApproaches: []
   });
+  const [loadingTestResults, setLoadingTestResults] = useState(false);
 
   const handleNavigation = (page) => {
     if (navigationProps && navigationProps.onNavigate) {
@@ -315,14 +515,14 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Nombre completo
                   </label>
-                  <p style={{
-                    fontSize: '16px',
-                    color: '#333',
-                    margin: 0,
-                    fontWeight: '500'
-                  }}>
+                    <p style={{
+                      fontSize: '16px',
+                      color: '#333',
+                      margin: 0,
+                      fontWeight: '500'
+                    }}>
                     {`${profileData.firstName} ${profileData.lastName}`}
-                  </p>
+                    </p>
                 </div>
 
                 <div>
@@ -335,14 +535,14 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Correo electrónico
                   </label>
-                  <p style={{
-                    fontSize: '16px',
-                    color: '#333',
-                    margin: 0,
-                    fontWeight: '500'
-                  }}>
-                    {profileData.email}
-                  </p>
+                    <p style={{
+                      fontSize: '16px',
+                      color: '#333',
+                      margin: 0,
+                      fontWeight: '500'
+                    }}>
+                      {profileData.email}
+                    </p>
                 </div>
 
                 <div>
@@ -355,14 +555,14 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Teléfono
                   </label>
-                  <p style={{
-                    fontSize: '16px',
-                    color: '#333',
-                    margin: 0,
-                    fontWeight: '500'
-                  }}>
-                    {profileData.phone}
-                  </p>
+                    <p style={{
+                      fontSize: '16px',
+                      color: '#333',
+                      margin: 0,
+                      fontWeight: '500'
+                    }}>
+                      {profileData.phone}
+                    </p>
                 </div>
 
                 <div>
@@ -375,14 +575,14 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Edad
                   </label>
-                  <p style={{
-                    fontSize: '16px',
-                    color: '#333',
-                    margin: 0,
-                    fontWeight: '500'
-                  }}>
-                    {profileData.age} años
-                  </p>
+                    <p style={{
+                      fontSize: '16px',
+                      color: '#333',
+                      margin: 0,
+                      fontWeight: '500'
+                    }}>
+                      {profileData.age} años
+                    </p>
                 </div>
 
                 <div>
@@ -395,16 +595,16 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                   }}>
                     Género
                   </label>
-                  <p style={{
-                    fontSize: '16px',
-                    color: '#333',
-                    margin: 0,
-                    fontWeight: '500'
-                  }}>
+                    <p style={{
+                      fontSize: '16px',
+                      color: '#333',
+                      margin: 0,
+                      fontWeight: '500'
+                    }}>
                     {profileData.gender === 'MALE' ? 'Masculino' : 
                      profileData.gender === 'FEMALE' ? 'Femenino' : 
                      profileData.gender}
-                  </p>
+                    </p>
                 </div>
 
 
@@ -441,9 +641,41 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                 }}>
                   Resultados del Test
                 </h2>
+                {testResults.completed && (
+                  <span style={{
+                    background: '#d1fae5',
+                    color: '#065f46',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '10px',
+                    fontWeight: '600',
+                    marginLeft: '8px'
+                  }}>
+                    Datos del Backend
+                  </span>
+                )}
               </div>
 
-              {testResults.completed ? (
+              {loadingTestResults ? (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '1rem',
+                  padding: '2rem',
+                  color: '#666'
+                }}>
+                  <div style={{
+                    width: 24,
+                    height: 24,
+                    border: '3px solid #f3f3f3',
+                    borderTop: '3px solid #0057FF',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  Cargando resultados del test...
+                </div>
+              ) : testResults.completed ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   {/* Estado del test */}
                   <div style={{
@@ -551,7 +783,9 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                       flexWrap: 'wrap',
                       gap: '8px'
                     }}>
-                      {testResults.profile.tags.map((tag, index) => (
+                      {testResults.profile.tags.map((tag, index) => {
+                        const percentage = testResults.profile.tagPercentages?.[tag] || 0;
+                        return (
                         <span
                           key={index}
                           style={{
@@ -560,12 +794,28 @@ const ClientProfilePage = ({ navigationProps, testAnswers }) => {
                             padding: '6px 12px',
                             borderRadius: '20px',
                             fontSize: '12px',
-                            fontWeight: '500'
+                              fontWeight: '500',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
                           }}
                         >
                           {tag}
+                            {percentage > 0 && (
+                              <span style={{
+                                background: '#0057FF',
+                                color: '#fff',
+                                padding: '2px 6px',
+                                borderRadius: '10px',
+                                fontSize: '10px',
+                                fontWeight: '600'
+                              }}>
+                                {Math.round(percentage)}%
                         </span>
-                      ))}
+                            )}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
 

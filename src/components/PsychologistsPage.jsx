@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { userService } from '../services/api';
 
 /**
  * Componente de página de Psicólogos
@@ -26,71 +27,82 @@ const PsychologistsPage = ({ navigationProps }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   /**
-   * Datos de psicólogos disponibles
-   * Incluye información completa de cada profesional
+   * Estados para manejar los datos de psicólogos
    */
-  const psychologists = [
-    {
-      id: 1,
-      name: 'Dr. María González',
-      specialty: 'Ansiedad y Estrés',
-      location: 'Bogotá',
-      age: '36-45',
-      approach: 'Cognitivo-Conductual',
-      experience: '8 años',
-      rating: 4.9,
-      reviews: 127,
-      languages: ['Español', 'Inglés'],
-      availability: 'Lunes a Viernes',
-      price: '$45,000',
-      avatar: '👩‍⚕️',
-      description: 'Especialista en trastornos de ansiedad y manejo del estrés. Utilizo técnicas de terapia cognitivo-conductual para ayudar a mis pacientes a desarrollar estrategias efectivas de afrontamiento.',
-      education: 'Psicología Clínica - Universidad de los Andes',
-      certifications: ['Terapeuta Cognitivo-Conductual', 'Especialista en Ansiedad'],
-      focusAreas: ['Ansiedad Generalizada', 'Trastorno de Pánico', 'Estrés Laboral', 'Fobias'],
-      sessionType: 'Individual y Grupal'
-    },
-    {
-      id: 2,
-      name: 'Dr. Carlos Rodríguez',
-      specialty: 'Depresión y Autoestima',
-      location: 'Medellín',
-      age: '26-35',
-      approach: 'Humanista',
-      experience: '5 años',
-      rating: 4.8,
-      reviews: 89,
-      languages: ['Español'],
-      availability: 'Martes a Sábado',
-      price: '$40,000',
-      avatar: '👨‍⚕️',
-      description: 'Enfoque humanista centrado en el desarrollo personal y la construcción de autoestima. Creo en el potencial de cada persona para superar sus dificultades.',
-      education: 'Psicología - Universidad de Antioquia',
-      certifications: ['Terapeuta Humanista', 'Especialista en Depresión'],
-      focusAreas: ['Depresión', 'Baja Autoestima', 'Crisis Existencial', 'Desarrollo Personal'],
-      sessionType: 'Individual'
-    },
-    {
-      id: 3,
-      name: 'Dra. Ana Martínez',
-      specialty: 'Relaciones y Familia',
-      location: 'Cali',
-      age: '46+',
-      approach: 'Sistémico',
-      experience: '12 años',
-      rating: 4.7,
-      reviews: 203,
-      languages: ['Español', 'Inglés', 'Francés'],
-      availability: 'Lunes a Domingo',
-      price: '$50,000',
-      avatar: '👩‍⚕️',
-      description: 'Especialista en terapia familiar y de pareja. Mi enfoque sistémico me permite trabajar con las dinámicas relacionales y patrones familiares.',
-      education: 'Psicología Familiar - Universidad Javeriana',
-      certifications: ['Terapeuta Sistémico', 'Especialista en Familia'],
-      focusAreas: ['Terapia de Pareja', 'Conflictos Familiares', 'Comunicación', 'Divorcio'],
-      sessionType: 'Individual, Pareja y Familiar'
-    }
-  ];
+  const [psychologists, setPsychologists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  /**
+   * Cargar psicólogos activos desde el backend
+   */
+  useEffect(() => {
+    const fetchActivePsychologists = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await userService.getAllPsychologists();
+        const allPsychologists = response.content || response || [];
+        
+        // Filtrar solo psicólogos activos
+        const activePsychologists = allPsychologists.filter(psychologist => 
+          psychologist.userStatus === 'ACTIVE'
+        );
+        
+        // Transformar los datos para el formato requerido por el componente
+        const transformedPsychologists = activePsychologists.map((psychologist, index) => ({
+          id: psychologist.userId || index + 1,
+          name: `${psychologist.name} ${psychologist.lastName}`,
+          specialty: psychologist.specialty || 'Psicólogo Clínico',
+          approach: psychologist.therapeuticStyle?.[0] || 'Cognitivo-Conductual',
+          avatar: '👩‍⚕️', // Avatar por defecto
+          description: psychologist.oneliner || 'Psicólogo especializado en bienestar emocional y desarrollo personal.',
+          focusAreas: psychologist.attendAges?.slice(0, 3) || ['Adultos', 'Jóvenes', 'Familias']
+        }));
+        
+        setPsychologists(transformedPsychologists);
+      } catch (error) {
+        console.error('Error cargando psicólogos:', error);
+        setError('Error al cargar los psicólogos. Inténtalo de nuevo.');
+        
+        // Fallback a datos estáticos si hay error
+        setPsychologists([
+          {
+            id: 1,
+            name: 'Dr. María González',
+            specialty: 'Ansiedad y Estrés',
+            approach: 'Cognitivo-Conductual',
+            avatar: '👩‍⚕️',
+            description: 'Especialista en trastornos de ansiedad y manejo del estrés. Utilizo técnicas de terapia cognitivo-conductual para ayudar a mis pacientes a desarrollar estrategias efectivas de afrontamiento.',
+            focusAreas: ['Ansiedad Generalizada', 'Trastorno de Pánico', 'Estrés Laboral', 'Fobias']
+          },
+          {
+            id: 2,
+            name: 'Dr. Carlos Rodríguez',
+            specialty: 'Depresión y Autoestima',
+            approach: 'Humanista',
+            avatar: '👨‍⚕️',
+            description: 'Enfoque humanista centrado en el desarrollo personal y la construcción de autoestima. Creo en el potencial de cada persona para superar sus dificultades.',
+            focusAreas: ['Depresión', 'Baja Autoestima', 'Crisis Existencial', 'Desarrollo Personal']
+          },
+          {
+            id: 3,
+            name: 'Dra. Ana Martínez',
+            specialty: 'Relaciones y Familia',
+            approach: 'Sistémico',
+            avatar: '👩‍⚕️',
+            description: 'Especialista en terapia familiar y de pareja. Mi enfoque sistémico me permite trabajar con las dinámicas relacionales y patrones familiares.',
+            focusAreas: ['Terapia de Pareja', 'Conflictos Familiares', 'Comunicación', 'Divorcio']
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivePsychologists();
+  }, []);
 
   /**
    * Maneja la navegación entre diferentes páginas de la aplicación
@@ -484,7 +496,7 @@ const PsychologistsPage = ({ navigationProps }) => {
           margin: '0 0 2.5rem 0',
           lineHeight: 1.6
         }}>
-          Contamos con más de 100 psicólogos especializados, todos verificados y listos para ayudarte en tu proceso de bienestar emocional.
+          Contamos con psicólogos especializados, todos verificados y listos para ayudarte en tu proceso de bienestar emocional.
         </p>
         
         {/* Botón de call-to-action para el test de matching */}
@@ -654,7 +666,38 @@ const PsychologistsPage = ({ navigationProps }) => {
         {/* ========================================
              LISTA DE PSICÓLOGOS
              ======================================== */}
-        {filteredPsychologists.length > 0 ? (
+        {loading ? (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: 400 
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ 
+                width: 40, 
+                height: 40, 
+                border: '4px solid #f3f3f3', 
+                borderTop: '4px solid #0057FF', 
+                borderRadius: '50%', 
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto 16px'
+              }} />
+              <p style={{ color: '#6b7280' }}>Cargando psicólogos...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div style={{ 
+            background: '#fee', 
+            border: '1px solid #fcc', 
+            borderRadius: 8, 
+            padding: 16, 
+            textAlign: 'center',
+            color: '#c33'
+          }}>
+            <p>{error}</p>
+          </div>
+        ) : filteredPsychologists.length > 0 ? (
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
@@ -667,8 +710,7 @@ const PsychologistsPage = ({ navigationProps }) => {
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                 border: '1px solid #e0e0e0',
                 overflow: 'hidden',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                cursor: 'pointer'
+                transition: 'transform 0.2s, box-shadow 0.2s'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-4px)';
@@ -678,7 +720,6 @@ const PsychologistsPage = ({ navigationProps }) => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
               }}
-              onClick={() => handleNavigation('questionnaire-match')}
               >
                 {/* Header del psicólogo */}
                 <div style={{
@@ -722,30 +763,7 @@ const PsychologistsPage = ({ navigationProps }) => {
                     </div>
                   </div>
                   
-                  {/* Información rápida */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}>
-                      <span style={{ fontSize: '1.2rem' }}>⭐</span>
-                      <span style={{ fontWeight: 600 }}>{psychologist.rating}</span>
-                      <span style={{ opacity: 0.8 }}>({psychologist.reviews} reseñas)</span>
-                    </div>
-                    <div style={{
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      padding: '0.5rem 1rem',
-                      borderRadius: 20,
-                      fontWeight: 600
-                    }}>
-                      {psychologist.price}
-                    </div>
-                  </div>
+
                 </div>
 
                 {/* Contenido del psicólogo */}
@@ -760,29 +778,10 @@ const PsychologistsPage = ({ navigationProps }) => {
                     {psychologist.description}
                   </p>
 
-                  {/* Información detallada */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '1rem',
-                    marginBottom: '1rem'
-                  }}>
-                    <div>
-                      <span style={{ color: '#999', fontSize: '0.85rem' }}>Ubicación</span>
-                      <p style={{ margin: '0.25rem 0 0 0', fontWeight: 600 }}>{psychologist.location}</p>
-                    </div>
-                    <div>
-                      <span style={{ color: '#999', fontSize: '0.85rem' }}>Experiencia</span>
-                      <p style={{ margin: '0.25rem 0 0 0', fontWeight: 600 }}>{psychologist.experience}</p>
-                    </div>
-                    <div>
-                      <span style={{ color: '#999', fontSize: '0.85rem' }}>Enfoque</span>
-                      <p style={{ margin: '0.25rem 0 0 0', fontWeight: 600 }}>{psychologist.approach}</p>
-                    </div>
-                    <div>
-                      <span style={{ color: '#999', fontSize: '0.85rem' }}>Disponibilidad</span>
-                      <p style={{ margin: '0.25rem 0 0 0', fontWeight: 600 }}>{psychologist.availability}</p>
-                    </div>
+                  {/* Enfoque terapéutico */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <span style={{ color: '#999', fontSize: '0.85rem' }}>Enfoque terapéutico</span>
+                    <p style={{ margin: '0.25rem 0 0 0', fontWeight: 600 }}>{psychologist.approach}</p>
                   </div>
 
                   {/* Áreas de enfoque */}
@@ -821,25 +820,7 @@ const PsychologistsPage = ({ navigationProps }) => {
                     </div>
                   </div>
 
-                  {/* Botón de acción */}
-                  <button
-                    style={{
-                      width: '100%',
-                      background: '#0057FF',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 8,
-                      padding: '0.75rem',
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#0046CC'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#0057FF'}
-                  >
-                    Seleccionar este psicólogo
-                  </button>
+
                 </div>
               </div>
             ))}
@@ -883,6 +864,15 @@ const PsychologistsPage = ({ navigationProps }) => {
         </div>
         )}
       </div>
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 };

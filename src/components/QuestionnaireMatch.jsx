@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const QuestionnaireMatch = ({ navigationProps }) => {
   const [currentSection, setCurrentSection] = useState(1);
@@ -68,12 +68,20 @@ const QuestionnaireMatch = ({ navigationProps }) => {
   const handleNext = () => {
     if (currentSection === 1 && answers.section1) {
       setCurrentSection(2);
+      // Scroll al principio de la página
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentSection === 2 && answers.section2.question2 && answers.section2.question3 && answers.section2.question4) {
       setCurrentSection(3);
+      // Scroll al principio de la página
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentSection === 3 && answers.section3.question5 && answers.section3.question6 && answers.section3.question7) {
       setCurrentSection(4);
+      // Scroll al principio de la página
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentSection === 4 && answers.section4.question8 && answers.section4.question9.length > 0 && answers.section4.question10.length > 0 && answers.section4.question11) {
       setCurrentSection(5);
+      // Scroll al principio de la página
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentSection === 5 && answers.section5.question12) {
       // Terminar cuestionario
       if (navigationProps && navigationProps.onNavigate) {
@@ -93,6 +101,8 @@ const QuestionnaireMatch = ({ navigationProps }) => {
   const handlePrev = () => {
     if (currentSection > 1) {
       setCurrentSection(currentSection - 1);
+      // Scroll al principio de la página
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -102,6 +112,11 @@ const QuestionnaireMatch = ({ navigationProps }) => {
     }
     setMobileMenuOpen(false);
   };
+
+  // Efecto para hacer scroll al principio cuando cambie la sección
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentSection]);
 
   const section1Options = [
     {

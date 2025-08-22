@@ -127,7 +127,9 @@ const LoginPage = ({ navigationProps }) => {
       }
 
       // Redirigir según el tipo de usuario
-      if (userData.userType === 'psychologist') {
+      if (userData.userType === 'superadmin') {
+        navigate('/superadmin-dashboard');
+      } else if (userData.userType === 'psychologist') {
         navigate('/psychologist-dashboard');
       } else if (userData.userType === 'business') {
         navigate('/business-dashboard');

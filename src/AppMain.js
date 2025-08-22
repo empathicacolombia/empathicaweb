@@ -21,6 +21,7 @@ import PricingPage from './components/PricingPage';
 import PsychologistDashboard from './components/PsychologistDashboard';
 import BusinessDemoDashboard from './components/BusinessDemoDashboard';
 import BusinessDashboard from './components/BusinessDashboard';
+import SuperAdminDashboard from './components/SuperAdminDashboard';
 import QuestionnaireMatch from './components/QuestionnaireMatch';
 import TestResults from './components/TestResults';
 import PsychologistProfileForm from './components/PsychologistProfileForm';
@@ -151,6 +152,13 @@ function AppMain() {
         <Route path="/business-dashboard/*" element={
           <ProtectedRoute user={user} userType="business">
             <BusinessDashboard navigationProps={navigationProps} />
+          </ProtectedRoute>
+        } />
+        
+        {/* Rutas del dashboard de super admin - PROTEGIDAS */}
+        <Route path="/superadmin-dashboard" element={
+          <ProtectedRoute user={user} userType="superadmin">
+            <SuperAdminDashboard navigationProps={navigationProps} />
           </ProtectedRoute>
         } />
         

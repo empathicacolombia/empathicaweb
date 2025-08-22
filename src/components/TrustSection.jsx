@@ -5,15 +5,15 @@ const stats = [
     icon: (
       <svg width="48" height="48" fill="none" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#e8f0ff"/><path d="M24 16a8 8 0 0 1 8 8v2a8 8 0 0 1-16 0v-2a8 8 0 0 1 8-8Zm0 18c-3.9 0-7-3.1-7-7 0-1.1.2-2.1.6-3h12.8c.4.9.6 1.9.6 3 0 3.9-3.1 7-7 7z" fill="#0057FF"/></svg>
     ),
-    value: '15,000+',
-    label: 'Usuarios activos',
+    value: 'Usuarios activos',
+    label: 'Personas confían en nosotros',
   },
   {
     icon: (
       <svg width="48" height="48" fill="none" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#e8f0ff"/><path d="M24 16a8 8 0 0 1 8 8v2a8 8 0 0 1-16 0v-2a8 8 0 0 1 8-8Zm0 18c-3.9 0-7-3.1-7-7 0-1.1.2-2.1.6-3h12.8c.4.9.6 1.9.6 3 0 3.9-3.1 7-7 7z" fill="#0057FF"/></svg>
     ),
-    value: '500+',
-    label: 'Psicólogos certificados',
+    value: 'Psicólogos certificados',
+    label: 'Profesionales verificados',
   },
   {
     icon: (
