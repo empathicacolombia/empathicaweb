@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X, User, Mail, Phone, Calendar, MapPin, Building } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const BusinessEmployees = ({ navigationProps }) => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -10,103 +12,22 @@ const BusinessEmployees = ({ navigationProps }) => {
 
   // Estado para el formulario de nuevo empleado
   const [newEmployee, setNewEmployee] = useState({
-    firstName: '',
+    name: '',
     lastName: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
+    dateOfBirth: '',
     gender: '',
-    department: '',
-    position: '',
-    hireDate: '',
-    address: ''
+    company: user?.company || user?.companyName || 'Empresa' // Nombre de la empresa del usuario autenticado
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+  const [employeesError, setEmployeesError] = useState('');
 
-  // Datos de ejemplo de empleados (ahora con más información)
-  const [employees, setEmployees] = useState([
-    { 
-      id: 1, 
-      firstName: 'Ana', 
-      lastName: 'García', 
-      name: 'Ana García', 
-      email: 'ana.garcia@empresa.com', 
-      phone: '+1 (555) 123-4567',
-      gender: 'Femenino',
-      department: 'Ventas', 
-      position: 'Gerente de Ventas',
-      hireDate: '2023-01-15',
-      address: 'Calle Principal 123, Ciudad',
-      status: 'Activo', 
-      sessions: 8, 
-      lastSession: '2024-01-15' 
-    },
-    { 
-      id: 2, 
-      firstName: 'Carlos', 
-      lastName: 'López', 
-      name: 'Carlos López', 
-      email: 'carlos.lopez@empresa.com', 
-      phone: '+1 (555) 234-5678',
-      gender: 'Masculino',
-      department: 'Marketing', 
-      position: 'Especialista en Marketing',
-      hireDate: '2023-03-20',
-      address: 'Avenida Central 456, Ciudad',
-      status: 'Activo', 
-      sessions: 5, 
-      lastSession: '2024-01-14' 
-    },
-    { 
-      id: 3, 
-      firstName: 'María', 
-      lastName: 'Rodríguez', 
-      name: 'María Rodríguez', 
-      email: 'maria.rodriguez@empresa.com', 
-      phone: '+1 (555) 345-6789',
-      gender: 'Femenino',
-      department: 'Tecnología', 
-      position: 'Desarrolladora Senior',
-      hireDate: '2022-11-10',
-      address: 'Plaza Mayor 789, Ciudad',
-      status: 'Activo', 
-      sessions: 12, 
-      lastSession: '2024-01-16' 
-    },
-    { 
-      id: 4, 
-      firstName: 'Juan', 
-      lastName: 'Pérez', 
-      name: 'Juan Pérez', 
-      email: 'juan.perez@empresa.com', 
-      phone: '+1 (555) 456-7890',
-      gender: 'Masculino',
-      department: 'RRHH', 
-      position: 'Analista de RRHH',
-      hireDate: '2023-06-05',
-      address: 'Calle Secundaria 321, Ciudad',
-      status: 'Inactivo', 
-      sessions: 3, 
-      lastSession: '2024-01-10' 
-    },
-    { 
-      id: 5, 
-      firstName: 'Laura', 
-      lastName: 'Martínez', 
-      name: 'Laura Martínez', 
-      email: 'laura.martinez@empresa.com', 
-      phone: '+1 (555) 567-8901',
-      gender: 'Femenino',
-      department: 'Finanzas', 
-      position: 'Contadora',
-      hireDate: '2023-02-28',
-      address: 'Boulevard Norte 654, Ciudad',
-      status: 'Activo', 
-      sessions: 6, 
-      lastSession: '2024-01-13' 
-    },
-  ]);
+  // Estado para los empleados (se cargarán desde el API)
+  const [employees, setEmployees] = useState([]);
 
   // Filtrar empleados
   const filteredEmployees = employees.filter(emp =>
@@ -118,6 +39,129 @@ const BusinessEmployees = ({ navigationProps }) => {
   const openUploadModal = () => setShowUploadModal(true);
   const openAssignSessionsModal = () => setShowAssignSessionsModal(true);
   const openNotificationModal = () => setShowNotificationModal(true);
+
+  // Función para obtener empleados del API filtrando por nombre de empresa
+  const fetchEmployeesByCompany = async (companyName) => {
+    setLoadingEmployees(true);
+    setEmployeesError('');
+
+    try {
+      console.log('=== OBTENIENDO EMPLEADOS POR EMPRESA ===');
+      console.log('URL:', '/api/patients');
+      console.log('Company Name:', companyName);
+      console.log('========================================');
+
+      const response = await fetch('/api/patients', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('empathica_token')}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al obtener pacientes');
+      }
+
+      const allPatients = await response.json();
+      console.log('Todos los pacientes del servidor:', allPatients);
+
+      // Filtrar pacientes que pertenezcan a la empresa
+      const companyPatients = allPatients.filter(patient => {
+        const patientCompany = patient.company || patient.companyName || '';
+        const matches = patientCompany.toLowerCase() === companyName.toLowerCase();
+        console.log(`Paciente: ${patient.name} ${patient.lastName}, Company: "${patientCompany}", Match: ${matches}`);
+        return matches;
+      });
+
+      console.log('Pacientes filtrados por empresa:', companyPatients);
+
+      // Transformar los datos del API al formato esperado por la UI
+      const transformedEmployees = companyPatients.map((patient, index) => ({
+        id: patient.userId || patient.id || index + 1,
+        firstName: patient.name || '',
+        lastName: patient.lastName || '',
+        name: `${patient.name || ''} ${patient.lastName || ''}`.trim(),
+        email: patient.email || '',
+        phone: patient.phoneNumber || patient.phone || '',
+        gender: patient.gender || 'No especificado',
+        department: 'N/A', // No viene del API
+        position: 'N/A', // No viene del API
+        hireDate: new Date().toISOString().split('T')[0], // Fecha actual como placeholder
+        address: 'N/A', // No viene del API
+        status: patient.userStatus === 'ACTIVE' ? 'Activo' : 'Inactivo',
+        sessions: 0, // Se puede calcular si hay datos de sesiones
+        lastSession: 'N/A'
+      }));
+
+      setEmployees(transformedEmployees);
+      console.log('Empleados cargados:', transformedEmployees.length);
+
+    } catch (error) {
+      console.error('Error obteniendo empleados:', error);
+      setEmployeesError(error.message);
+    } finally {
+      setLoadingEmployees(false);
+    }
+  };
+
+  // Función para obtener empleados del API
+  const fetchEmployees = async () => {
+    // Obtener el nombre de la empresa del usuario
+    const companyName = user?.company || user?.companyName || user?.companyId;
+    
+    if (!companyName) {
+      setEmployeesError('No se pudo obtener el nombre de la empresa');
+      return;
+    }
+
+    console.log('=== FETCH EMPLOYEES ===');
+    console.log('User:', user);
+    console.log('Company Name:', companyName);
+    console.log('=======================');
+
+    await fetchEmployeesByCompany(companyName);
+  };
+
+  // Debug: Verificar cuando el componente se monta
+  useEffect(() => {
+    console.log('=== COMPONENTE MONTADO ===');
+    console.log('User disponible:', !!user);
+    console.log('User completo:', user);
+    console.log('==========================');
+  }, []);
+
+  // Debug: Verificar cuando el usuario cambia
+  useEffect(() => {
+    console.log('=== USUARIO CAMBIÓ ===');
+    console.log('User completo:', user);
+    console.log('User companyId:', user?.companyId);
+    console.log('User ID:', user?.id);
+    console.log('User roles:', user?.roles);
+    console.log('======================');
+  }, [user]);
+
+  // Cargar empleados cuando se monte el componente y el usuario esté disponible
+  useEffect(() => {
+    console.log('=== DEBUG USEEFFECT ===');
+    console.log('User completo:', user);
+    console.log('User company:', user?.company);
+    console.log('User companyName:', user?.companyName);
+    console.log('User companyId:', user?.companyId);
+    console.log('User ID:', user?.id);
+    console.log('User roles:', user?.roles);
+    console.log('========================');
+    
+    const companyName = user?.company || user?.companyName || user?.companyId;
+    
+    if (companyName) {
+      console.log('Ejecutando fetchEmployees con companyName:', companyName);
+      fetchEmployees();
+    } else {
+      console.log('No se ejecuta fetchEmployees - no hay nombre de empresa disponible');
+    }
+  }, [user?.company, user?.companyName, user?.companyId]);
 
   // Funciones para manejar el formulario de nuevo empleado
   const handleInputChange = (field, value) => {
@@ -138,7 +182,7 @@ const BusinessEmployees = ({ navigationProps }) => {
 
     try {
       // Validaciones básicas
-      if (!newEmployee.firstName || !newEmployee.lastName || !newEmployee.email) {
+      if (!newEmployee.name || !newEmployee.lastName || !newEmployee.email || !newEmployee.phoneNumber || !newEmployee.dateOfBirth || !newEmployee.gender) {
         throw new Error('Por favor completa todos los campos obligatorios');
       }
 
@@ -148,43 +192,77 @@ const BusinessEmployees = ({ navigationProps }) => {
         throw new Error('El email no tiene un formato válido');
       }
 
-      // Crear nuevo empleado
+      // Validar teléfono (solo números, exactamente 10 dígitos)
+      if (newEmployee.phoneNumber.replace(/\D/g, '').length !== 10) {
+        throw new Error('El teléfono debe tener exactamente 10 dígitos');
+      }
+
+              // Preparar datos para el API
+        const employeeData = {
+          name: newEmployee.name,
+          lastName: newEmployee.lastName,
+          email: newEmployee.email,
+          phoneNumber: newEmployee.phoneNumber.replace(/\D/g, ''), // Solo números
+          dateOfBirth: newEmployee.dateOfBirth,
+          gender: newEmployee.gender,
+          company: newEmployee.company
+        };
+
+      console.log('=== AGREGANDO EMPLEADO ===');
+      console.log('Datos enviados:', employeeData);
+      console.log('==========================');
+
+      // Llamada al API
+      const response = await fetch('/api/patients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('empathica_token')}`
+        },
+        body: JSON.stringify(employeeData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al agregar empleado');
+      }
+
+      const result = await response.json();
+      console.log('Respuesta del servidor:', result);
+
+      // Crear empleado para la lista local (mantener compatibilidad con la UI)
       const employee = {
         id: employees.length + 1,
-        firstName: newEmployee.firstName,
+        firstName: newEmployee.name,
         lastName: newEmployee.lastName,
-        name: `${newEmployee.firstName} ${newEmployee.lastName}`,
+        name: `${newEmployee.name} ${newEmployee.lastName}`,
         email: newEmployee.email,
-        phone: newEmployee.phone || 'No especificado',
-        gender: newEmployee.gender || 'No especificado',
-        department: newEmployee.department || 'No especificado',
-        position: newEmployee.position || 'No especificado',
-        hireDate: newEmployee.hireDate || new Date().toISOString().split('T')[0],
-        address: newEmployee.address || 'No especificado',
+        phone: newEmployee.phoneNumber,
+        gender: newEmployee.gender,
+        department: 'N/A', // No se envía al API
+        position: 'N/A', // No se envía al API
+        hireDate: new Date().toISOString().split('T')[0],
+        address: 'N/A', // No se envía al API
         status: 'Activo',
         sessions: 0,
         lastSession: 'N/A'
       };
 
-      // Agregar empleado a la lista (simulando llamada al backend)
-      console.log('Agregando nuevo empleado:', employee);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simular delay
-      
-      setEmployees(prev => [...prev, employee]);
       setSuccess('¡Empleado agregado exitosamente!');
       
       // Limpiar formulario
       setNewEmployee({
-        firstName: '',
+        name: '',
         lastName: '',
         email: '',
-        phone: '',
+        phoneNumber: '',
+        dateOfBirth: '',
         gender: '',
-        department: '',
-        position: '',
-        hireDate: '',
-        address: ''
+        company: user?.company || user?.companyName || 'Empresa'
       });
+
+      // Recargar la lista de empleados desde el API
+      await fetchEmployees();
 
       // Cerrar modal después de un breve delay
       setTimeout(() => {
@@ -203,15 +281,13 @@ const BusinessEmployees = ({ navigationProps }) => {
   const closeCreateModal = () => {
     setShowCreateModal(false);
     setNewEmployee({
-      firstName: '',
+      name: '',
       lastName: '',
       email: '',
-      phone: '',
+      phoneNumber: '',
+      dateOfBirth: '',
       gender: '',
-      department: '',
-      position: '',
-      hireDate: '',
-      address: ''
+      company: user?.company || user?.companyName || 'Empresa'
     });
     setError('');
     setSuccess('');
@@ -223,7 +299,55 @@ const BusinessEmployees = ({ navigationProps }) => {
       <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
         {/* Estadísticas Generales */}
         <div style={{ flex: 1, background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', padding: '1.5rem 2rem', border: '1.5px solid #f2f2f2', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ color: '#222', fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Estadísticas Generales</div>
+          <div style={{ color: '#222', fontWeight: 800, fontSize: 20, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              Estadísticas Generales
+              {loadingEmployees && (
+                <div style={{
+                  width: 16,
+                  height: 16,
+                  border: '2px solid #e0e7ef',
+                  borderTop: '2px solid #0057ff',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+              )}
+            </div>
+            <button
+              onClick={() => {
+                console.log('=== BOTÓN RECARGAR PRESIONADO ===');
+                console.log('User:', user);
+                console.log('User company:', user?.company);
+                console.log('User companyName:', user?.companyName);
+                console.log('User companyId:', user?.companyId);
+                console.log('User ID:', user?.id);
+                
+                const companyName = user?.company || user?.companyName || user?.companyId;
+                
+                if (companyName) {
+                  console.log('Recargando con companyName:', companyName);
+                  fetchEmployees();
+                } else {
+                  console.log('No hay nombre de empresa disponible');
+                }
+              }}
+              style={{
+                background: '#0057ff',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                padding: '6px 12px',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4
+              }}
+            >
+              🔄 Recargar
+            </button>
+          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
             <span>Total empleados</span>
             <span style={{ color: '#0057ff', fontWeight: 800, fontSize: 20 }}>{employees.length}</span>
@@ -238,13 +362,13 @@ const BusinessEmployees = ({ navigationProps }) => {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
             <span>Reportan estrés</span>
-            <span style={{ color: '#ff4444', fontWeight: 800, fontSize: 20 }}>156</span>
+            <span style={{ color: '#ff4444', fontWeight: 800, fontSize: 20 }}>1</span>
           </div>
           <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15, margin: '10px 0 2px 0' }}>Sesiones totales</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>{employees.reduce((sum, emp) => sum + emp.sessions, 0)}/106</span>
+            <span style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>{employees.reduce((sum, emp) => sum + emp.sessions, 0)}/20</span>
             <div style={{ flex: 1, height: 10, background: '#f5e3d6', borderRadius: 8, overflow: 'hidden' }}>
-              <div style={{ width: `${(employees.reduce((sum, emp) => sum + emp.sessions, 0) / 106) * 100}%`, height: '100%', background: '#0057ff', borderRadius: 8 }}></div>
+              <div style={{ width: `${(employees.reduce((sum, emp) => sum + emp.sessions, 0) / 20) * 100}%`, height: '100%', background: '#0057ff', borderRadius: 8 }}></div>
             </div>
           </div>
         </div>
@@ -316,6 +440,39 @@ const BusinessEmployees = ({ navigationProps }) => {
           />
         </div>
 
+        {/* Mensaje de error si hay problemas al cargar empleados */}
+        {employeesError && (
+          <div style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            color: '#dc2626',
+            padding: '12px 16px',
+            borderRadius: 8,
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8
+          }}>
+            <span>⚠️</span>
+            <span>{employeesError}</span>
+            <button
+              onClick={fetchEmployees}
+              style={{
+                background: '#dc2626',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 4,
+                padding: '4px 8px',
+                fontSize: 12,
+                cursor: 'pointer',
+                marginLeft: 'auto'
+              }}
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
+
         {/* Tabla de empleados */}
         <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 8px #e0e7ef', border: '1.5px solid #f2f2f2', overflow: 'hidden' }}>
           <div style={{ padding: '1.5rem 2rem', borderBottom: '2px solid #e0e7ef' }}>
@@ -337,7 +494,30 @@ const BusinessEmployees = ({ navigationProps }) => {
                 </tr>
               </thead>
               <tbody>
-                {filteredEmployees.map((employee) => (
+                {loadingEmployees ? (
+                  <tr>
+                    <td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#7a8bbd' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        <div style={{
+                          width: 20,
+                          height: 20,
+                          border: '2px solid #e0e7ef',
+                          borderTop: '2px solid #0057ff',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite'
+                        }} />
+                        Cargando empleados...
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredEmployees.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#7a8bbd' }}>
+                      {employeesError ? 'Error al cargar empleados' : 'No hay empleados registrados'}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredEmployees.map((employee) => (
                   <tr key={employee.id} style={{ borderBottom: '1px solid #e0e7ef' }}>
                     <td style={{ padding: '1rem', color: '#222', fontWeight: 600 }}>{employee.name}</td>
                     <td style={{ padding: '1rem', color: '#7a8bbd' }}>{employee.email}</td>
@@ -372,7 +552,8 @@ const BusinessEmployees = ({ navigationProps }) => {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -470,8 +651,8 @@ const BusinessEmployees = ({ navigationProps }) => {
                     </label>
                     <input
                       type="text"
-                      value={newEmployee.firstName}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      value={newEmployee.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                       style={{
                         width: '100%',
                         padding: '12px 16px',
@@ -550,12 +731,18 @@ const BusinessEmployees = ({ navigationProps }) => {
                       fontSize: 14,
                       marginBottom: 8
                     }}>
-                      Teléfono
+                      Teléfono *
                     </label>
                     <input
                       type="tel"
-                      value={newEmployee.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      value={newEmployee.phoneNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        if (value.length <= 10) {
+                          handleInputChange('phoneNumber', value);
+                        }
+                      }}
+                      maxLength={10}
                       style={{
                         width: '100%',
                         padding: '12px 16px',
@@ -566,7 +753,7 @@ const BusinessEmployees = ({ navigationProps }) => {
                       }}
                       onFocus={(e) => e.target.style.borderColor = '#0057FF'}
                       onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
-                      placeholder="+1 (555) 123-4567"
+                      placeholder="1234567890"
                     />
                   </div>
 
@@ -578,7 +765,7 @@ const BusinessEmployees = ({ navigationProps }) => {
                       fontSize: 14,
                       marginBottom: 8
                     }}>
-                      Género
+                      Género *
                     </label>
                     <select
                       value={newEmployee.gender}
@@ -602,62 +789,6 @@ const BusinessEmployees = ({ navigationProps }) => {
                       <option value="Prefiero no decir">Prefiero no decir</option>
                     </select>
                   </div>
-                </div>
-              </div>
-
-              {/* Información Laboral */}
-              <div style={{ marginBottom: 24 }}>
-                <h3 style={{
-                  fontSize: 18,
-                  fontWeight: 600,
-                  color: '#374151',
-                  marginBottom: 16,
-                  paddingBottom: 8,
-                  borderBottom: '2px solid #e0e7ef'
-                }}>
-                  Información Laboral
-                </h3>
-                
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                  gap: 16
-                }}>
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      color: '#374151',
-                      fontWeight: 600,
-                      fontSize: 14,
-                      marginBottom: 8
-                    }}>
-                      Departamento
-                    </label>
-                    <select
-                      value={newEmployee.department}
-                      onChange={(e) => handleInputChange('department', e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: '2px solid #e0e7ef',
-                        borderRadius: 8,
-                        fontSize: 14,
-                        transition: 'border-color 0.2s ease',
-                        background: '#fff'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = '#0057FF'}
-                      onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
-                    >
-                      <option value="">Seleccionar departamento</option>
-                      <option value="Ventas">Ventas</option>
-                      <option value="Marketing">Marketing</option>
-                      <option value="Tecnología">Tecnología</option>
-                      <option value="RRHH">RRHH</option>
-                      <option value="Finanzas">Finanzas</option>
-                      <option value="Operaciones">Operaciones</option>
-                      <option value="Administración">Administración</option>
-                    </select>
-                  </div>
 
                   <div>
                     <label style={{
@@ -667,40 +798,12 @@ const BusinessEmployees = ({ navigationProps }) => {
                       fontSize: 14,
                       marginBottom: 8
                     }}>
-                      Cargo
-                    </label>
-                    <input
-                      type="text"
-                      value={newEmployee.position}
-                      onChange={(e) => handleInputChange('position', e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: '2px solid #e0e7ef',
-                        borderRadius: 8,
-                        fontSize: 14,
-                        transition: 'border-color 0.2s ease'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = '#0057FF'}
-                      onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
-                      placeholder="Ej: Desarrollador Senior"
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      color: '#374151',
-                      fontWeight: 600,
-                      fontSize: 14,
-                      marginBottom: 8
-                    }}>
-                      Fecha de Contratación
+                      Fecha de Nacimiento *
                     </label>
                     <input
                       type="date"
-                      value={newEmployee.hireDate}
-                      onChange={(e) => handleInputChange('hireDate', e.target.value)}
+                      value={newEmployee.dateOfBirth}
+                      onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                       style={{
                         width: '100%',
                         padding: '12px 16px',
@@ -716,48 +819,6 @@ const BusinessEmployees = ({ navigationProps }) => {
                 </div>
               </div>
 
-              {/* Dirección */}
-              <div style={{ marginBottom: 24 }}>
-                <h3 style={{
-                  fontSize: 18,
-                  fontWeight: 600,
-                  color: '#374151',
-                  marginBottom: 16,
-                  paddingBottom: 8,
-                  borderBottom: '2px solid #e0e7ef'
-                }}>
-                  Información Adicional
-                </h3>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#374151',
-                    fontWeight: 600,
-                    fontSize: 14,
-                    marginBottom: 8
-                  }}>
-                    Dirección
-                  </label>
-                  <textarea
-                    value={newEmployee.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e0e7ef',
-                      borderRadius: 8,
-                      fontSize: 14,
-                      transition: 'border-color 0.2s ease',
-                      minHeight: 80,
-                      resize: 'vertical'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#0057FF'}
-                    onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
-                    placeholder="Dirección completa del empleado"
-                  />
-                </div>
-              </div>
 
               {/* Mensajes de error y éxito */}
               {error && (
@@ -787,6 +848,36 @@ const BusinessEmployees = ({ navigationProps }) => {
                   {success}
                 </div>
               )}
+
+              {/* Mensaje informativo */}
+              <div style={{
+                background: '#f0f9ff',
+                border: '1px solid #0ea5e9',
+                borderRadius: 8,
+                padding: '12px 16px',
+                marginBottom: 20,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}>
+                <div style={{
+                  width: 20,
+                  height: 20,
+                  background: '#0ea5e9',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: 12,
+                  fontWeight: 'bold'
+                }}>
+                  i
+                </div>
+                <div style={{ color: '#0c4a6e', fontSize: 14, fontWeight: 500 }}>
+                  <strong>Importante:</strong> El nuevo empleado recibirá un correo electrónico con su contraseña para acceder a su dashboard personal.
+                </div>
+              </div>
 
               {/* Botones */}
               <div style={{

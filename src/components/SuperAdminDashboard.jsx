@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSessionTimeout } from '../hooks/useSessionTimeout';
 import SessionTimeoutAlert from './SessionTimeoutAlert';
+import { companyService } from '../services/api';
 import {
   Home,
   Users,
@@ -25,7 +26,7 @@ import PsychologistManagement from './PsychologistManagement';
 const sidebarItems = [
   { icon: <Home size={22} />, label: 'Inicio', section: 'Dashboard' },
   { icon: <Users size={22} />, label: 'Gestión de Psicólogos', section: 'Psicólogos' },
-  { icon: <Building2 size={22} />, label: 'Crear Empresa', section: 'Empresas' },
+  { icon: <Building2 size={22} />, label: 'Gestión de Empresas', section: 'Empresas' },
   { icon: <FileText size={22} />, label: 'Reportes', section: 'Reportes' },
   { icon: <Settings size={22} />, label: 'Configuración', section: 'Configuración' },
 ];
@@ -34,13 +35,24 @@ const sidebarItems = [
  * Componente de formulario para crear empresa
  */
 function CreateCompanyForm({ onCompanyCreated }) {
-  const [companyName, setCompanyName] = useState('');
+  const [formData, setFormData] = useState({
+    companyName: '',
+    adminName: '',
+    adminLastName: '',
+    adminEmail: '',
+    adminPhone: '',
+    adminDateOfBirth: '',
+    adminGender: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleInputChange = (value) => {
-    setCompanyName(value);
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
     // Limpiar mensajes de error al escribir
     if (error) setError('');
     if (success) setSuccess('');
@@ -54,73 +66,326 @@ function CreateCompanyForm({ onCompanyCreated }) {
 
     try {
       // Validaciones básicas
-      if (!companyName.trim()) {
+      if (!formData.companyName.trim()) {
         throw new Error('Por favor ingresa el nombre de la empresa');
       }
+      if (!formData.adminName.trim()) {
+        throw new Error('Por favor ingresa el nombre del administrador');
+      }
+      if (!formData.adminLastName.trim()) {
+        throw new Error('Por favor ingresa el apellido del administrador');
+      }
+      if (!formData.adminEmail.trim()) {
+        throw new Error('Por favor ingresa el email del administrador');
+      }
+      if (!formData.adminPhone.trim()) {
+        throw new Error('Por favor ingresa el teléfono del administrador');
+      }
+      if (formData.adminPhone.trim().length !== 10) {
+        throw new Error('El teléfono debe tener exactamente 10 dígitos');
+      }
+      if (!formData.adminDateOfBirth) {
+        throw new Error('Por favor ingresa la fecha de nacimiento del administrador');
+      }
+      if (!formData.adminGender) {
+        throw new Error('Por favor selecciona el género del administrador');
+      }
 
-      // Aquí iría la llamada al API para crear la empresa
-      console.log('Creando empresa:', companyName);
-      
-      // Simular llamada al API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simular respuesta del backend con credenciales
-      const newCompany = {
-        id: Date.now(), // ID temporal
-        name: companyName,
-        email: `admin@${companyName.toLowerCase().replace(/\s+/g, '')}.com`,
-        password: `TempPass${Math.floor(Math.random() * 1000)}!`,
-        createdAt: new Date().toISOString().split('T')[0],
-        status: 'Activa'
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.adminEmail)) {
+        throw new Error('El email del administrador no tiene un formato válido');
+      }
+
+      // Crear la empresa con administrador en una sola llamada
+      const companyData = {
+        name: formData.companyName.trim(),
+        admin: {
+          name: formData.adminName.trim(),
+          lastName: formData.adminLastName.trim(),
+          email: formData.adminEmail.trim(),
+          phoneNumber: formData.adminPhone.trim(),
+          dateOfBirth: formData.adminDateOfBirth,
+          gender: formData.adminGender
+        }
       };
       
-      setSuccess('¡Empresa creada exitosamente!');
+      const response = await companyService.createCompany(companyData);
+      console.log('Empresa y administrador creados exitosamente:', response);
       
-      // Notificar al componente padre
+      setSuccess('¡Empresa y administrador creados exitosamente!');
+      
+      // Notificar al componente padre con la respuesta del backend
       if (onCompanyCreated) {
-        onCompanyCreated(newCompany);
+        onCompanyCreated(response);
       }
       
       // Limpiar formulario
-      setCompanyName('');
+      setFormData({
+        companyName: '',
+        adminName: '',
+        adminLastName: '',
+        adminEmail: '',
+        adminPhone: '',
+        adminDateOfBirth: '',
+        adminGender: ''
+      });
 
     } catch (error) {
-      console.error('Error creando empresa:', error);
-      setError(error.message);
+      console.error('Error creando empresa con administrador:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else if (error.message) {
+        setError(error.message);
+      } else {
+        setError('Error al crear la empresa. Por favor intenta nuevamente.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: '500px' }}>
-      <div style={{ marginBottom: 24 }}>
-        <label style={{ 
-          display: 'block', 
+    <form onSubmit={handleSubmit} style={{ maxWidth: '800px' }}>
+      {/* Información de la Empresa */}
+      <div style={{ marginBottom: 32 }}>
+        <h3 style={{ 
           color: '#374151', 
           fontWeight: 600, 
-          fontSize: 16, 
-          marginBottom: 12 
+          fontSize: 20, 
+          marginBottom: 20,
+          paddingBottom: 8,
+          borderBottom: '2px solid #e0e7ef'
         }}>
-          Nombre de la Empresa *
-        </label>
-        <input
-          type="text"
-          value={companyName}
-          onChange={(e) => handleInputChange(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '16px 20px',
-            border: '2px solid #e0e7ef',
-            borderRadius: 12,
-            fontSize: 16,
-            transition: 'border-color 0.2s ease',
-            background: '#fff'
-          }}
-          onFocus={(e) => e.target.style.borderColor = '#0057FF'}
-          onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
-          placeholder="Ej: Empresa ABC S.A."
-        />
+          Información de la Empresa
+        </h3>
+        
+        <div>
+          <label style={{ 
+            display: 'block', 
+            color: '#374151', 
+            fontWeight: 600, 
+            fontSize: 16, 
+            marginBottom: 12 
+          }}>
+            Nombre de la Empresa *
+          </label>
+          <input
+            type="text"
+            value={formData.companyName}
+            onChange={(e) => handleInputChange('companyName', e.target.value)}
+            style={{
+              width: '100%',
+              padding: '16px 20px',
+              border: '2px solid #e0e7ef',
+              borderRadius: 12,
+              fontSize: 16,
+              transition: 'border-color 0.2s ease',
+              background: '#fff'
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+            onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+            placeholder="Ej: Empresa ABC S.A."
+          />
+        </div>
+      </div>
+
+      {/* Información del Administrador */}
+      <div style={{ marginBottom: 32 }}>
+        <h3 style={{ 
+          color: '#374151', 
+          fontWeight: 600, 
+          fontSize: 20, 
+          marginBottom: 20,
+          paddingBottom: 8,
+          borderBottom: '2px solid #e0e7ef'
+        }}>
+          Información del Administrador
+        </h3>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+          gap: 20 
+        }}>
+          <div>
+            <label style={{ 
+              display: 'block', 
+              color: '#374151', 
+              fontWeight: 600, 
+              fontSize: 14, 
+              marginBottom: 8 
+            }}>
+              Nombre *
+            </label>
+            <input
+              type="text"
+              value={formData.adminName}
+              onChange={(e) => handleInputChange('adminName', e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '2px solid #e0e7ef',
+                borderRadius: 8,
+                fontSize: 14,
+                transition: 'border-color 0.2s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+              placeholder="Nombre"
+            />
+          </div>
+
+          <div>
+            <label style={{ 
+              display: 'block', 
+              color: '#374151', 
+              fontWeight: 600, 
+              fontSize: 14, 
+              marginBottom: 8 
+            }}>
+              Apellido *
+            </label>
+            <input
+              type="text"
+              value={formData.adminLastName}
+              onChange={(e) => handleInputChange('adminLastName', e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '2px solid #e0e7ef',
+                borderRadius: 8,
+                fontSize: 14,
+                transition: 'border-color 0.2s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+              placeholder="Apellido"
+            />
+          </div>
+
+          <div>
+            <label style={{ 
+              display: 'block', 
+              color: '#374151', 
+              fontWeight: 600, 
+              fontSize: 14, 
+              marginBottom: 8 
+            }}>
+              Email *
+            </label>
+            <input
+              type="email"
+              value={formData.adminEmail}
+              onChange={(e) => handleInputChange('adminEmail', e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '2px solid #e0e7ef',
+                borderRadius: 8,
+                fontSize: 14,
+                transition: 'border-color 0.2s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+              placeholder="admin@empresa.com"
+            />
+          </div>
+
+          <div>
+            <label style={{ 
+              display: 'block', 
+              color: '#374151', 
+              fontWeight: 600, 
+              fontSize: 14, 
+              marginBottom: 8 
+            }}>
+              Teléfono *
+            </label>
+            <input
+              type="tel"
+              value={formData.adminPhone}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, ''); // Solo números
+                if (value.length <= 10) {
+                  handleInputChange('adminPhone', value);
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '2px solid #e0e7ef',
+                borderRadius: 8,
+                fontSize: 14,
+                transition: 'border-color 0.2s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+              placeholder="1234567890"
+              maxLength={10}
+            />
+          </div>
+
+          <div>
+            <label style={{ 
+              display: 'block', 
+              color: '#374151', 
+              fontWeight: 600, 
+              fontSize: 14, 
+              marginBottom: 8 
+            }}>
+              Fecha de Nacimiento *
+            </label>
+            <input
+              type="date"
+              value={formData.adminDateOfBirth}
+              onChange={(e) => handleInputChange('adminDateOfBirth', e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '2px solid #e0e7ef',
+                borderRadius: 8,
+                fontSize: 14,
+                transition: 'border-color 0.2s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+            />
+          </div>
+
+          <div>
+            <label style={{ 
+              display: 'block', 
+              color: '#374151', 
+              fontWeight: 600, 
+              fontSize: 14, 
+              marginBottom: 8 
+            }}>
+              Género *
+            </label>
+            <select
+              value={formData.adminGender}
+              onChange={(e) => handleInputChange('adminGender', e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '2px solid #e0e7ef',
+                borderRadius: 8,
+                fontSize: 14,
+                transition: 'border-color 0.2s ease',
+                background: '#fff'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+            >
+              <option value="">Seleccionar género</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+              <option value="Prefiero no decir">Prefiero no decir</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Mensajes de error y éxito */}
@@ -152,6 +417,36 @@ function CreateCompanyForm({ onCompanyCreated }) {
         </div>
       )}
 
+      {/* Mensaje informativo */}
+      <div style={{
+        background: '#f0f9ff',
+        border: '1px solid #0ea5e9',
+        borderRadius: 8,
+        padding: '12px 16px',
+        marginBottom: 20,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8
+      }}>
+        <div style={{
+          width: 20,
+          height: 20,
+          background: '#0ea5e9',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          fontSize: 12,
+          fontWeight: 'bold'
+        }}>
+          i
+        </div>
+        <div style={{ color: '#0c4a6e', fontSize: 14, fontWeight: 500 }}>
+          <strong>Importante:</strong> El administrador recibirá un correo electrónico con su contraseña para acceder al dashboard de la empresa.
+        </div>
+      </div>
+
       {/* Botón de envío */}
       <div style={{ 
         display: 'flex', 
@@ -161,7 +456,15 @@ function CreateCompanyForm({ onCompanyCreated }) {
         <button
           type="button"
           onClick={() => {
-            setCompanyName('');
+            setFormData({
+              companyName: '',
+              adminName: '',
+              adminLastName: '',
+              adminEmail: '',
+              adminPhone: '',
+              adminDateOfBirth: '',
+              adminGender: ''
+            });
             setError('');
             setSuccess('');
           }}
@@ -218,12 +521,12 @@ function CreateCompanyForm({ onCompanyCreated }) {
               }} />
               Creando...
             </>
-          ) : (
-            <>
-              <Plus size={16} />
-              Crear Empresa
-            </>
-          )}
+                            ) : (
+                    <>
+                      <Plus size={16} />
+                      Crear Empresa y Admin
+                    </>
+                  )}
         </button>
       </div>
     </form>
@@ -288,32 +591,123 @@ const SuperAdminDashboard = ({ navigationProps }) => {
   const [showMobileNav, setShowMobileNav] = useState(false);
   
   // Estado para las empresas
-  const [companies, setCompanies] = useState([
-    {
-      id: 1,
-      name: 'TechCorp Solutions',
-      email: 'admin@techcorp.com',
-      password: 'TempPass123!',
-      createdAt: '2024-01-15',
-      status: 'Activa'
-    },
-    {
-      id: 2,
-      name: 'InnovateLab',
-      email: 'admin@innovatelab.com',
-      password: 'TempPass456!',
-      createdAt: '2024-01-20',
-      status: 'Activa'
-    }
-  ]);
+  const [companies, setCompanies] = useState([]);
+  const [companiesPagination, setCompaniesPagination] = useState({
+    totalElements: 0,
+    totalPages: 0,
+    first: true,
+    last: true,
+    size: 0,
+    number: 0,
+    numberOfElements: 0,
+    empty: true
+  });
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [companiesError, setCompaniesError] = useState('');
+  
+  // Estados para el modal de detalles
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companyAdmins, setCompanyAdmins] = useState([]);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
+  const [adminsError, setAdminsError] = useState('');
 
   // Hook para manejo de timeout de sesión
   useSessionTimeout();
 
+  // Función para cargar las empresas
+  const fetchCompanies = async () => {
+    try {
+      setLoadingCompanies(true);
+      setCompaniesError('');
+      const response = await companyService.getCompanies();
+      console.log('Respuesta completa del servidor:', response);
+      
+      // Extraer las empresas del contenido paginado
+      const companiesList = response.content || [];
+      setCompanies(companiesList);
+      
+      // Guardar información de paginación
+      setCompaniesPagination({
+        totalElements: response.totalElements || 0,
+        totalPages: response.totalPages || 0,
+        first: response.first || true,
+        last: response.last || true,
+        size: response.size || 0,
+        number: response.number || 0,
+        numberOfElements: response.numberOfElements || 0,
+        empty: response.empty || true
+      });
+      
+      console.log('Empresas extraídas:', companiesList);
+      console.log('Total de empresas:', response.totalElements);
+    } catch (error) {
+      console.error('Error obteniendo empresas:', error);
+      setCompaniesError('Error al cargar las empresas');
+      setCompanies([]);
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
+
   // Función para manejar la creación de empresas
   const handleCompanyCreated = (newCompany) => {
+    // Agregar la nueva empresa a la lista
     setCompanies(prev => [...prev, newCompany]);
+    
+    // Actualizar la información de paginación
+    setCompaniesPagination(prev => ({
+      ...prev,
+      totalElements: prev.totalElements + 1,
+      numberOfElements: prev.numberOfElements + 1,
+      empty: false
+    }));
   };
+
+  // Función para cargar administradores de una empresa
+  const fetchCompanyAdmins = async (companyId) => {
+    setLoadingAdmins(true);
+    setAdminsError('');
+    
+    try {
+      const response = await companyService.getCompanyAdmins(companyId);
+      console.log('Administradores obtenidos:', response);
+      
+      // Extraer los administradores del contenido paginado
+      const adminsList = response.content || [];
+      setCompanyAdmins(adminsList);
+      
+      console.log('Administradores extraídos:', adminsList);
+    } catch (error) {
+      console.error('Error cargando administradores:', error);
+      setAdminsError('Error al cargar los administradores de la empresa');
+      setCompanyAdmins([]);
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  // Función para abrir el modal de detalles
+  const handleViewDetails = (company) => {
+    setSelectedCompany(company);
+    setShowDetailsModal(true);
+    fetchCompanyAdmins(company.companyId);
+  };
+
+  // Función para cerrar el modal
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedCompany(null);
+    setCompanyAdmins([]);
+    setAdminsError('');
+  };
+
+  // Cargar empresas al montar el componente
+  useEffect(() => {
+    if (activeSection === 'Empresas') {
+      fetchCompanies();
+    }
+  }, [activeSection]);
 
   /**
    * Maneja el cierre de sesión del super admin
@@ -496,7 +890,7 @@ const SuperAdminDashboard = ({ navigationProps }) => {
                   maxWidth: 600,
                   margin: '0 auto'
                 }}>
-                  Bienvenido al panel de super administrador. Aquí podrás gestionar las solicitudes de aprobación de psicólogos y administrar la plataforma.
+                  Bienvenido al panel de super administrador. Aquí podrás gestionar empresas, crear administradores, aprobar solicitudes de psicólogos y administrar la plataforma.
                 </p>
                 
                 <div style={{ 
@@ -512,6 +906,70 @@ const SuperAdminDashboard = ({ navigationProps }) => {
                     fontSize: 18, 
                     marginBottom: 16 
                   }}>
+                    Funcionalidades Disponibles
+                  </h3>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                    gap: 16 
+                  }}>
+                    <div style={{ 
+                      padding: 16, 
+                      background: '#fff', 
+                      borderRadius: 8, 
+                      border: '1px solid #e0e7ef',
+                      position: 'relative'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        background: '#10b981',
+                        color: '#fff',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: '2px 6px',
+                        borderRadius: 4
+                      }}>
+                        DISPONIBLE
+                      </div>
+                      <Building2 size={24} color="#10b981" style={{ marginBottom: 8 }} />
+                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Gestión de Empresas</h4>
+                      <p style={{ color: '#6b7280', fontSize: 14 }}>Crear empresas y gestionar administradores</p>
+                    </div>
+                    <div style={{ 
+                      padding: 16, 
+                      background: '#fff', 
+                      borderRadius: 8, 
+                      border: '1px solid #e0e7ef',
+                      position: 'relative'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        background: '#10b981',
+                        color: '#fff',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: '2px 6px',
+                        borderRadius: 4
+                      }}>
+                        DISPONIBLE
+                      </div>
+                      <Users size={24} color="#10b981" style={{ marginBottom: 8 }} />
+                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Gestión de Psicólogos</h4>
+                      <p style={{ color: '#6b7280', fontSize: 14 }}>Aprobar solicitudes de psicólogos pendientes</p>
+                    </div>
+                  </div>
+                  
+                  <h3 style={{ 
+                    color: '#374151', 
+                    fontWeight: 600, 
+                    fontSize: 18, 
+                    marginTop: 32,
+                    marginBottom: 16 
+                  }}>
                     Funcionalidades Próximas
                   </h3>
                   <div style={{ 
@@ -523,31 +981,97 @@ const SuperAdminDashboard = ({ navigationProps }) => {
                       padding: 16, 
                       background: '#fff', 
                       borderRadius: 8, 
-                      border: '1px solid #e0e7ef' 
+                      border: '1px solid #e0e7ef',
+                      position: 'relative'
                     }}>
-                      <Users size={24} color="#0057FF" style={{ marginBottom: 8 }} />
-                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Gestión de Psicólogos</h4>
-                      <p style={{ color: '#6b7280', fontSize: 14 }}>Aprobar solicitudes de psicólogos pendientes</p>
+                      <div style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        background: '#f59e0b',
+                        color: '#fff',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: '2px 6px',
+                        borderRadius: 4
+                      }}>
+                        PRÓXIMO
+                      </div>
+                      <FileText size={24} color="#f59e0b" style={{ marginBottom: 8 }} />
+                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Reportes Avanzados</h4>
+                      <p style={{ color: '#6b7280', fontSize: 14 }}>Estadísticas detalladas y análisis de la plataforma</p>
                     </div>
                     <div style={{ 
                       padding: 16, 
                       background: '#fff', 
                       borderRadius: 8, 
-                      border: '1px solid #e0e7ef' 
+                      border: '1px solid #e0e7ef',
+                      position: 'relative'
                     }}>
-                      <FileText size={24} color="#0057FF" style={{ marginBottom: 8 }} />
-                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Reportes</h4>
-                      <p style={{ color: '#6b7280', fontSize: 14 }}>Ver estadísticas y reportes de la plataforma</p>
+                      <div style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        background: '#f59e0b',
+                        color: '#fff',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: '2px 6px',
+                        borderRadius: 4
+                      }}>
+                        PRÓXIMO
+                      </div>
+                      <Settings size={24} color="#f59e0b" style={{ marginBottom: 8 }} />
+                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Configuración del Sistema</h4>
+                      <p style={{ color: '#6b7280', fontSize: 14 }}>Parámetros avanzados y configuraciones globales</p>
                     </div>
                     <div style={{ 
                       padding: 16, 
                       background: '#fff', 
                       borderRadius: 8, 
-                      border: '1px solid #e0e7ef' 
+                      border: '1px solid #e0e7ef',
+                      position: 'relative'
                     }}>
-                      <Settings size={24} color="#0057FF" style={{ marginBottom: 8 }} />
-                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Configuración</h4>
-                      <p style={{ color: '#6b7280', fontSize: 14 }}>Configurar parámetros del sistema</p>
+                      <div style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        background: '#f59e0b',
+                        color: '#fff',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: '2px 6px',
+                        borderRadius: 4
+                      }}>
+                        PRÓXIMO
+                      </div>
+                      <Shield size={24} color="#f59e0b" style={{ marginBottom: 8 }} />
+                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Gestión de Usuarios</h4>
+                      <p style={{ color: '#6b7280', fontSize: 14 }}>Administrar usuarios y permisos del sistema</p>
+                    </div>
+                    <div style={{ 
+                      padding: 16, 
+                      background: '#fff', 
+                      borderRadius: 8, 
+                      border: '1px solid #e0e7ef',
+                      position: 'relative'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        background: '#f59e0b',
+                        color: '#fff',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: '2px 6px',
+                        borderRadius: 4
+                      }}>
+                        PRÓXIMO
+                      </div>
+                      <Activity size={24} color="#f59e0b" style={{ marginBottom: 8 }} />
+                      <h4 style={{ color: '#374151', fontWeight: 600, marginBottom: 8 }}>Monitoreo en Tiempo Real</h4>
+                      <p style={{ color: '#6b7280', fontSize: 14 }}>Dashboard de métricas y actividad en vivo</p>
                     </div>
                   </div>
                 </div>
@@ -622,11 +1146,56 @@ const SuperAdminDashboard = ({ navigationProps }) => {
                     fontSize: 24, 
                     margin: 0 
                   }}>
-                    Empresas Registradas ({companies.length})
+                    Empresas Registradas ({companiesPagination.totalElements})
                   </h3>
                 </div>
 
-                {companies.length === 0 ? (
+                {loadingCompanies ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '40px 20px',
+                    color: '#6b7280'
+                  }}>
+                    <div style={{
+                      width: 32,
+                      height: 32,
+                      border: '3px solid #e0e7ef',
+                      borderTop: '3px solid #0057FF',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite',
+                      margin: '0 auto 16px auto'
+                    }} />
+                    <p style={{ fontSize: 16, margin: 0 }}>
+                      Cargando empresas...
+                    </p>
+                  </div>
+                ) : companiesError ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '40px 20px',
+                    color: '#dc2626'
+                  }}>
+                    <Building2 size={48} color="#fecaca" style={{ marginBottom: 16 }} />
+                    <p style={{ fontSize: 16, margin: '0 0 16px 0' }}>
+                      {companiesError}
+                    </p>
+                    <button
+                      onClick={fetchCompanies}
+                      style={{
+                        background: '#0057FF',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '8px 16px',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Reintentar
+                    </button>
+                  </div>
+                ) : companies.length === 0 ? (
                   <div style={{
                     textAlign: 'center',
                     padding: '40px 20px',
@@ -643,43 +1212,40 @@ const SuperAdminDashboard = ({ navigationProps }) => {
                       <thead>
                         <tr style={{ background: '#f8f9fa' }}>
                           <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Empresa</th>
-                          <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Email Admin</th>
-                          <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Contraseña</th>
-                          <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Fecha Creación</th>
                           <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Estado</th>
                           <th style={{ padding: '1rem', textAlign: 'center', color: '#222', fontWeight: 700, fontSize: 14 }}>Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
                         {companies.map((company) => (
-                          <tr key={company.id} style={{ borderBottom: '1px solid #e0e7ef' }}>
+                          <tr key={company.companyId} style={{ borderBottom: '1px solid #e0e7ef' }}>
                             <td style={{ padding: '1rem', color: '#222', fontWeight: 600 }}>{company.name}</td>
-                            <td style={{ padding: '1rem', color: '#7a8bbd' }}>{company.email}</td>
-                            <td style={{ padding: '1rem', color: '#7a8bbd', fontFamily: 'monospace' }}>{company.password}</td>
-                            <td style={{ padding: '1rem', color: '#7a8bbd' }}>{company.createdAt}</td>
                             <td style={{ padding: '1rem' }}>
                               <span style={{
-                                background: company.status === 'Activa' ? '#e6f7e6' : '#ffe6e6',
-                                color: company.status === 'Activa' ? '#2ecc71' : '#ff4444',
+                                background: '#e6f7e6',
+                                color: '#2ecc71',
                                 padding: '0.3rem 0.8rem',
                                 borderRadius: 12,
                                 fontSize: 12,
                                 fontWeight: 700
                               }}>
-                                {company.status}
+                                Activa
                               </span>
                             </td>
                             <td style={{ padding: '1rem', textAlign: 'center' }}>
-                              <button style={{
-                                background: '#0057ff',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: 8,
-                                padding: '0.5rem 1rem',
-                                fontSize: 12,
-                                fontWeight: 600,
-                                cursor: 'pointer'
-                              }}>
+                              <button 
+                                onClick={() => handleViewDetails(company)}
+                                style={{
+                                  background: '#0057ff',
+                                  color: '#fff',
+                                  border: 'none',
+                                  borderRadius: 8,
+                                  padding: '0.5rem 1rem',
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  cursor: 'pointer'
+                                }}
+                              >
                                 Ver Detalles
                               </button>
                             </td>
@@ -687,6 +1253,29 @@ const SuperAdminDashboard = ({ navigationProps }) => {
                         ))}
                       </tbody>
                     </table>
+                    
+                    {/* Información de paginación */}
+                    {companiesPagination.totalElements > 0 && (
+                      <div style={{
+                        marginTop: 20,
+                        padding: '16px 20px',
+                        background: '#f8f9fa',
+                        borderRadius: 8,
+                        border: '1px solid #e0e7ef',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: 14,
+                        color: '#6b7280'
+                      }}>
+                        <div>
+                          Mostrando {companiesPagination.numberOfElements} de {companiesPagination.totalElements} empresas
+                        </div>
+                        <div>
+                          Página {companiesPagination.number + 1} de {companiesPagination.totalPages}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -736,6 +1325,181 @@ const SuperAdminDashboard = ({ navigationProps }) => {
           )}
         </div>
       </div>
+
+      {/* Modal de Detalles de Empresa */}
+      {showDetailsModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: 20
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 16,
+            width: '100%',
+            maxWidth: '800px',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
+          }}>
+            {/* Header del Modal */}
+            <div style={{
+              padding: '24px 32px',
+              borderBottom: '1px solid #e0e7ef',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h2 style={{
+                  color: '#222',
+                  fontWeight: 700,
+                  fontSize: 24,
+                  margin: 0,
+                  marginBottom: 8
+                }}>
+                  Detalles de {selectedCompany?.name}
+                </h2>
+                <p style={{
+                  color: '#6b7280',
+                  fontSize: 14,
+                  margin: 0
+                }}>
+                  Información de administradores
+                </p>
+              </div>
+              <button
+                onClick={closeDetailsModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 24,
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                  padding: 8,
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Contenido del Modal */}
+            <div style={{ padding: '32px' }}>
+              {loadingAdmins ? (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: '#6b7280'
+                }}>
+                  <div style={{
+                    width: 32,
+                    height: 32,
+                    border: '3px solid #e0e7ef',
+                    borderTop: '3px solid #0057FF',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 16px'
+                  }} />
+                  <p style={{ fontSize: 16, margin: 0 }}>Cargando administradores...</p>
+                </div>
+              ) : adminsError ? (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: '#ef4444'
+                }}>
+                  <p style={{ fontSize: 16, margin: 0, marginBottom: 16 }}>{adminsError}</p>
+                  <button
+                    onClick={() => fetchCompanyAdmins(selectedCompany.companyId)}
+                    style={{
+                      background: '#0057FF',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '8px 16px',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Reintentar
+                  </button>
+                </div>
+              ) : companyAdmins.length === 0 ? (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: '#6b7280'
+                }}>
+                  <Building2 size={48} color="#d1d5db" style={{ marginBottom: 16 }} />
+                  <p style={{ fontSize: 16, margin: 0 }}>No hay administradores registrados</p>
+                </div>
+              ) : (
+                <div>
+                  <h3 style={{
+                    color: '#374151',
+                    fontWeight: 600,
+                    fontSize: 18,
+                    marginBottom: 20
+                  }}>
+                    Administradores ({companyAdmins.length})
+                  </h3>
+                  
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#f8f9fa' }}>
+                          <th style={{ padding: '12px', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Nombre</th>
+                          <th style={{ padding: '12px', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Email</th>
+                          <th style={{ padding: '12px', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Teléfono</th>
+                          <th style={{ padding: '12px', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Género</th>
+                          <th style={{ padding: '12px', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {companyAdmins.map((admin) => (
+                          <tr key={admin.userId} style={{ borderBottom: '1px solid #e0e7ef' }}>
+                            <td style={{ padding: '12px', color: '#222', fontWeight: 600 }}>
+                              {admin.name} {admin.lastName}
+                            </td>
+                            <td style={{ padding: '12px', color: '#6b7280' }}>{admin.email}</td>
+                            <td style={{ padding: '12px', color: '#6b7280' }}>{admin.phoneNumber}</td>
+                            <td style={{ padding: '12px', color: '#6b7280' }}>{admin.gender}</td>
+                            <td style={{ padding: '12px' }}>
+                              <span style={{
+                                background: admin.userStatus === 'ACTIVE' ? '#e6f7e6' : '#ffe6e6',
+                                color: admin.userStatus === 'ACTIVE' ? '#2ecc71' : '#ff4444',
+                                padding: '0.25rem 0.6rem',
+                                borderRadius: 12,
+                                fontSize: 12,
+                                fontWeight: 600
+                              }}>
+                                {admin.userStatus === 'ACTIVE' ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navegación móvil */}
       <MobileDashboardNav

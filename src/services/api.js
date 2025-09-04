@@ -736,6 +736,82 @@ export const appointmentService = {
 };
 
 /**
+ * Servicios de empresas
+ */
+export const companyService = {
+  /**
+   * Crea una nueva empresa con administrador
+   * @param {Object} companyData - Datos de la empresa y administrador
+   * @returns {Promise} - Respuesta del servidor con credenciales
+   */
+  createCompany: async (companyData) => {
+    try {
+      console.log('=== CREANDO EMPRESA CON ADMIN ===');
+      console.log('URL:', '/api/companies');
+      console.log('Datos enviados:', companyData);
+      console.log('==================================');
+      
+      const response = await apiClient.post('/api/companies', companyData);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error creando empresa:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene todas las empresas (respuesta paginada)
+   * @returns {Promise} - Respuesta paginada con lista de empresas
+   */
+  getCompanies: async () => {
+    try {
+      console.log('=== OBTENIENDO EMPRESAS ===');
+      console.log('URL:', '/api/companies');
+      console.log('============================');
+      
+      const response = await apiClient.get('/api/companies');
+      const data = handleResponse(response);
+      
+      console.log('Respuesta del servidor:', data);
+      console.log('Total de empresas:', data.totalElements);
+      console.log('Empresas en esta página:', data.content?.length || 0);
+      
+      return data;
+    } catch (error) {
+      console.error('Error obteniendo empresas:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene los administradores de una empresa específica
+   * @param {number} companyId - ID de la empresa
+   * @returns {Promise} - Respuesta paginada con lista de administradores
+   */
+  getCompanyAdmins: async (companyId) => {
+    try {
+      console.log('=== OBTENIENDO ADMINISTRADORES DE EMPRESA ===');
+      console.log('URL:', `/api/companies/${companyId}/admins`);
+      console.log('Company ID:', companyId);
+      console.log('=============================================');
+      
+      const response = await apiClient.get(`/api/companies/${companyId}/admins`);
+      const data = handleResponse(response);
+      
+      console.log('Respuesta del servidor:', data);
+      console.log('Total de administradores:', data.totalElements);
+      console.log('Administradores en esta página:', data.content?.length || 0);
+      
+      return data;
+    } catch (error) {
+      console.error('Error obteniendo administradores de empresa:', error);
+      throw error;
+    }
+  },
+
+};
+
+/**
  * Configuración global de la API
  */
 export const apiConfig = {
@@ -825,6 +901,7 @@ export default {
   authService,
   userService,
   appointmentService,
+  companyService,
   apiConfig,
   apiClient
 }; 

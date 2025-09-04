@@ -102,7 +102,7 @@ const BusinessToolkits = ({ navigationProps }) => {
           <div style={{ color: '#7a8bbd', fontSize: 12 }}>Áreas de desarrollo</div>
         </div>
         <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <div style={{ color: '#9c27b0', fontWeight: 800, fontSize: 17 }}>85%</div>
+          <div style={{ color: '#9c27b0', fontWeight: 800, fontSize: 17 }}>0%</div>
           <div style={{ color: '#222', fontWeight: 700, fontSize: 13 }}>Tasa de Uso</div>
           <div style={{ color: '#7a8bbd', fontSize: 12 }}>Participación activa</div>
         </div>

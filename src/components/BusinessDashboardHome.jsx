@@ -14,23 +14,23 @@ const BusinessDashboardHome = ({ navigationProps }) => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginBottom: 18 }}>
         <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Smile size={26} color="#2ecc71" />
-          <div style={{ color: '#2ecc71', fontWeight: 700, fontSize: 17 }}>78%</div>
+          <div style={{ color: '#2ecc71', fontWeight: 700, fontSize: 17 }}>0%</div>
           <div style={{ color: '#222', fontWeight: 700, fontSize: 13 }}>Estado Emocional General</div>
           <div style={{ color: '#7a8bbd', fontSize: 12 }}>Bienestar promedio</div>
           <span style={{ color: '#7a8bbd', fontSize: 10, marginTop: 6 }}>Live</span>
         </div>
         <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Calendar size={26} color="#6ea8fe" />
-          <div style={{ color: '#0057FF', fontWeight: 800, fontSize: 17 }}>1,247</div>
+          <div style={{ color: '#0057FF', fontWeight: 800, fontSize: 17 }}>0</div>
           <div style={{ color: '#222', fontWeight: 700, fontSize: 13 }}>Sesiones Utilizadas</div>
-          <div style={{ color: '#7a8bbd', fontSize: 12 }}>de 1,560 disponibles</div>
+          <div style={{ color: '#7a8bbd', fontSize: 12 }}>de 0 disponibles</div>
           <span style={{ color: '#7a8bbd', fontSize: 10, marginTop: 6 }}>Live</span>
         </div>
         <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Users size={26} color="#ffb300" />
-          <div style={{ color: '#ff7043', fontWeight: 800, fontSize: 17 }}>490</div>
+          <div style={{ color: '#ff7043', fontWeight: 800, fontSize: 17 }}>0</div>
           <div style={{ color: '#222', fontWeight: 700, fontSize: 13 }}>Colaboradores Activos</div>
-          <div style={{ color: '#7a8bbd', fontSize: 12 }}>de 520 empleados</div>
+          <div style={{ color: '#7a8bbd', fontSize: 12 }}>de 0 empleados</div>
           <span style={{ color: '#7a8bbd', fontSize: 10, marginTop: 6 }}>Live</span>
         </div>
       </div>
@@ -39,9 +39,9 @@ const BusinessDashboardHome = ({ navigationProps }) => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: 18, marginBottom: 18 }}>
         <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #e0e7ef', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
           <AlertTriangle size={26} color="#ffb3b3" />
-          <div style={{ color: '#ff5e5e', fontWeight: 800, fontSize: 17 }}>156</div>
+          <div style={{ color: '#ff5e5e', fontWeight: 800, fontSize: 17 }}>0</div>
           <div style={{ color: '#222', fontWeight: 700, fontSize: 13 }}>Reportan Estrés</div>
-          <div style={{ color: '#7a8bbd', fontSize: 12 }}>30% de empleados activos</div>
+          <div style={{ color: '#7a8bbd', fontSize: 12 }}>0% de empleados activos</div>
           <span style={{ color: '#7a8bbd', fontSize: 10, marginTop: 6 }}>Live</span>
         </div>
       </div>
@@ -59,60 +59,60 @@ const BusinessDashboardHome = ({ navigationProps }) => {
           {/* Tarjetas de áreas */}
           {[
             {
-              color: '#ff4444',
+              color: '#2ecc71',
               label: 'Ventas',
-              status: { text: 'Alto', color: '#0057ff', bg: '#e6f0ff' },
-              empleados: 85,
-              porcentaje: 28,
-              comentario: '24 empleados reportan estrés laboral',
+              status: { text: 'Bajo', color: '#666', bg: '#e6f7e6' },
+              empleados: 0,
+              porcentaje: 0,
+              comentario: '0 empleados reportan estrés laboral',
             },
             {
-              color: '#ff4444',
+              color: '#2ecc71',
               label: 'Marketing',
-              status: { text: 'Crítico', color: '#fff', bg: '#ff4444' },
-              empleados: 78,
-              porcentaje: 45,
-              comentario: '35 empleados mencionan falta de comunicación',
+              status: { text: 'Bajo', color: '#666', bg: '#e6f7e6' },
+              empleados: 0,
+              porcentaje: 0,
+              comentario: '0 empleados mencionan falta de comunicación',
             },
             {
-              color: '#ff4444',
+              color: '#2ecc71',
               label: 'Tecnología',
-              status: { text: 'Alto', color: '#0057ff', bg: '#e6f0ff' },
-              empleados: 95,
-              porcentaje: 44,
-              comentario: '42 empleados reportan estrés crítico',
+              status: { text: 'Bajo', color: '#666', bg: '#e6f7e6' },
+              empleados: 0,
+              porcentaje: 0,
+              comentario: '0 empleados reportan estrés crítico',
             },
             {
               color: '#2ecc71',
               label: 'Recursos Humanos',
               status: { text: 'Bajo', color: '#666', bg: '#e6f7e6' },
-              empleados: 52,
-              porcentaje: 19,
-              comentario: '10 empleados con falta de comunicación',
+              empleados: 0,
+              porcentaje: 0,
+              comentario: '0 empleados con falta de comunicación',
             },
             {
-              color: '#ff9800',
+              color: '#2ecc71',
               label: 'Finanzas',
-              status: { text: 'Medio', color: '#fff', bg: '#ff9800' },
-              empleados: 65,
-              porcentaje: 23,
-              comentario: '15 empleados mencionan falta de liderazgo',
+              status: { text: 'Bajo', color: '#666', bg: '#e6f7e6' },
+              empleados: 0,
+              porcentaje: 0,
+              comentario: '0 empleados mencionan falta de liderazgo',
             },
             {
-              color: '#ff6b6b',
+              color: '#2ecc71',
               label: 'Operaciones',
-              status: { text: 'Alto', color: '#0057ff', bg: '#e6f0ff' },
-              empleados: 88,
-              porcentaje: 28,
-              comentario: '25 empleados con estrés laboral elevado',
+              status: { text: 'Bajo', color: '#666', bg: '#e6f7e6' },
+              empleados: 0,
+              porcentaje: 0,
+              comentario: '0 empleados con estrés laboral elevado',
             },
             {
               color: '#2ecc71',
               label: 'Otros',
               status: { text: 'Bajo', color: '#666', bg: '#f2f2f2' },
-              empleados: 47,
-              porcentaje: 15,
-              comentario: '7 empleados con problemas menores',
+              empleados: 0,
+              porcentaje: 0,
+              comentario: '0 empleados con problemas menores',
             },
           ].map((area, index) => (
             <div key={index} style={{
@@ -167,12 +167,12 @@ const BusinessDashboardHome = ({ navigationProps }) => {
           </div>
           
           {[
-            { dept: 'RRHH', value: 85, color: '#2ecc71' },
-            { dept: 'Finanzas', value: 72, color: '#ff9800' },
-            { dept: 'Operaciones', value: 68, color: '#ff6b6b' },
-            { dept: 'Ventas', value: 65, color: '#ff4444' },
-            { dept: 'Marketing', value: 58, color: '#ff4444' },
-            { dept: 'Tecnología', value: 52, color: '#ff4444' },
+            { dept: 'RRHH', value: 0, color: '#2ecc71' },
+            { dept: 'Finanzas', value: 0, color: '#2ecc71' },
+            { dept: 'Operaciones', value: 0, color: '#2ecc71' },
+            { dept: 'Ventas', value: 0, color: '#2ecc71' },
+            { dept: 'Marketing', value: 0, color: '#2ecc71' },
+            { dept: 'Tecnología', value: 0, color: '#2ecc71' },
           ].map((item, index) => (
             <div key={index} style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
