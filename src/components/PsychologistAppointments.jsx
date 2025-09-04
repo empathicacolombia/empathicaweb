@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, XCircle, AlertCircle, Edit, Trash, Save, CheckSquare, Square, Play, Check, Pause, Square as StopIcon } from 'lucide-react';
+import { appointmentService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Pestañas disponibles para filtrar citas
@@ -13,6 +15,8 @@ const tabs = ['Próximas', 'Hoy'];
  * Incluye funcionalidades de confirmación, notas clínicas y gestión de estado de citas
  */
 const PsychologistAppointments = () => {
+  const { user } = useAuth();
+  
   // Estados para controlar la interfaz y datos de citas
   const [activeTab, setActiveTab] = useState('Próximas');
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -36,6 +40,11 @@ const PsychologistAppointments = () => {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const intervalRef = useRef(null);
 
+  // Estados para las sesiones del backend
+  const [sessions, setSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+  const [sessionsError, setSessionsError] = useState(null);
+
   // Limpiar intervalo cuando el componente se desmonte
   useEffect(() => {
     return () => {
@@ -44,6 +53,41 @@ const PsychologistAppointments = () => {
       }
     };
   }, []);
+
+  /**
+   * Obtiene las sesiones asignadas al psicólogo desde el backend
+   */
+  const fetchSessions = async () => {
+    if (!user?.id) {
+      setSessionsError('No se pudo identificar al psicólogo');
+      return;
+    }
+
+    try {
+      setLoadingSessions(true);
+      setSessionsError(null);
+      
+      const data = await appointmentService.getPsychologistSessions();
+      console.log('Sesiones obtenidas del backend:', data);
+      
+      if (data?.content && Array.isArray(data.content)) {
+        setSessions(data.content);
+      } else {
+        setSessions([]);
+      }
+    } catch (error) {
+      console.error('Error obteniendo sesiones:', error);
+      setSessionsError('Error al cargar las sesiones');
+      setSessions([]);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  // Cargar sesiones al montar el componente
+  useEffect(() => {
+    fetchSessions();
+  }, [user?.id]);
 
   /**
    * Tags disponibles para categorizar pacientes y sesiones
@@ -55,6 +99,76 @@ const PsychologistAppointments = () => {
     'Problemas de pareja', 'Duelo', 'Trauma', 'Adicciones', 'TDAH',
     'Autoestima', 'Comunicación', 'Límites', 'Relajación'
   ];
+
+  /**
+   * Procesa y formatea los datos de las sesiones del backend
+   */
+  const processSessions = () => {
+    if (!sessions || sessions.length === 0) return [];
+
+    return sessions.map(session => {
+      const sessionDate = new Date(session.sessionTime);
+      const now = new Date();
+      
+      // Determinar si la sesión es de hoy
+      const isToday = sessionDate.toDateString() === now.toDateString();
+      
+      // Determinar si la sesión es próxima (futura)
+      const isUpcoming = sessionDate > now;
+      
+      // Formatear fecha y hora
+      const formattedDate = sessionDate.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      
+      const formattedTime = sessionDate.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Obtener tags del paciente
+      const patientTags = [];
+      if (session.patient?.tag1?.name) patientTags.push(session.patient.tag1.name);
+      if (session.patient?.tag2?.name) patientTags.push(session.patient.tag2.name);
+      if (session.patient?.tag3?.name) patientTags.push(session.patient.tag3.name);
+
+      return {
+        id: session.sessionId,
+        patientName: `${session.patient?.name || 'N/A'} ${session.patient?.lastName || ''}`,
+        patientEmail: session.patient?.email || 'N/A',
+        patientPhone: session.patient?.phoneNumber || session.patient?.phone || 'N/A',
+        date: formattedDate,
+        time: formattedTime,
+        duration: '50 min',
+        type: 'Sesión Individual',
+        status: session.status || 'Programada',
+        location: 'Virtual',
+        notes: session.notes?.length > 0 ? session.notes[0]?.note : 'Sin notas',
+        avatar: session.patient?.name ? session.patient.name.charAt(0) : 'P',
+        tags: patientTags,
+        sessionTime: session.sessionTime,
+        isToday,
+        isUpcoming,
+        patient: session.patient,
+        session: session
+      };
+    });
+  };
+
+  /**
+   * Filtra las sesiones según la pestaña activa
+   */
+  const getFilteredSessions = () => {
+    const processedSessions = processSessions();
+    
+    if (activeTab === 'Hoy') {
+      return processedSessions.filter(session => session.isToday);
+    } else {
+      return processedSessions.filter(session => session.isUpcoming);
+    }
+  };
 
   /**
    * Motivos predefinidos para cancelación de citas
@@ -70,102 +184,21 @@ const PsychologistAppointments = () => {
   ];
 
   /**
-   * Datos de ejemplo de citas del psicólogo
-   * Incluye información completa de pacientes, horarios y estado de citas
-   * TODO: Reemplazar con datos dinámicos del backend
+   * Citas del psicólogo obtenidas del backend
+   * Se actualiza automáticamente con las sesiones asignadas
    */
-  const [appointments, setAppointments] = useState([
-    {
-      id: 1,
-      patientName: 'María González',
-      patientEmail: 'maria.gonzalez@email.com',
-      patientPhone: '+57 300 123 4567',
-      date: '25/7/2025',
-      time: '15:00',
-      duration: '50 min',
-      type: 'Sesión Individual',
-      status: 'Confirmada',
-      location: 'Presencial - Consultorio 3',
-      notes: 'Continuar trabajo en manejo de estrés laboral',
-      avatar: 'MG',
-      tags: ['Estrés laboral', 'Mindfulness', 'Autoestima']
-    },
-    {
-      id: 2,
-      patientName: 'Carlos Rodríguez',
-      patientEmail: 'carlos.rodriguez@email.com',
-      patientPhone: '+57 300 234 5678',
-      date: '26/7/2025',
-      time: '10:30',
-      duration: '45 min',
-      type: 'Sesión Individual',
-      status: 'Pendiente',
-      location: 'Virtual - Zoom',
-      notes: 'Primera sesión de evaluación',
-      avatar: 'CR',
-      tags: ['Evaluación inicial']
-    },
-    {
-      id: 3,
-      patientName: 'Ana López',
-      patientEmail: 'ana.lopez@email.com',
-      patientPhone: '+57 300 345 6789',
-      date: '28/7/2025',
-      time: '16:00',
-      duration: '60 min',
-      type: 'Sesión Individual',
-      status: 'En Proceso',
-      location: 'Presencial - Consultorio 1',
-      notes: 'Seguimiento de técnicas de mindfulness',
-      avatar: 'AL',
-      tags: ['Mindfulness', 'Relajación', 'Estrés laboral']
-    },
-    {
-      id: 4,
-      patientName: 'Elena Ruiz',
-      patientEmail: 'elena.ruiz@email.com',
-      patientPhone: '+57 300 901 2345',
-      date: '30/7/2025',
-      time: '14:00',
-      duration: '50 min',
-      type: 'Sesión Individual',
-      status: 'Pendiente',
-      location: 'Virtual - Teams',
-      notes: 'Evaluación de progreso en terapia',
-      avatar: 'ER',
-      tags: ['Evaluación', 'Progreso']
-    },
-    {
-      id: 5,
-      patientName: 'Laura Sánchez',
-      patientEmail: 'laura.sanchez@email.com',
-      patientPhone: '+57 300 567 8901',
-      date: '24/7/2025',
-      time: '09:00',
-      duration: '45 min',
-      type: 'Sesión Individual',
-      status: 'Completada',
-      location: 'Presencial - Consultorio 2',
-      notes: 'Sesión de terapia cognitivo-conductual completada exitosamente',
-      avatar: 'LS',
-      tags: ['TOC', 'Ansiedad', 'Progreso']
-    }
-  ]);
+  const appointments = getFilteredSessions();
 
   /**
    * Filtra citas según la pestaña activa
-   * Próximas: Muestra citas confirmadas y pendientes
-   * Hoy: Muestra citas en proceso y completadas
+   * Próximas: Muestra citas futuras
+   * Hoy: Muestra citas de hoy
    * 
    * @returns {Array} Lista filtrada de citas según la pestaña
    */
   const getAppointmentsByTab = () => {
-    if (activeTab === 'Próximas') {
-      return appointments.filter(apt => apt.status === 'Confirmada' || apt.status === 'Pendiente');
-    } else if (activeTab === 'Hoy') {
-      return appointments.filter(apt => apt.status === 'En Proceso' || apt.status === 'Completada');
-    }
-    return [];
+    // Ya no es necesario filtrar aquí porque getFilteredSessions() ya lo hace
+    return appointments;
   };
 
   /**
@@ -281,10 +314,11 @@ const PsychologistAppointments = () => {
    * @param {Object} appointment - Cita a iniciar
    */
   const startAppointment = (appointment) => {
-    setAppointments(prev => prev.map(apt => 
-      apt.id === appointment.id 
-        ? { ...apt, status: 'En Proceso' }
-        : apt
+    // Actualizar el estado local de sesiones
+    setSessions(prev => prev.map(session => 
+      session.sessionId === appointment.id 
+        ? { ...session, status: 'En Proceso' }
+        : session
     ));
     startTimer(appointment.id);
   };
@@ -366,17 +400,19 @@ const PsychologistAppointments = () => {
    */
   const saveNotesAndComplete = () => {
     if (selectedAppointment) {
-      setAppointments(prev => prev.map(apt => 
-        apt.id === selectedAppointment.id 
+      // Actualizar el estado local de sesiones
+      setSessions(prev => prev.map(session => 
+        session.sessionId === selectedAppointment.id 
           ? { 
-              ...apt, 
+              ...session, 
               status: 'Completada',
-              notes: notesForm.notes,
-              tags: notesForm.tags,
-              tagIntensities: notesForm.tagIntensities,
-              sessionDuration: timer // Guardar la duración de la sesión
+              notes: [{
+                sessionNoteId: Date.now(), // ID temporal
+                note: notesForm.notes,
+                session: session.sessionId.toString()
+              }]
             }
-          : apt
+          : session
       ));
     }
     stopTimer(); // Detener el cronómetro
@@ -414,10 +450,11 @@ const PsychologistAppointments = () => {
 
   const confirmCancelAppointment = () => {
     if (selectedAppointment) {
-      setAppointments(prev => prev.map(apt => 
-        apt.id === selectedAppointment.id 
-          ? { ...apt, status: 'Cancelada' }
-          : apt
+      // Actualizar el estado local de sesiones
+      setSessions(prev => prev.map(session => 
+        session.sessionId === selectedAppointment.id 
+          ? { ...session, status: 'Cancelada' }
+          : session
       ));
     }
     closeCancelModal();
@@ -514,22 +551,22 @@ const PsychologistAppointments = () => {
                 </button>
               )}
               
-              <button 
-                onClick={() => openNotesModal(appointment)}
-                style={{
-                  background: '#10B981',
-                  color: '#fff',
-                  border: 'none',
+          <button 
+            onClick={() => openNotesModal(appointment)}
+            style={{
+              background: '#10B981',
+              color: '#fff',
+              border: 'none',
                   borderRadius: 4,
                   padding: '0.25rem 0.5rem',
                   fontSize: 10,
-                  fontWeight: 600,
+              fontWeight: 600,
                   cursor: 'pointer'
                 }}
               >
                 <Check size={12} />
-                Finalizar
-              </button>
+            Finalizar
+          </button>
             </div>
           </div>
         );
@@ -554,14 +591,36 @@ const PsychologistAppointments = () => {
       <div style={{ 
         marginBottom: '2rem' 
       }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '0.5rem'
+      }}>
         <h1 style={{ 
           color: '#222', 
           fontWeight: 800, 
           fontSize: 32,
-          margin: '0 0 0.5rem 0'
+            margin: 0
         }}>
           Mis Citas
         </h1>
+          
+          {/* Contador de sesiones */}
+          {!loadingSessions && !sessionsError && (
+            <div style={{
+              background: '#f0f8ff',
+              border: '1px solid #0057FF',
+              borderRadius: '20px',
+              padding: '0.5rem 1rem',
+              fontSize: 14,
+              fontWeight: 600,
+              color: '#0057FF'
+            }}>
+              {sessions.length} sesión{sessions.length !== 1 ? 'es' : ''}
+            </div>
+          )}
+        </div>
         <p style={{ 
           color: '#7a8bbd', 
           fontSize: 16, 
@@ -571,14 +630,22 @@ const PsychologistAppointments = () => {
         </p>
       </div>
 
-      {/* Tabs internos */}
+      {/* Tabs internos y botón de recarga */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '2rem'
+      }}>
+        {/* Tabs */}
       <div style={{ 
         display: 'flex', 
         gap: 0, 
-        marginBottom: '2rem',
         background: '#f8f9fa',
         borderRadius: 12,
-        padding: '0.5rem'
+          padding: '0.5rem',
+          flex: 1,
+          maxWidth: '400px'
       }}>
         {tabs.map(tab => (
           <button 
@@ -603,6 +670,48 @@ const PsychologistAppointments = () => {
             {tab}
           </button>
         ))}
+        </div>
+
+        {/* Botón de recarga */}
+        <button
+          onClick={fetchSessions}
+          disabled={loadingSessions}
+          style={{
+            background: '#0057FF',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            padding: '0.75rem 1rem',
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: loadingSessions ? 'not-allowed' : 'pointer',
+            opacity: loadingSessions ? 0.6 : 1,
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              animation: loadingSessions ? 'spin 1s linear infinite' : 'none'
+            }}
+          >
+            <path d="M21 2v6h-6" />
+            <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+            <path d="M3 22v-6h6" />
+            <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+          </svg>
+          {loadingSessions ? 'Actualizando...' : 'Actualizar'}
+        </button>
       </div>
 
       {/* Contenido de citas */}
@@ -611,7 +720,79 @@ const PsychologistAppointments = () => {
         flexDirection: 'column',
         gap: '1rem'
       }}>
-        {appointments.length > 0 ? (
+        {/* Estado de carga */}
+        {loadingSessions && (
+          <div style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: '2rem',
+            textAlign: 'center',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #f0f0f0'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1rem',
+              fontSize: 16,
+              color: '#666'
+            }}>
+              <div style={{
+                width: 24,
+                height: 24,
+                border: '3px solid #f3f3f3',
+                borderTop: '3px solid #0057FF',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+              Cargando sesiones...
+            </div>
+          </div>
+        )}
+
+        {/* Estado de error */}
+        {sessionsError && !loadingSessions && (
+          <div style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: 12,
+            padding: '2rem',
+            textAlign: 'center',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1rem',
+              fontSize: 16,
+              color: '#dc2626',
+              marginBottom: '1rem'
+            }}>
+              <AlertCircle size={24} />
+              {sessionsError}
+            </div>
+            <button
+              onClick={fetchSessions}
+              style={{
+                background: '#0057FF',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '0.75rem 1.5rem',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Intentar de nuevo
+            </button>
+          </div>
+        )}
+
+        {/* Lista de citas */}
+        {!loadingSessions && !sessionsError && appointments.length > 0 ? (
           appointments.map((appointment) => (
             <div
               key={appointment.id}
@@ -688,12 +869,25 @@ const PsychologistAppointments = () => {
                   </div>
                 </div>
 
-                {/* Estado de la cita */}
+                {/* Estado de la cita y datos del backend */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px'
                 }}>
+                  {/* Indicador de datos del backend */}
+                  <span style={{
+                    background: '#10B981',
+                    color: '#fff',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '12px',
+                    fontSize: 10,
+                    fontWeight: 600,
+                    textTransform: 'uppercase'
+                  }}>
+                    Backend
+                  </span>
+                  
                   {getStatusIcon(appointment.status)}
                   <span style={{
                     background: getStatusColor(appointment.status),
@@ -756,6 +950,33 @@ const PsychologistAppointments = () => {
                   <span><strong>Ubicación:</strong> {appointment.location}</span>
                 </div>
               </div>
+
+                {/* Información adicional del backend */}
+                <div style={{
+                  background: '#f8f9fa',
+                  borderRadius: 8,
+                  padding: '0.75rem',
+                  marginBottom: '1rem',
+                  border: '1px solid #e0e0e0'
+                }}>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gap: '0.75rem',
+                    fontSize: 12,
+                    color: '#666'
+                  }}>
+                    <div>
+                      <strong>ID Sesión:</strong> {appointment.id}
+                    </div>
+                    <div>
+                      <strong>Fecha ISO:</strong> {appointment.sessionTime ? new Date(appointment.sessionTime).toISOString().split('T')[0] : 'N/A'}
+                    </div>
+                    <div>
+                      <strong>Hora UTC:</strong> {appointment.sessionTime ? new Date(appointment.sessionTime).toLocaleTimeString('en-US', { timeZone: 'UTC' }) : 'N/A'}
+                    </div>
+                  </div>
+                </div>
 
               {/* Tags del paciente */}
               {appointment.tags && appointment.tags.length > 0 && (
@@ -857,8 +1078,8 @@ const PsychologistAppointments = () => {
               color: '#222',
               margin: '0 0 0.5rem 0'
             }}>
-              {activeTab === 'Próximas' && 'No hay citas próximas'}
-              {activeTab === 'Hoy' && 'No hay citas para hoy'}
+              {activeTab === 'Próximas' && 'No hay sesiones próximas'}
+              {activeTab === 'Hoy' && 'No hay sesiones para hoy'}
             </h3>
             <p style={{
               color: '#7a8bbd',
@@ -867,8 +1088,8 @@ const PsychologistAppointments = () => {
               maxWidth: 400,
               margin: 0
             }}>
-              {activeTab === 'Próximas' && 'No tienes citas programadas para los próximos días'}
-              {activeTab === 'Hoy' && 'No tienes citas programadas para hoy'}
+              {activeTab === 'Próximas' && 'No tienes sesiones asignadas para los próximos días. Las sesiones aparecerán aquí cuando los pacientes las agenden.'}
+              {activeTab === 'Hoy' && 'No tienes sesiones programadas para hoy. Las sesiones aparecerán aquí cuando los pacientes las agenden.'}
             </p>
           </div>
         )}

@@ -178,11 +178,11 @@ const RegisterPage = ({ navigationProps }) => {
       // Después del registro exitoso, redirigir a la pantalla de confirmación
       console.log('=== INICIO DE REDIRECCIÓN ===');
       console.log('Registro exitoso, redirigiendo a pantalla de confirmación...');
-      
-      // Marcar al usuario como registrado
-      if (navigationProps && navigationProps.onUserRegistration) {
+    
+    // Marcar al usuario como registrado
+    if (navigationProps && navigationProps.onUserRegistration) {
         console.log('Llamando a onUserRegistration...');
-        navigationProps.onUserRegistration();
+      navigationProps.onUserRegistration();
         console.log('onUserRegistration ejecutado');
       } else {
         console.log('onUserRegistration no disponible');
@@ -212,7 +212,7 @@ const RegisterPage = ({ navigationProps }) => {
           window.location.href = '/registration-success';
           return; // Evitar que el formulario se reinicie
         }
-      } else {
+    } else {
         console.error('navigationProps.onNavigate no está disponible');
         // Fallback: usar window.location
         console.log('Usando fallback con window.location...');
@@ -1197,14 +1197,14 @@ const RegisterPage = ({ navigationProps }) => {
               }}
               onMouseEnter={e => {
                 if (!isLoading) {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 87, 255, 0.3)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 87, 255, 0.3)';
                 }
               }}
               onMouseLeave={e => {
                 if (!isLoading) {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
                 }
               }}
             >

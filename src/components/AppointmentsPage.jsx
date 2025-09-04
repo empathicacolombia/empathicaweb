@@ -3,8 +3,10 @@ import { Home, CalendarDays, Heart, Users, LifeBuoy, User, LogOut, Calendar, X }
 import logoEmpathica from '../assets/Logoempathica.png';
 import ClientSidebar from './ClientSidebar';
 import AppointmentCalendarModal from './AppointmentCalendarModal';
+import PaymentModal from './PaymentModal';
+import PsychologistScheduleModal from './PsychologistScheduleModal';
 import MobileDashboardNav from './MobileDashboardNav';
-import { userService } from '../services/api';
+import { userService, appointmentService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -38,6 +40,17 @@ const AppointmentsPage = ({ navigationProps }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   /**
+   * Estado para controlar la apertura del modal de pago
+   */
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+
+  /**
+   * Estado para controlar la apertura del modal de horario del psicólogo
+   */
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+
+  /**
    * Estado para almacenar las citas próximas (se actualiza cuando se agenda una nueva)
    */
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
@@ -47,6 +60,13 @@ const AppointmentsPage = ({ navigationProps }) => {
    */
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+
+  /**
+   * Estados para las sesiones del paciente desde el backend
+   */
+  const [patientSessions, setPatientSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+  const [sessionsError, setSessionsError] = useState(null);
 
   /**
    * Obtiene la información del usuario desde el backend
@@ -63,6 +83,15 @@ const AppointmentsPage = ({ navigationProps }) => {
       setUserError(null);
       const data = await userService.getPatientById(user.id);
       setUserInfo(data);
+      
+      // Debug: mostrar información del paciente
+      console.log('Datos del paciente cargados:', data);
+      console.log('Roles del paciente:', data?.roles);
+      console.log('¿Es paciente Empathica?', data?.roles?.some(role => role.toLowerCase().includes('empathica')));
+      console.log('¿Tiene psicólogo asignado?', !!data?.psychologist?.userId);
+      console.log('Psicólogo asignado:', data?.psychologist);
+      console.log('Estado del botón de agendar:', data?.psychologist?.userId ? 'Habilitado' : 'Deshabilitado');
+      
     } catch (error) {
       console.error('Error obteniendo datos del paciente:', error);
       setUserError('Error al cargar los datos del paciente');
@@ -79,6 +108,41 @@ const AppointmentsPage = ({ navigationProps }) => {
   }, [user?.id]);
 
   /**
+   * Obtiene las sesiones del paciente desde el backend
+   */
+  const fetchPatientSessions = async () => {
+    if (!user?.id) {
+      setSessionsError('No se pudo identificar al paciente');
+      return;
+    }
+
+    try {
+      setLoadingSessions(true);
+      setSessionsError(null);
+      
+      const data = await appointmentService.getPatientSessions();
+      console.log('Sesiones del paciente obtenidas del backend:', data);
+      
+      if (data?.content && Array.isArray(data.content)) {
+        setPatientSessions(data.content);
+      } else {
+        setPatientSessions([]);
+      }
+    } catch (error) {
+      console.error('Error obteniendo sesiones del paciente:', error);
+      setSessionsError('Error al cargar las sesiones');
+      setPatientSessions([]);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  // Cargar sesiones al montar el componente
+  useEffect(() => {
+    fetchPatientSessions();
+  }, [user?.id]);
+
+  /**
    * Abre el modal de detalles de una sesión específica
    */
   const openSessionDetails = (session) => {
@@ -92,6 +156,113 @@ const AppointmentsPage = ({ navigationProps }) => {
   const closeSessionDetails = () => {
     setIsDetailsModalOpen(false);
     setSelectedSession(null);
+  };
+
+  /**
+   * Verifica si el paciente pertenece a Empathica basado en sus roles
+   * @returns {boolean} - true si pertenece a Empathica, false en caso contrario
+   */
+  const isEmpathicaPatient = () => {
+    if (!userInfo?.roles || !Array.isArray(userInfo.roles)) {
+      return false;
+    }
+    
+    // Buscar cualquier rol que contenga "empathica" (case-insensitive)
+    return userInfo.roles.some(role => 
+      role.toLowerCase().includes('empathica')
+    );
+  };
+
+  /**
+   * Maneja el click en el botón de agendar cita
+   * Verifica si el paciente tiene psicólogo asignado antes de permitir agendar
+   */
+  const handleScheduleAppointment = () => {
+    // Verificar si tiene psicólogo asignado
+    if (!userInfo?.psychologist?.userId) {
+      console.log('Paciente sin psicólogo asignado - Bloqueando agendado');
+      // No permitir agendar cita, mostrar mensaje de error
+      setUserError('Para agendar una cita, primero necesitas seleccionar un especialista. Ve a "Mi Especialista" para encontrar tu psicólogo ideal.');
+      return;
+    }
+
+    // Verificar si es paciente de Empathica para mostrar modal de pago primero
+    if (isEmpathicaPatient()) {
+      console.log('Paciente de Empathica - Mostrando modal de pago antes de seleccionar cita');
+      // Mostrar modal de pago primero
+      setIsPaymentModalOpen(true);
+    } else {
+      console.log('Paciente empresarial - Mostrando horario del psicólogo directamente');
+      // Para pacientes empresariales, mostrar horario directamente
+      setIsScheduleModalOpen(true);
+    }
+  };
+
+
+
+  /**
+   * Maneja la confirmación del modal de horario del psicólogo
+   * Solo se usa para pacientes empresariales (los de Empathica ya pagaron)
+   */
+  const handleScheduleConfirm = (psychologistId, sessionDateTime) => {
+    setIsScheduleModalOpen(false);
+    
+    // Solo pacientes empresariales llegan aquí (los de Empathica ya pagaron)
+    console.log('Paciente empresarial - Creando sesión directamente');
+    createSessionDirectly(psychologistId, sessionDateTime);
+  };
+
+  /**
+   * Crea una sesión directamente para pacientes institucionales
+   */
+  const createSessionDirectly = async (psychologistId, sessionDateTime) => {
+    try {
+      console.log('=== DATOS ENVIADOS AL BACKEND ===');
+      console.log('URL:', `/api/patients/session/${psychologistId}`);
+      console.log('Payload:', { sessionTime: sessionDateTime });
+      console.log('Tipo de psychologistId:', typeof psychologistId);
+      console.log('Tipo de sessionDateTime:', typeof sessionDateTime);
+      console.log('Valor de sessionDateTime:', sessionDateTime);
+      console.log('Fecha parseada:', new Date(sessionDateTime));
+      console.log('=====================================');
+      
+      const response = await appointmentService.createSession(psychologistId, sessionDateTime);
+      console.log('Sesión creada exitosamente:', response);
+      
+      // Mostrar mensaje de éxito y actualizar citas
+      alert('¡Sesión agendada exitosamente!');
+      
+      // Recargar información del usuario para mostrar la nueva cita
+      fetchUserInfo();
+      
+    } catch (error) {
+      console.error('Error creando sesión:', error);
+      console.error('Detalles del error:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
+      alert('Error al agendar la sesión. Inténtalo de nuevo.');
+    }
+  };
+
+  /**
+   * Maneja la confirmación del pago exitoso
+   * Después del pago, muestra el modal de horario del psicólogo
+   */
+  const handlePaymentConfirm = () => {
+    setIsPaymentLoading(true);
+    
+    // Cerrar modal de pago
+    setTimeout(() => {
+      setIsPaymentLoading(false);
+      setIsPaymentModalOpen(false);
+      
+      // Mostrar modal de horario del psicólogo después del pago exitoso
+      console.log('Pago exitoso - Mostrando horario del psicólogo');
+      setIsScheduleModalOpen(true);
+    }, 1000);
   };
 
   /**
@@ -123,6 +294,71 @@ const AppointmentsPage = ({ navigationProps }) => {
   // Usar el estado global del sidebar
   const sidebarOpen = navigationProps?.sidebarOpen ?? true;
 
+  /**
+   * Procesa y formatea los datos de las sesiones del backend
+   */
+  const processSessions = () => {
+    if (!patientSessions || patientSessions.length === 0) return [];
+
+    return patientSessions.map(session => {
+      const sessionDate = new Date(session.sessionTime);
+      const now = new Date();
+      
+      // Determinar si la sesión es próxima (futura) o del historial (pasada)
+      const isUpcoming = sessionDate > now;
+      
+      // Formatear fecha y hora
+      const formattedDate = sessionDate.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      
+      const formattedTime = sessionDate.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Obtener tags del paciente
+      const patientTags = [];
+      if (session.patient?.tag1?.name) patientTags.push(session.patient.tag1.name);
+      if (session.patient?.tag2?.name) patientTags.push(session.patient.tag2.name);
+      if (session.patient?.tag3?.name) patientTags.push(session.patient.tag3.name);
+
+      return {
+        id: session.sessionId,
+        patientName: `${session.patient?.name || 'N/A'} ${session.patient?.lastName || ''}`,
+        psychologistName: `${session.psychologist?.name || 'N/A'} ${session.psychologist?.lastName || ''}`,
+        psychologistEmail: session.psychologist?.email || 'N/A',
+        psychologistSpecialty: session.psychologist?.specialty || 'N/A',
+        date: formattedDate,
+        time: formattedTime,
+        duration: '50 min',
+        type: 'Sesión Individual',
+        status: session.status || 'Programada',
+        location: 'Virtual',
+        notes: session.notes?.length > 0 ? session.notes[0]?.note : 'Sin notas',
+        tags: patientTags,
+        sessionTime: session.sessionTime,
+        isUpcoming,
+        session: session
+      };
+    });
+  };
+
+  /**
+   * Filtra las sesiones según la pestaña activa
+   */
+  const getFilteredSessions = () => {
+    const processedSessions = processSessions();
+    
+    if (activeTab === 'upcoming') {
+      return processedSessions.filter(session => session.isUpcoming);
+    } else {
+      return processedSessions.filter(session => !session.isUpcoming);
+    }
+  };
+
 
 
   /**
@@ -131,8 +367,8 @@ const AppointmentsPage = ({ navigationProps }) => {
    */
   const historyAppointments = [];
 
-  // Seleccionar las citas según la pestaña activa
-  const appointments = activeTab === 'upcoming' ? upcomingAppointments : historyAppointments;
+  // Obtener las sesiones filtradas según la pestaña activa
+  const appointments = getFilteredSessions();
 
   return (
     <div style={{
@@ -303,39 +539,96 @@ const AppointmentsPage = ({ navigationProps }) => {
               }}>
                   Bienvenida de vuelta a tu portal de bienestar mental
               </p>
+              
+              {/* Indicador del tipo de paciente */}
+              {!isLoadingUser && userInfo && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginTop: '0.5rem'
+                }}>
+                  <span style={{
+                    background: isEmpathicaPatient() ? '#0057FF' : '#22C55E',
+                    color: '#fff',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '12px',
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}>
+                    {isEmpathicaPatient() ? 'Paciente Empathica' : 'Paciente Empresarial'}
+                  </span>
+                  <span style={{
+                    fontSize: 12,
+                    color: '#666'
+                  }}>
+                    {isEmpathicaPatient() ? 'Pago por sesión' : 'Cobertura empresarial'}
+                  </span>
+                  
+                  {/* Indicador de psicólogo asignado */}
+                  {userInfo?.psychologist?.userId && (
+                    <>
+                      <span style={{
+                        background: '#8B5CF6',
+                        color: '#fff',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '12px',
+                        fontSize: 12,
+                        fontWeight: 600
+                      }}>
+                        Psicólogo Asignado
+                      </span>
+                      <span style={{
+                        fontSize: 12,
+                        color: '#666'
+                      }}>
+                        {userInfo.psychologist.name} {userInfo.psychologist.lastName}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
               </div>
             </div>
             
-            {/* Botón verde para agendar nueva cita */}
+            {/* Botón para agendar nueva cita */}
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleScheduleAppointment}
+              disabled={!userInfo?.psychologist?.userId}
               style={{
-                background: '#22C55E',
+                background: userInfo?.psychologist?.userId ? '#22C55E' : '#ccc',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 12,
                 padding: '0.875rem 1.5rem',
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: userInfo?.psychologist?.userId ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 fontSize: 14,
-                boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
-                transition: 'all 0.2s ease'
+                boxShadow: userInfo?.psychologist?.userId ? '0 4px 12px rgba(34, 197, 94, 0.3)' : 'none',
+                transition: 'all 0.2s ease',
+                opacity: userInfo?.psychologist?.userId ? 1 : 0.7
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 16px rgba(34, 197, 94, 0.4)';
+                if (userInfo?.psychologist?.userId) {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(34, 197, 94, 0.4)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+                if (userInfo?.psychologist?.userId) {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+                }
               }}
             >
               <Calendar size={16} />
-              Agendar Nueva Cita
+              {userInfo?.psychologist?.userId ? 'Agendar Nueva Cita' : 'Selecciona un Especialista Primero'}
             </button>
+            
+
           </div>
 
           {/* ========================================
@@ -384,14 +677,88 @@ const AppointmentsPage = ({ navigationProps }) => {
           {/* ========================================
                SECCIÓN PRINCIPAL DE CITAS
                ======================================== */}
-          <div style={{
-            background: '#f8f9fa',
-            borderRadius: 20,
-            padding: '2rem',
-            marginBottom: '2rem',
-            border: '1px solid #e9ecef'
-          }}>
-            {activeTab === 'upcoming' && upcomingAppointments.length === 0 ? (
+          
+          {/* Estado de carga */}
+          {loadingSessions && (
+            <div style={{
+              background: '#fff',
+              borderRadius: 20,
+              padding: '3rem',
+              marginBottom: '2rem',
+              border: '1px solid #e9ecef',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '1rem',
+                fontSize: 16,
+                color: '#666'
+              }}>
+                <div style={{
+                  width: 24,
+                  height: 24,
+                  border: '3px solid #f3f3f3',
+                  borderTop: '3px solid #0057FF',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                Cargando sesiones...
+              </div>
+            </div>
+          )}
+
+          {/* Estado de error */}
+          {sessionsError && !loadingSessions && (
+            <div style={{
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: 20,
+              padding: '2rem',
+              marginBottom: '2rem',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '1rem',
+                fontSize: 16,
+                color: '#dc2626',
+                marginBottom: '1rem'
+              }}>
+                <span style={{ fontSize: 20 }}>⚠️</span>
+                {sessionsError}
+              </div>
+              <button
+                onClick={fetchPatientSessions}
+                style={{
+                  background: '#0057FF',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '0.75rem 1.5rem',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Intentar de nuevo
+              </button>
+            </div>
+          )}
+
+          {/* Contenido principal de citas */}
+          {!loadingSessions && !sessionsError && (
+            <div style={{
+              background: '#f8f9fa',
+              borderRadius: 20,
+              padding: '2rem',
+              marginBottom: '2rem',
+              border: '1px solid #e9ecef'
+            }}>
+            {activeTab === 'upcoming' && appointments.length === 0 ? (
               /* ========================================
                    ESTADO: NO HAY CITAS PROGRAMADAS
                    ======================================== */
@@ -448,7 +815,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                   Agenda tu próxima cita para comenzar tu sesión
                 </p>
               </div>
-            ) : activeTab === 'upcoming' && upcomingAppointments.length > 0 ? (
+            ) : activeTab === 'upcoming' && appointments.length > 0 ? (
               /* ========================================
                    ESTADO: PRÓXIMA SESIÓN VIRTUAL
                    ======================================== */
@@ -680,7 +1047,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                   </div>
                 </div>
               </div>
-            ) : activeTab === 'history' && historyAppointments.length === 0 ? (
+            ) : activeTab === 'history' && appointments.length === 0 ? (
               /* ========================================
                    ESTADO: HISTORIAL VACÍO
                    ======================================== */
@@ -730,7 +1097,7 @@ const AppointmentsPage = ({ navigationProps }) => {
             flexDirection: 'column',
             gap: '1rem'
           }}>
-                {historyAppointments.map((appointment) => (
+            {appointments.map((appointment) => (
               <div
                 key={appointment.id}
                 style={{
@@ -824,50 +1191,14 @@ const AppointmentsPage = ({ navigationProps }) => {
                         }}
                       >
                         Ver detalles
-                  </button>
+                    </button>
                 </div>
               </div>
             ))}
               </div>
             )}
-            
-            {/* ========================================
-                 BOTÓN AGENDAR NUEVA CITA (AL FINAL)
-                 ======================================== */}
-            <div style={{
-              textAlign: 'center',
-              marginTop: '2rem'
-            }}>
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                style={{
-                  background: '#fff',
-                  color: '#0057FF',
-                  border: '2px solid #0057FF',
-                  borderRadius: 12,
-                  padding: '0.875rem 2rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: 14,
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#0057FF';
-                  e.target.style.color = '#fff';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#fff';
-                  e.target.style.color = '#0057FF';
-                }}
-              >
-                <Calendar size={16} />
-                Agendar Nueva Cita
-              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
       
@@ -878,6 +1209,28 @@ const AppointmentsPage = ({ navigationProps }) => {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         onAppointmentScheduled={handleAppointmentScheduled}
+      />
+
+      {/* ========================================
+           MODAL DE PAGO PARA PACIENTES EMPATHICA
+           ======================================== */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onContinue={handlePaymentConfirm}
+        isLoading={isPaymentLoading}
+      />
+
+      {/* ========================================
+           MODAL DE HORARIO DEL PSICÓLOGO ASIGNADO
+           ======================================== */}
+      <PsychologistScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onContinue={handleScheduleConfirm}
+        psychologistId={userInfo?.psychologist?.userId}
+        psychologistName={userInfo?.psychologist ? `${userInfo.psychologist.name} ${userInfo.psychologist.lastName}` : 'Tu Psicólogo'}
+        isEmpathicaPatient={isEmpathicaPatient()}
       />
 
       {/* ========================================
@@ -942,7 +1295,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                           color: '#1976D2',
                           padding: '0.25rem 0.75rem',
                           borderRadius: '20px',
-                          fontSize: 12,
+                      fontSize: 12,
                           fontWeight: 600
                         }}
                       >
@@ -991,7 +1344,7 @@ const AppointmentsPage = ({ navigationProps }) => {
               }}>
                 <h3 style={{
                   fontSize: 18,
-                  fontWeight: 600,
+                      fontWeight: 600,
                   color: '#333',
                   margin: '0 0 1rem 0'
                 }}>
@@ -1020,7 +1373,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                     Bueno
                   </span>
                 </div>
-              </div>
+                  </div>
 
               {/* Detalles de la sesión específica */}
               <div style={{
@@ -1045,7 +1398,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                     }}>
                       <span style={{ fontSize: 18 }}>📅</span>
                       <h4 style={{
-                        fontSize: 18,
+                    fontSize: 18,
                         fontWeight: 600,
                         color: '#333',
                         margin: 0
@@ -1055,12 +1408,12 @@ const AppointmentsPage = ({ navigationProps }) => {
                     </div>
                     <p style={{
                       fontSize: 14,
-                      color: '#666',
+                    color: '#666',
                       margin: 0
-                    }}>
+                  }}>
                       Evaluación de 3 áreas terapéuticas
                     </p>
-                  </div>
+                </div>
                   
                   <div style={{
                     display: 'flex',
@@ -1075,7 +1428,7 @@ const AppointmentsPage = ({ navigationProps }) => {
                       Puntuación 72/100
                     </span>
                     <span style={{ fontSize: 16 }}>⬇️</span>
-                  </div>
+              </div>
                 </div>
 
                 {/* Evaluación por áreas */}
@@ -1163,11 +1516,11 @@ const AppointmentsPage = ({ navigationProps }) => {
                             >
                               ★
                             </span>
-                          ))}
-                        </div>
-                      </div>
+            ))}
+          </div>
+        </div>
                     ))}
-                  </div>
+      </div>
                 </div>
 
                 {/* Notas de la sesión */}

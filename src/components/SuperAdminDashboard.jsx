@@ -10,7 +10,9 @@ import {
   Shield,
   Activity,
   FileText,
-  Calendar
+  Calendar,
+  Building2,
+  Plus
 } from 'lucide-react';
 import logoEmpathica from '../assets/Logoempathica.png';
 import MobileDashboardNav from './MobileDashboardNav';
@@ -23,9 +25,210 @@ import PsychologistManagement from './PsychologistManagement';
 const sidebarItems = [
   { icon: <Home size={22} />, label: 'Inicio', section: 'Dashboard' },
   { icon: <Users size={22} />, label: 'Gestión de Psicólogos', section: 'Psicólogos' },
+  { icon: <Building2 size={22} />, label: 'Crear Empresa', section: 'Empresas' },
   { icon: <FileText size={22} />, label: 'Reportes', section: 'Reportes' },
   { icon: <Settings size={22} />, label: 'Configuración', section: 'Configuración' },
 ];
+
+/**
+ * Componente de formulario para crear empresa
+ */
+function CreateCompanyForm({ onCompanyCreated }) {
+  const [companyName, setCompanyName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleInputChange = (value) => {
+    setCompanyName(value);
+    // Limpiar mensajes de error al escribir
+    if (error) setError('');
+    if (success) setSuccess('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // Validaciones básicas
+      if (!companyName.trim()) {
+        throw new Error('Por favor ingresa el nombre de la empresa');
+      }
+
+      // Aquí iría la llamada al API para crear la empresa
+      console.log('Creando empresa:', companyName);
+      
+      // Simular llamada al API
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simular respuesta del backend con credenciales
+      const newCompany = {
+        id: Date.now(), // ID temporal
+        name: companyName,
+        email: `admin@${companyName.toLowerCase().replace(/\s+/g, '')}.com`,
+        password: `TempPass${Math.floor(Math.random() * 1000)}!`,
+        createdAt: new Date().toISOString().split('T')[0],
+        status: 'Activa'
+      };
+      
+      setSuccess('¡Empresa creada exitosamente!');
+      
+      // Notificar al componente padre
+      if (onCompanyCreated) {
+        onCompanyCreated(newCompany);
+      }
+      
+      // Limpiar formulario
+      setCompanyName('');
+
+    } catch (error) {
+      console.error('Error creando empresa:', error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ maxWidth: '500px' }}>
+      <div style={{ marginBottom: 24 }}>
+        <label style={{ 
+          display: 'block', 
+          color: '#374151', 
+          fontWeight: 600, 
+          fontSize: 16, 
+          marginBottom: 12 
+        }}>
+          Nombre de la Empresa *
+        </label>
+        <input
+          type="text"
+          value={companyName}
+          onChange={(e) => handleInputChange(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '16px 20px',
+            border: '2px solid #e0e7ef',
+            borderRadius: 12,
+            fontSize: 16,
+            transition: 'border-color 0.2s ease',
+            background: '#fff'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+          onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+          placeholder="Ej: Empresa ABC S.A."
+        />
+      </div>
+
+      {/* Mensajes de error y éxito */}
+      {error && (
+        <div style={{
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
+          color: '#dc2626',
+          padding: '12px 16px',
+          borderRadius: 8,
+          marginBottom: 20,
+          fontSize: 14
+        }}>
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div style={{
+          background: '#f0fdf4',
+          border: '1px solid #bbf7d0',
+          color: '#16a34a',
+          padding: '12px 16px',
+          borderRadius: 8,
+          marginBottom: 20,
+          fontSize: 14
+        }}>
+          {success}
+        </div>
+      )}
+
+      {/* Botón de envío */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'flex-end', 
+        gap: 16 
+      }}>
+        <button
+          type="button"
+          onClick={() => {
+            setCompanyName('');
+            setError('');
+            setSuccess('');
+          }}
+          style={{
+            padding: '12px 24px',
+            background: '#f3f4f6',
+            color: '#374151',
+            border: 'none',
+            borderRadius: 8,
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'background 0.2s ease'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = '#e5e7eb'}
+          onMouseLeave={(e) => e.currentTarget.style.background = '#f3f4f6'}
+        >
+          Limpiar
+        </button>
+        
+        <button
+          type="submit"
+          disabled={isLoading}
+          style={{
+            padding: '12px 24px',
+            background: isLoading ? '#9ca3af' : '#0057FF',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            transition: 'background 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) e.currentTarget.style.background = '#0041CC';
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) e.currentTarget.style.background = '#0057FF';
+          }}
+        >
+          {isLoading ? (
+            <>
+              <div style={{
+                width: 16,
+                height: 16,
+                border: '2px solid #fff',
+                borderTop: '2px solid transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+              Creando...
+            </>
+          ) : (
+            <>
+              <Plus size={16} />
+              Crear Empresa
+            </>
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
 
 /**
  * Componente de barra de encabezado del dashboard
@@ -83,9 +286,34 @@ const SuperAdminDashboard = ({ navigationProps }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSection, setActiveSection] = useState('Dashboard');
   const [showMobileNav, setShowMobileNav] = useState(false);
+  
+  // Estado para las empresas
+  const [companies, setCompanies] = useState([
+    {
+      id: 1,
+      name: 'TechCorp Solutions',
+      email: 'admin@techcorp.com',
+      password: 'TempPass123!',
+      createdAt: '2024-01-15',
+      status: 'Activa'
+    },
+    {
+      id: 2,
+      name: 'InnovateLab',
+      email: 'admin@innovatelab.com',
+      password: 'TempPass456!',
+      createdAt: '2024-01-20',
+      status: 'Activa'
+    }
+  ]);
 
   // Hook para manejo de timeout de sesión
   useSessionTimeout();
+
+  // Función para manejar la creación de empresas
+  const handleCompanyCreated = (newCompany) => {
+    setCompanies(prev => [...prev, newCompany]);
+  };
 
   /**
    * Maneja el cierre de sesión del super admin
@@ -334,6 +562,137 @@ const SuperAdminDashboard = ({ navigationProps }) => {
             </div>
           )}
 
+          {/* Empresas - Crear empresa y lista */}
+          {activeSection === 'Empresas' && (
+            <div className="dashboard-section">
+              {/* Formulario de creación */}
+              <div style={{ 
+                background: '#fff', 
+                borderRadius: 12, 
+                padding: 32, 
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                marginBottom: 24
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 16, 
+                  marginBottom: 32 
+                }}>
+                  <Building2 size={32} color="#0057FF" />
+                  <div>
+                    <h2 style={{ 
+                      color: '#222', 
+                      fontWeight: 700, 
+                      fontSize: 28, 
+                      margin: 0 
+                    }}>
+                      Crear Nueva Empresa
+                    </h2>
+                    <p style={{ 
+                      color: '#6b7280', 
+                      fontSize: 16, 
+                      margin: '8px 0 0 0' 
+                    }}>
+                      Registra una nueva empresa en la plataforma
+                    </p>
+                  </div>
+                </div>
+
+                <CreateCompanyForm onCompanyCreated={handleCompanyCreated} />
+              </div>
+
+              {/* Lista de empresas */}
+              <div style={{ 
+                background: '#fff', 
+                borderRadius: 12, 
+                padding: 32, 
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 16, 
+                  marginBottom: 24 
+                }}>
+                  <Building2 size={24} color="#0057FF" />
+                  <h3 style={{ 
+                    color: '#222', 
+                    fontWeight: 700, 
+                    fontSize: 24, 
+                    margin: 0 
+                  }}>
+                    Empresas Registradas ({companies.length})
+                  </h3>
+                </div>
+
+                {companies.length === 0 ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '40px 20px',
+                    color: '#6b7280'
+                  }}>
+                    <Building2 size={48} color="#d1d5db" style={{ marginBottom: 16 }} />
+                    <p style={{ fontSize: 16, margin: 0 }}>
+                      No hay empresas registradas aún
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#f8f9fa' }}>
+                          <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Empresa</th>
+                          <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Email Admin</th>
+                          <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Contraseña</th>
+                          <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Fecha Creación</th>
+                          <th style={{ padding: '1rem', textAlign: 'left', color: '#222', fontWeight: 700, fontSize: 14 }}>Estado</th>
+                          <th style={{ padding: '1rem', textAlign: 'center', color: '#222', fontWeight: 700, fontSize: 14 }}>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {companies.map((company) => (
+                          <tr key={company.id} style={{ borderBottom: '1px solid #e0e7ef' }}>
+                            <td style={{ padding: '1rem', color: '#222', fontWeight: 600 }}>{company.name}</td>
+                            <td style={{ padding: '1rem', color: '#7a8bbd' }}>{company.email}</td>
+                            <td style={{ padding: '1rem', color: '#7a8bbd', fontFamily: 'monospace' }}>{company.password}</td>
+                            <td style={{ padding: '1rem', color: '#7a8bbd' }}>{company.createdAt}</td>
+                            <td style={{ padding: '1rem' }}>
+                              <span style={{
+                                background: company.status === 'Activa' ? '#e6f7e6' : '#ffe6e6',
+                                color: company.status === 'Activa' ? '#2ecc71' : '#ff4444',
+                                padding: '0.3rem 0.8rem',
+                                borderRadius: 12,
+                                fontSize: 12,
+                                fontWeight: 700
+                              }}>
+                                {company.status}
+                              </span>
+                            </td>
+                            <td style={{ padding: '1rem', textAlign: 'center' }}>
+                              <button style={{
+                                background: '#0057ff',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 8,
+                                padding: '0.5rem 1rem',
+                                fontSize: 12,
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}>
+                                Ver Detalles
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Reportes - Placeholder */}
           {activeSection === 'Reportes' && (
             <div className="dashboard-section">
@@ -395,3 +754,18 @@ const SuperAdminDashboard = ({ navigationProps }) => {
 };
 
 export default SuperAdminDashboard;
+
+// Estilos CSS para animaciones
+const styles = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Inyectar estilos en el documento
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
+}

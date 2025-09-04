@@ -6,7 +6,8 @@ import axios from 'axios';
  */
 
 // URL base del servidor backend
-const API_BASE_URL = 'https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443';
+const API_BASE_URL = 'https://local.julioperezag.com';
+//https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443
 
 // Crear instancia de axios con configuración base
 const apiClient = axios.create({
@@ -171,20 +172,20 @@ export const authService = {
     }
   },
 
-  /**
-   * Inicia sesión de un usuario
-   * @param {Object} credentials - Credenciales de login
-   * @param {string} credentials.email - Email del usuario
-   * @param {string} credentials.password - Contraseña del usuario
-   * @returns {Promise} - Respuesta del servidor con token
-   */
-  login: async (credentials) => {
-    try {
-      // Enviar solo email y password al backend
-      const loginData = {
-        email: credentials.email,
-        password: credentials.password
-      };
+           /**
+          * Inicia sesión de un usuario
+          * @param {Object} credentials - Credenciales de login
+          * @param {string} credentials.email - Email del usuario
+          * @param {string} credentials.password - Contraseña del usuario
+          * @returns {Promise} - Respuesta del servidor con token
+          */
+         login: async (credentials) => {
+           try {
+             // Enviar solo email y password al backend
+             const loginData = {
+               email: credentials.email,
+               password: credentials.password
+             };
 
       const response = await apiClient.post('/api/auth/login', loginData);
       const data = handleResponse(response);
@@ -195,7 +196,7 @@ export const authService = {
       }
       
       return data;
-    } catch (error) {
+           } catch (error) {
       // Manejar errores específicos de autenticación
       if (error.response) {
         if (error.response.status === 401) {
@@ -231,7 +232,7 @@ export const authService = {
   logout: () => {
     localStorage.removeItem('empathica_token');
     localStorage.removeItem('empathica_user');
-  }
+         }
 };
 
 /**
@@ -594,6 +595,141 @@ export const appointmentService = {
       return handleResponse(response);
     } catch (error) {
       console.error('Error creando cita:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Crea una nueva sesión con un psicólogo específico
+   * @param {number} psychologistId - ID del psicólogo
+   * @param {string} sessionTime - Fecha y hora de la sesión en formato ISO
+   * @returns {Promise} - Respuesta del servidor
+   */
+  createSession: async (psychologistId, sessionTime) => {
+    try {
+      console.log('=== API SERVICE - createSession ===');
+      console.log('URL:', `/api/patients/session/${psychologistId}`);
+      console.log('Payload completo:', { sessionTime: sessionTime });
+      console.log('Headers:', apiClient.defaults.headers);
+      console.log('=====================================');
+      
+      const response = await apiClient.post(`/api/patients/session/${psychologistId}`, {
+        sessionTime: sessionTime
+      });
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error creando sesión:', error);
+      throw error;
+    }
+  },
+
+
+  /**
+   * Obtiene las sesiones del paciente
+   * @returns {Promise} - Respuesta del servidor con las sesiones del paciente
+   */
+  getPatientSessions: async () => {
+    try {
+      const response = await apiClient.get('/api/patients/sessions');
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error obteniendo sesiones del paciente:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Crea una orden de pago en PayPal
+   * @param {Object} orderData - Datos de la orden
+   * @returns {Promise} - Respuesta del servidor con la orden creada
+   */
+  createPaymentOrder: async (orderData = {}) => {
+    try {
+      console.log('=== CREANDO ORDEN DE PAGO ===');
+      console.log('URL:', '/api/payments/orders');
+      console.log('Payload:', orderData, '(objeto vacío - backend se encarga de crear la orden)');
+      console.log('=====================================');
+      
+      const response = await apiClient.post('/api/payments/orders', orderData);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error creando orden de pago:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Captura una orden de pago de PayPal
+   * @param {string} orderId - ID de la orden a capturar
+   * @returns {Promise} - Respuesta del servidor con la captura
+   */
+  capturePaymentOrder: async (orderId) => {
+    try {
+      console.log('=== CAPTURANDO ORDEN DE PAGO ===');
+      console.log('URL:', `/api/payments/orders/${orderId}/capture`);
+      console.log('Order ID:', orderId);
+      console.log('=====================================');
+      
+      const response = await apiClient.post(`/api/payments/orders/${orderId}/capture`);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error capturando orden de pago:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene las sesiones del psicólogo
+   * @returns {Promise} - Respuesta del servidor con las sesiones del psicólogo
+   */
+  getPsychologistSessions: async () => {
+    try {
+      console.log('=== OBTENIENDO SESIONES DEL PSICÓLOGO ===');
+      console.log('URL:', '/api/psychologists/sessions');
+      console.log('=====================================');
+      
+      const response = await apiClient.get('/api/psychologists/sessions');
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error obteniendo sesiones del psicólogo:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene los pacientes asignados al psicólogo
+   * @returns {Promise} - Respuesta del servidor con los pacientes asignados
+   */
+  getPsychologistPatients: async () => {
+    try {
+      console.log('=== OBTENIENDO PACIENTES DEL PSICÓLOGO ===');
+      console.log('URL:', '/api/psychologists/patients');
+      console.log('=====================================');
+      
+      const response = await apiClient.get('/api/psychologists/patients');
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error obteniendo pacientes del psicólogo:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene la información detallada de un paciente por ID
+   * @param {number} patientId - ID del paciente
+   * @returns {Promise} - Respuesta del servidor con la información del paciente
+   */
+  getPatientDetails: async (patientId) => {
+    try {
+      console.log('=== OBTENIENDO DETALLES DEL PACIENTE ===');
+      console.log('URL:', `/api/patients/${patientId}`);
+      console.log('Patient ID:', patientId);
+      console.log('=====================================');
+      
+      const response = await apiClient.get(`/api/patients/${patientId}`);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error obteniendo detalles del paciente:', error);
       throw error;
     }
   }

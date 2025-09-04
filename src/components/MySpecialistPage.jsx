@@ -63,7 +63,6 @@ const MySpecialistPage = ({ navigationProps }) => {
       if (storedTags) {
         const tagsData = JSON.parse(storedTags);
         const recommendedPsychologistId = tagsData.recommendedPsychologistId;
-        console.log('ID del psicólogo recomendado encontrado en MySpecialistPage:', recommendedPsychologistId);
         return recommendedPsychologistId;
       }
     } catch (parseError) {
@@ -89,14 +88,16 @@ const MySpecialistPage = ({ navigationProps }) => {
         // Enviar PUT de tags cuando se presenta el psicólogo recomendado
         await updatePatientTagsFromLocalStorage();
       } else {
-        console.warn('No se encontró ID de psicólogo recomendado en localStorage, usando ID por defecto');
-        // Fallback: usar ID por defecto si no hay uno guardado
-        const data = await userService.getPsychologistById(14);
-        setRecommendedPsychologist(data);
+        console.warn('No se encontró ID de psicólogo recomendado en localStorage');
+        // No usar fallback hardcodeado, simplemente no mostrar psicólogo recomendado
+        setRecommendedPsychologist(null);
       }
     } catch (error) {
       console.error('Error obteniendo psicólogo recomendado:', error);
-      setError('Error al cargar el psicólogo recomendado');
+      // NO establecer error global, solo log local
+      setRecommendedPsychologist(null);
+      // Limpiar cualquier error previo para permitir mostrar otros psicólogos
+      setError(null);
     } finally {
       setLoadingRecommendation(false);
     }
@@ -192,10 +193,17 @@ const MySpecialistPage = ({ navigationProps }) => {
       const response = await userService.getAllPsychologists();
       const psychologists = response.content || response || [];
       
+      // Verificar si hay datos válidos
+      if (!Array.isArray(psychologists) || psychologists.length === 0) {
+        console.warn('No se encontraron psicólogos en la respuesta del backend');
+        setOtherPsychologists([]);
+        return;
+      }
+      
       // Filtrar solo psicólogos activos
       const activePsychologists = psychologists.filter(psy => psy.userStatus === 'ACTIVE');
       
-      if (activePsychologists.length >= 3) {
+      if (activePsychologists.length > 0) {
         // Obtener el ID del psicólogo recomendado para excluirlo
         const recommendedPsychologistId = getRecommendedPsychologistId();
         
@@ -204,8 +212,9 @@ const MySpecialistPage = ({ navigationProps }) => {
           psy.userId !== recommendedPsychologistId
         );
         
-        // Tomar los primeros 2 psicólogos
-        const selectedOthers = otherActivePsychologists.slice(0, 2);
+        // Tomar hasta 2 psicólogos (máximo 3 en total: 1 recomendado + 2 alternativos)
+        const maxOthers = Math.min(otherActivePsychologists.length, 2);
+        const selectedOthers = otherActivePsychologists.slice(0, maxOthers);
         
         // Transformar los datos para el formato esperado
         const transformedOthers = selectedOthers.map((psy, index) => ({
@@ -226,7 +235,7 @@ const MySpecialistPage = ({ navigationProps }) => {
         setOtherPsychologists(transformedOthers);
         console.log('Otros psicólogos cargados:', transformedOthers);
       } else {
-        console.warn('No hay suficientes psicólogos activos para mostrar alternativas');
+        console.warn('No hay psicólogos activos en el sistema');
         setOtherPsychologists([]);
       }
       
@@ -323,10 +332,6 @@ const MySpecialistPage = ({ navigationProps }) => {
   // Cargar psicólogo recomendado y otros psicólogos si no hay uno asignado
   useEffect(() => {
     if (patientData && !patientData.psychologist) {
-      // Debug: verificar localStorage al cargar
-      const debugId = getRecommendedPsychologistId();
-      console.log('Debug - ID del psicólogo recomendado al cargar MySpecialistPage:', debugId);
-      
       // Verificar si hay datos en localStorage
       const storedTags = localStorage.getItem('empathica_test_tags');
       
@@ -580,7 +585,7 @@ const MySpecialistPage = ({ navigationProps }) => {
           )}
 
           {/* Psicólogo asignado o mensaje de no asignado */}
-          {!loading && !error && (
+          {!loading && (
             <>
               {patientData?.psychologist ? (
                 /* Tarjeta del especialista asignado */

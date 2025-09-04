@@ -86,11 +86,11 @@ const BusinessSettings = ({ navigationProps }) => {
                     Nombre de la Empresa
                   </label>
                   <div style={{
-                    width: '100%',
-                    padding: '0.8rem 1rem',
-                    borderRadius: 12,
-                    border: '1.5px solid #e0e7ef',
-                    fontSize: 16,
+                      width: '100%',
+                      padding: '0.8rem 1rem',
+                      borderRadius: 12,
+                      border: '1.5px solid #e0e7ef',
+                      fontSize: 16,
                     background: '#f8f9fa',
                     color: '#666'
                   }}>
@@ -103,11 +103,11 @@ const BusinessSettings = ({ navigationProps }) => {
                     Email de Contacto
                   </label>
                   <div style={{
-                    width: '100%',
-                    padding: '0.8rem 1rem',
-                    borderRadius: 12,
-                    border: '1.5px solid #e0e7ef',
-                    fontSize: 16,
+                      width: '100%',
+                      padding: '0.8rem 1rem',
+                      borderRadius: 12,
+                      border: '1.5px solid #e0e7ef',
+                      fontSize: 16,
                     background: '#f8f9fa',
                     color: '#666'
                   }}>
@@ -120,28 +120,28 @@ const BusinessSettings = ({ navigationProps }) => {
                     Administrador
                   </label>
                   <div style={{
-                    width: '100%',
-                    padding: '0.8rem 1rem',
-                    borderRadius: 12,
-                    border: '1.5px solid #e0e7ef',
-                    fontSize: 16,
+                      width: '100%',
+                      padding: '0.8rem 1rem',
+                      borderRadius: 12,
+                      border: '1.5px solid #e0e7ef',
+                      fontSize: 16,
                     background: '#f8f9fa',
                     color: '#666'
                   }}>
                     {user ? `${user.name} ${user.lastName}` : 'No disponible'}
-                  </div>
-                </div>
+              </div>
+            </div>
 
-                <div>
+            <div>
                   <label style={{ display: 'block', color: '#222', fontWeight: 600, fontSize: 16, marginBottom: 8 }}>
                     Teléfono
-                  </label>
+                    </label>
                   <div style={{
                     width: '100%',
-                    padding: '0.8rem 1rem',
-                    borderRadius: 12,
-                    border: '1.5px solid #e0e7ef',
-                    fontSize: 16,
+                        padding: '0.8rem 1rem',
+                        borderRadius: 12,
+                        border: '1.5px solid #e0e7ef',
+                        fontSize: 16,
                     background: '#f8f9fa',
                     color: '#666'
                   }}>

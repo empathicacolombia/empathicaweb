@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { usePageTitle } from './hooks/usePageTitle';
 import { useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -82,103 +83,114 @@ function AppMain() {
     onUserRegistration: handleUserRegistration
   };
 
+  // Configuración de PayPal
+  const paypalOptions = {
+    "client-id": "test", // Cambiar por tu CLIENT_ID real en producción
+    currency: "USD",
+    intent: "capture",
+    components: "buttons",
+    "data-sdk-integration-source": "developer-studio",
+  };
+
   return (
-    <div className="AppMain">
-      <Routes>
-        {/* Rutas principales */}
-        <Route path="/" element={<App navigationProps={navigationProps} />} />
-        <Route path="/individuals" element={<App navigationProps={navigationProps} />} />
-        <Route path="/business" element={<AppBusiness navigationProps={navigationProps} />} />
-        
-        {/* Rutas de autenticación */}
-        <Route path="/login" element={<LoginPage navigationProps={navigationProps} />} />
-        <Route path="/register" element={<RegisterPage navigationProps={navigationProps} />} />
-        <Route path="/quick-register" element={<QuickRegisterPage navigationProps={navigationProps} />} />
-        <Route path="/registration-success" element={<RegistrationSuccess navigationProps={navigationProps} />} />
-        
-        {/* Rutas del dashboard de clientes - PROTEGIDAS */}
-        <Route path="/client-dashboard" element={
-          <ProtectedRoute user={user} userType="client">
-            <ClientDashboard navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        <Route path="/appointments" element={
-          <ProtectedRoute user={user} userType="client">
-            <AppointmentsPage navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        <Route path="/for-you" element={
-          <ProtectedRoute user={user} userType="client">
-            <ForYouPage navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        <Route path="/my-specialist" element={
-          <ProtectedRoute user={user} userType="client">
-            <MySpecialistPage navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        <Route path="/support" element={
-          <ProtectedRoute user={user} userType="client">
-            <SupportPage navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        <Route path="/client-profile" element={
-          <ProtectedRoute user={user} userType="client">
-            <ClientProfilePage navigationProps={navigationProps} testAnswers={testAnswers} />
-          </ProtectedRoute>
-        } />
-        
-        {/* Rutas del dashboard de psicólogos - PROTEGIDAS */}
-        <Route path="/psychologist-dashboard" element={
-          <ProtectedRoute user={user} userType="psychologist">
-            <PsychologistDashboard navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        <Route path="/psychologist-profile-form" element={
-          <ProtectedRoute user={user} userType="psychologist">
-            <PsychologistProfileForm navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        
-        {/* Rutas del dashboard empresarial - PÚBLICAS */}
-        <Route path="/business-demo-dashboard" element={<BusinessDemoDashboard navigationProps={navigationProps} />} />
-        
-        {/* Rutas del dashboard empresarial real - PROTEGIDAS */}
-        <Route path="/business-dashboard" element={
-          <ProtectedRoute user={user} userType="business">
-            <BusinessDashboard navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        <Route path="/business-dashboard/*" element={
-          <ProtectedRoute user={user} userType="business">
-            <BusinessDashboard navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        
-        {/* Rutas del dashboard de super admin - PROTEGIDAS */}
-        <Route path="/superadmin-dashboard" element={
-          <ProtectedRoute user={user} userType="superadmin">
-            <SuperAdminDashboard navigationProps={navigationProps} />
-          </ProtectedRoute>
-        } />
-        
-        {/* Otras rutas */}
-        <Route path="/psychologists" element={<PsychologistsPage navigationProps={navigationProps} />} />
-        <Route path="/about-us" element={<AboutUsPage navigationProps={navigationProps} />} />
-        <Route path="/pricing" element={<PricingPage navigationProps={navigationProps} />} />
-        <Route path="/free-orientation" element={<FreeOrientationPage navigationProps={navigationProps} />} />
-        <Route path="/business-demo" element={<BusinessDemoSection navigationProps={navigationProps} />} />
-        
-        {/* Ruta de acceso denegado */}
-        <Route path="/access-denied" element={<AccessDenied />} />
-        <Route path="/questionnaire-match" element={<QuestionnaireMatch navigationProps={navigationProps} />} />
-        <Route path="/test-results" element={<TestResults navigationProps={navigationProps} testAnswers={testAnswers} />} />
-        <Route path="/faq" element={<FAQPage navigationProps={navigationProps} />} />
-        
-        {/* Ruta por defecto - redirige a la página principal */}
-        <Route path="*" element={<App navigationProps={navigationProps} />} />
-      </Routes>
-    </div>
+    <PayPalScriptProvider options={paypalOptions}>
+      <div className="AppMain">
+        <Routes>
+          {/* Rutas principales */}
+          <Route path="/" element={<App navigationProps={navigationProps} />} />
+          <Route path="/individuals" element={<App navigationProps={navigationProps} />} />
+          <Route path="/business" element={<AppBusiness navigationProps={navigationProps} />} />
+          
+          {/* Rutas de autenticación */}
+          <Route path="/login" element={<LoginPage navigationProps={navigationProps} />} />
+          <Route path="/register" element={<RegisterPage navigationProps={navigationProps} />} />
+          <Route path="/quick-register" element={<QuickRegisterPage navigationProps={navigationProps} />} />
+          <Route path="/registration-success" element={<RegistrationSuccess navigationProps={navigationProps} />} />
+          
+          {/* Rutas del dashboard de clientes - PROTEGIDAS */}
+          <Route path="/client-dashboard" element={
+            <ProtectedRoute user={user} userType="client">
+              <ClientDashboard navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          <Route path="/appointments" element={
+            <ProtectedRoute user={user} userType="client">
+              <AppointmentsPage navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          <Route path="/for-you" element={
+            <ProtectedRoute user={user} userType="client">
+              <ForYouPage navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          <Route path="/my-specialist" element={
+            <ProtectedRoute user={user} userType="client">
+              <MySpecialistPage navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          <Route path="/support" element={
+            <ProtectedRoute user={user} userType="client">
+              <SupportPage navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          <Route path="/client-profile" element={
+            <ProtectedRoute user={user} userType="client">
+              <ClientProfilePage navigationProps={navigationProps} testAnswers={testAnswers} />
+            </ProtectedRoute>
+          } />
+          
+          {/* Rutas del dashboard de psicólogos - PROTEGIDAS */}
+          <Route path="/psychologist-dashboard" element={
+            <ProtectedRoute user={user} userType="psychologist">
+              <PsychologistDashboard navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          <Route path="/psychologist-profile-form" element={
+            <ProtectedRoute user={user} userType="psychologist">
+              <PsychologistProfileForm navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          
+          {/* Rutas del dashboard empresarial - PÚBLICAS */}
+          <Route path="/business-demo-dashboard" element={<BusinessDemoDashboard navigationProps={navigationProps} />} />
+          
+          {/* Rutas del dashboard empresarial real - PROTEGIDAS */}
+          <Route path="/business-dashboard" element={
+            <ProtectedRoute user={user} userType="business">
+              <BusinessDashboard navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          <Route path="/business-dashboard/*" element={
+            <ProtectedRoute user={user} userType="business">
+              <BusinessDashboard navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          
+          {/* Rutas del dashboard de super admin - PROTEGIDAS */}
+          <Route path="/superadmin-dashboard" element={
+            <ProtectedRoute user={user} userType="superadmin">
+              <SuperAdminDashboard navigationProps={navigationProps} />
+            </ProtectedRoute>
+          } />
+          
+          {/* Otras rutas */}
+          <Route path="/psychologists" element={<PsychologistsPage navigationProps={navigationProps} />} />
+          <Route path="/about-us" element={<AboutUsPage navigationProps={navigationProps} />} />
+          <Route path="/pricing" element={<PricingPage navigationProps={navigationProps} />} />
+          <Route path="/free-orientation" element={<FreeOrientationPage navigationProps={navigationProps} />} />
+          <Route path="/business-demo" element={<BusinessDemoSection navigationProps={navigationProps} />} />
+          
+          {/* Ruta de acceso denegado */}
+          <Route path="/access-denied" element={<AccessDenied />} />
+          <Route path="/questionnaire-match" element={<QuestionnaireMatch navigationProps={navigationProps} />} />
+          <Route path="/test-results" element={<TestResults navigationProps={navigationProps} testAnswers={testAnswers} />} />
+          <Route path="/faq" element={<FAQPage navigationProps={navigationProps} />} />
+          
+          {/* Ruta por defecto - redirige a la página principal */}
+          <Route path="*" element={<App navigationProps={navigationProps} />} />
+        </Routes>
+      </div>
+    </PayPalScriptProvider>
   );
 }
 

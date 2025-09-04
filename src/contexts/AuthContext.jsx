@@ -35,19 +35,34 @@ export const AuthProvider = ({ children }) => {
     let userType = 'client'; // Por defecto
     
     if (userDetails.roles && userDetails.roles.length > 0) {
-      // Verificar si es super admin (ADMIN + Company:Empathica)
-      const hasAdminRole = userDetails.roles.includes('ADMIN');
-      const hasEmpathicaCompany = userDetails.roles.includes('Company:Empathica');
+      console.log('=== MAPEANDO ROLES DE USUARIO ===');
+      console.log('Roles recibidos:', userDetails.roles);
+      console.log('Tipo de roles:', typeof userDetails.roles);
+      console.log('Es array?', Array.isArray(userDetails.roles));
       
-      if (hasAdminRole && hasEmpathicaCompany) {
+      // Verificar si es super admin (SUPER_ADMIN + company:Empathica)
+      const hasSuperAdminRole = userDetails.roles.includes('SUPER_ADMIN');
+      const hasEmpathicaCompany = userDetails.roles.includes('company:Empathica') || userDetails.roles.includes('Company:Empathica');
+      
+      console.log('Tiene SUPER_ADMIN?', hasSuperAdminRole);
+      console.log('Tiene company:Empathica?', hasEmpathicaCompany);
+      
+      if (hasSuperAdminRole && hasEmpathicaCompany) {
         userType = 'superadmin';
+        console.log('Usuario detectado como SUPER_ADMIN');
       } else if (userDetails.roles.includes('PSYCHOLOGIST')) {
         userType = 'psychologist';
+        console.log('Usuario detectado como PSYCHOLOGIST');
       } else if (userDetails.roles.includes('ADMIN')) {
         userType = 'business';
+        console.log('Usuario detectado como ADMIN');
       } else if (userDetails.roles.includes('PATIENT')) {
         userType = 'client';
+        console.log('Usuario detectado como PATIENT');
       }
+      
+      console.log('UserType final:', userType);
+      console.log('=====================================');
     }
     
     // Estandarizar el ID del usuario

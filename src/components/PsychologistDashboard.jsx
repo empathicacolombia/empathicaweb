@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSessionTimeout } from '../hooks/useSessionTimeout';
 import SessionTimeoutAlert from './SessionTimeoutAlert';
+import { appointmentService } from '../services/api';
 import {
   Home,
   Clock,
@@ -14,7 +15,10 @@ import {
   LogOut,
   CheckCircle,
   Activity,
-  Users
+  Users,
+  XCircle,
+  Mail,
+  Phone
 } from 'lucide-react';
 import logoEmpathica from '../assets/Logoempathica.png';
 
@@ -123,6 +127,113 @@ const PsychologistDashboard = ({ navigationProps }) => {
   
   // Estados para filtrado
   const [statusFilter, setStatusFilter] = useState('');
+
+  // Estados para los pacientes del psicólogo
+  const [patients, setPatients] = useState([]);
+  const [loadingPatients, setLoadingPatients] = useState(false);
+  const [patientsError, setPatientsError] = useState(null);
+
+  // Estados para el modal de detalles del paciente
+  const [showPatientModal, setShowPatientModal] = useState(false);
+  const [selectedPatientDetails, setSelectedPatientDetails] = useState(null);
+  const [loadingPatientDetails, setLoadingPatientDetails] = useState(false);
+  const [patientDetailsError, setPatientDetailsError] = useState(null);
+
+  // Función para obtener los pacientes del psicólogo
+  const fetchPatients = async () => {
+    if (!user?.id) {
+      setPatientsError('No se pudo identificar al psicólogo');
+      return;
+    }
+
+    try {
+      setLoadingPatients(true);
+      setPatientsError(null);
+      
+      const data = await appointmentService.getPsychologistPatients();
+      console.log('Pacientes obtenidos del backend:', data);
+      
+      if (data?.content && Array.isArray(data.content)) {
+        setPatients(data.content);
+      } else {
+        setPatients([]);
+      }
+    } catch (error) {
+      console.error('Error obteniendo pacientes:', error);
+      setPatientsError('Error al cargar los pacientes');
+      setPatients([]);
+    } finally {
+      setLoadingPatients(false);
+    }
+  };
+
+  // Función para obtener los detalles de un paciente
+  const fetchPatientDetails = async (patientId) => {
+    try {
+      setLoadingPatientDetails(true);
+      setPatientDetailsError(null);
+      
+      const data = await appointmentService.getPatientDetails(patientId);
+      console.log('Detalles del paciente obtenidos:', data);
+      
+      setSelectedPatientDetails(data);
+      setShowPatientModal(true);
+    } catch (error) {
+      console.error('Error obteniendo detalles del paciente:', error);
+      setPatientDetailsError('Error al cargar los detalles del paciente');
+    } finally {
+      setLoadingPatientDetails(false);
+    }
+  };
+
+  // Función para cerrar el modal de detalles
+  const closePatientModal = () => {
+    setShowPatientModal(false);
+    setSelectedPatientDetails(null);
+    setPatientDetailsError(null);
+  };
+
+  // Cargar pacientes al montar el componente
+  useEffect(() => {
+    if (activeSection === 'Dashboard') {
+      fetchPatients();
+    }
+  }, [activeSection, user?.id]);
+
+  // Función para procesar los datos de los pacientes
+  const processPatients = () => {
+    if (!patients || patients.length === 0) return [];
+
+    return patients.map(patient => {
+      // Calcular edad
+      const birthDate = new Date(patient.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const finalAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) 
+        ? age - 1 : age;
+
+      // Obtener tags del paciente
+      const patientTags = [];
+      if (patient.tag1?.name) patientTags.push(patient.tag1.name);
+      if (patient.tag2?.name) patientTags.push(patient.tag2.name);
+      if (patient.tag3?.name) patientTags.push(patient.tag3.name);
+
+      return {
+        id: patient.userId,
+        name: `${patient.name || 'N/A'} ${patient.lastName || ''}`,
+        email: patient.email || 'N/A',
+        phone: patient.phoneNumber || patient.phone || 'N/A',
+        age: finalAge,
+        gender: patient.gender || 'N/A',
+        status: patient.userStatus || 'ACTIVE',
+        tags: patientTags,
+        address: patient.address || 'N/A',
+        avatar: patient.name ? patient.name.charAt(0) : 'P',
+        rawData: patient
+      };
+    });
+  };
 
   // Verificar si el dashboard debe estar bloqueado
   const isDashboardBlocked = () => {
@@ -313,11 +424,11 @@ const PsychologistDashboard = ({ navigationProps }) => {
             <div>
               <div style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>
                 {user ? `Dr. ${user.name}` : 'Dr. Psicólogo'}
-              </div>
+            </div>
               <div style={{ color: '#7a8bbd', fontSize: 13 }}>
                 {user ? `${user.lastName}` : 'Especialista'}
-              </div>
-            </div>
+          </div>
+        </div>
           </div>
         </div>
         {/* ========================================
@@ -447,44 +558,327 @@ const PsychologistDashboard = ({ navigationProps }) => {
             </div>
 
             {/* ========================================
+                 ESTADO DE CARGA
+                 ======================================== */}
+            {loadingPatients && (
+              <div style={{
+                background: '#fff',
+                borderRadius: 16,
+                padding: '3rem',
+                marginBottom: '2rem',
+                textAlign: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '1rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  <div style={{
+                    width: 40,
+                    height: 40,
+                    border: '4px solid #f3f3f3',
+                    borderTop: '4px solid #0057FF',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                </div>
+                <h2 style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: '#374151',
+                  margin: '0 0 1rem 0'
+                }}>
+                  Cargando pacientes...
+                </h2>
+                <p style={{
+                  fontSize: 16,
+                  color: '#6b7280',
+                  lineHeight: 1.6,
+                  margin: 0
+                }}>
+                  Obteniendo información de tus pacientes asignados.
+                </p>
+          </div>
+        )}
+
+            {/* ========================================
+                 ERROR AL CARGAR
+                 ======================================== */}
+            {patientsError && (
+              <div style={{
+                background: '#fff',
+                borderRadius: 16,
+                padding: '3rem',
+                marginBottom: '2rem',
+                textAlign: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '1rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  <XCircle size={64} color="#dc2626" />
+                </div>
+                <h2 style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: '#dc2626',
+                  margin: '0 0 1rem 0'
+                }}>
+                  Error al cargar pacientes
+                </h2>
+                <p style={{
+                  fontSize: 16,
+                  color: '#6b7280',
+                  lineHeight: 1.6,
+                  margin: '0 0 1.5rem 0'
+                }}>
+                  {patientsError}
+                </p>
+                <button
+                  onClick={fetchPatients}
+                  style={{
+                    background: '#dc2626',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '12px 24px',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
+
+            {/* ========================================
+                 LISTA DE PACIENTES
+                 ======================================== */}
+            {!loadingPatients && !patientsError && processPatients().length > 0 && (
+              <div style={{
+                background: '#fff',
+                borderRadius: 16,
+                padding: '2rem',
+                marginBottom: '2rem',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '1.5rem'
+                }}>
+                  <h2 style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: '#374151',
+                    margin: 0
+                  }}>
+                    Pacientes Asignados ({processPatients().length})
+                  </h2>
+                </div>
+
+                <div style={{
+                  display: 'grid',
+                  gap: '1rem',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+                }}>
+                  {processPatients().map(patient => (
+                    <div
+                      key={patient.id}
+                      style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 12,
+                        padding: '1.5rem',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f1f5f9';
+                        e.currentTarget.style.borderColor = '#cbd5e1';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#f8fafc';
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        marginBottom: '1rem'
+                      }}>
+                        <div style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: '50%',
+                          background: '#0057FF',
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 18,
+                          fontWeight: 700
+                        }}>
+                          {patient.avatar}
+                        </div>
+                        <div>
+                          <h3 style={{
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: '#374151',
+                            margin: '0 0 0.25rem 0'
+                          }}>
+                            {patient.name}
+                          </h3>
+                          <p style={{
+                            fontSize: 14,
+                            color: '#6b7280',
+                            margin: 0
+                          }}>
+                            {patient.age} años • {patient.gender}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.5rem',
+                        marginBottom: '1rem'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: 14,
+                          color: '#6b7280'
+                        }}>
+                          <Mail size={14} />
+                          {patient.email}
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: 14,
+                          color: '#6b7280'
+                        }}>
+                          <Phone size={14} />
+                          {patient.phone}
+                        </div>
+                      </div>
+
+                      {patient.tags.length > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '0.5rem',
+                          marginBottom: '1rem'
+                        }}>
+                          {patient.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              style={{
+                                background: '#e0f2fe',
+                                color: '#0369a1',
+                                fontSize: 12,
+                                fontWeight: 600,
+                                padding: '0.25rem 0.5rem',
+                                borderRadius: 6
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Botón Ver Información */}
+                      <button
+                        onClick={() => fetchPatientDetails(patient.id)}
+                        disabled={loadingPatientDetails}
+                        style={{
+                          width: '100%',
+                          background: '#0057FF',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '0.75rem',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          cursor: loadingPatientDetails ? 'not-allowed' : 'pointer',
+                          opacity: loadingPatientDetails ? 0.6 : 1,
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!loadingPatientDetails) {
+                            e.currentTarget.style.background = '#0041CC';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!loadingPatientDetails) {
+                            e.currentTarget.style.background = '#0057FF';
+                          }
+                        }}
+                      >
+                        {loadingPatientDetails ? 'Cargando...' : 'Ver Información'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ========================================
                  MENSAJE DE NO HAY PACIENTES
                  ======================================== */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 16,
-              padding: '3rem',
-              marginBottom: '2rem',
-              textAlign: 'center',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-            }}>
+            {!loadingPatients && !patientsError && processPatients().length === 0 && (
               <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '1rem',
-                marginBottom: '1.5rem'
+                background: '#fff',
+                borderRadius: 16,
+                padding: '3rem',
+                marginBottom: '2rem',
+                textAlign: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}>
-                <Users size={64} color="#6b7280" />
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '1rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  <Users size={64} color="#6b7280" />
+                </div>
+                <h2 style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: '#374151',
+                  margin: '0 0 1rem 0'
+                }}>
+                  No tienes pacientes asignados
+                </h2>
+                <p style={{
+                  fontSize: 16,
+                  color: '#6b7280',
+                  lineHeight: 1.6,
+                  margin: 0,
+                  maxWidth: '500px',
+                  margin: '0 auto'
+                }}>
+                  Aún no tienes pacientes asignados. Los pacientes aparecerán aquí una vez que se registren y te seleccionen como su psicólogo.
+                </p>
               </div>
-              <h2 style={{
-                fontSize: 24,
-                fontWeight: 700,
-                color: '#374151',
-                margin: '0 0 1rem 0'
-              }}>
-                No tiene pacientes
-              </h2>
-              <p style={{
-                fontSize: 16,
-                color: '#6b7280',
-                lineHeight: 1.6,
-                margin: 0,
-                maxWidth: '500px',
-                margin: '0 auto'
-              }}>
-                Aún no tienes pacientes asignados. Los pacientes aparecerán aquí una vez que se registren y te seleccionen como su psicólogo.
-              </p>
-            </div>
+            )}
           </div>
         )}
         {/* Sección Horarios - Gestión de disponibilidad */}
@@ -496,42 +890,7 @@ const PsychologistDashboard = ({ navigationProps }) => {
         {/* Sección Citas - Gestión de citas programadas */}
         {activeSection === 'Citas' && !shouldShowOnlySettings && (
           <div className="dashboard-section">
-            <div style={{
-              background: '#fff',
-              borderRadius: 16,
-              padding: '3rem',
-              marginBottom: '2rem',
-              textAlign: 'center',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '1rem',
-                marginBottom: '1.5rem'
-              }}>
-                <Calendar size={64} color="#6b7280" />
-              </div>
-              <h2 style={{
-                fontSize: 24,
-                fontWeight: 700,
-                color: '#374151',
-                margin: '0 0 1rem 0'
-              }}>
-                No se han asignado citas
-              </h2>
-              <p style={{
-                fontSize: 16,
-                color: '#6b7280',
-                lineHeight: 1.6,
-                margin: 0,
-                maxWidth: '500px',
-                margin: '0 auto'
-              }}>
-                Aún no tienes citas programadas. Las citas aparecerán aquí una vez que los pacientes las agenden contigo.
-              </p>
-            </div>
+            <PsychologistAppointments />
           </div>
         )}
 
@@ -554,7 +913,7 @@ const PsychologistDashboard = ({ navigationProps }) => {
                 marginBottom: '1.5rem'
               }}>
                 <FileText size={64} color="#6b7280" />
-              </div>
+          </div>
               <h2 style={{
                 fontSize: 24,
                 fontWeight: 700,
@@ -573,7 +932,7 @@ const PsychologistDashboard = ({ navigationProps }) => {
               }}>
                 El historial de sesiones aparecerá aquí una vez que tengas citas completadas con tus pacientes.
               </p>
-            </div>
+          </div>
           </div>
         )}
         {/* Sección Biblioteca - Recursos y materiales */}
@@ -787,6 +1146,448 @@ const PsychologistDashboard = ({ navigationProps }) => {
       
       {/* Alerta de timeout de sesión */}
       <SessionTimeoutAlert warningMinutes={5} timeoutMinutes={60} />
+
+      {/* ========================================
+           MODAL DE DETALLES DEL PACIENTE
+           ======================================== */}
+      {showPatientModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 16,
+            padding: '2rem',
+            maxWidth: '800px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+          }}>
+            {/* Header del modal */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '2rem',
+              paddingBottom: '1rem',
+              borderBottom: '1px solid #e0e0e0'
+            }}>
+              <h2 style={{
+                fontSize: 24,
+                fontWeight: 700,
+                color: '#333',
+                margin: 0
+              }}>
+                Información del Paciente
+              </h2>
+              <button
+                onClick={closePatientModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 24,
+                  color: '#666',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Contenido del modal */}
+            {loadingPatientDetails ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '3rem'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <div style={{
+                    width: 40,
+                    height: 40,
+                    border: '4px solid #f3f3f3',
+                    borderTop: '4px solid #0057FF',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <span style={{
+                    fontSize: 16,
+                    color: '#666'
+                  }}>
+                    Cargando información del paciente...
+                  </span>
+                </div>
+              </div>
+            ) : patientDetailsError ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '3rem'
+              }}>
+                <XCircle size={64} color="#dc2626" style={{ marginBottom: '1rem' }} />
+                <h3 style={{
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: '#dc2626',
+                  margin: '0 0 1rem 0'
+                }}>
+                  Error al cargar información
+                </h3>
+                <p style={{
+                  fontSize: 14,
+                  color: '#666',
+                  margin: '0 0 1.5rem 0'
+                }}>
+                  {patientDetailsError}
+                </p>
+                <button
+                  onClick={() => selectedPatientDetails && fetchPatientDetails(selectedPatientDetails.userId)}
+                  style={{
+                    background: '#dc2626',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '12px 24px',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Reintentar
+                </button>
+              </div>
+            ) : selectedPatientDetails ? (
+              <div style={{
+                display: 'grid',
+                gap: '2rem'
+              }}>
+                {/* Información Personal */}
+                <div style={{
+                  background: '#f8fafc',
+                  borderRadius: 12,
+                  padding: '1.5rem'
+                }}>
+                  <h3 style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: '#374151',
+                    margin: '0 0 1rem 0'
+                  }}>
+                    Información Personal
+                  </h3>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '1rem'
+                  }}>
+                    <div>
+                      <label style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Nombre Completo
+                      </label>
+                      <p style={{
+                        fontSize: 14,
+                        color: '#374151',
+                        margin: '0.25rem 0 0 0'
+                      }}>
+                        {selectedPatientDetails.name} {selectedPatientDetails.lastName}
+                      </p>
+                    </div>
+                    <div>
+                      <label style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Email
+                      </label>
+                      <p style={{
+                        fontSize: 14,
+                        color: '#374151',
+                        margin: '0.25rem 0 0 0'
+                      }}>
+                        {selectedPatientDetails.email}
+                      </p>
+                    </div>
+                    <div>
+                      <label style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Teléfono
+                      </label>
+                      <p style={{
+                        fontSize: 14,
+                        color: '#374151',
+                        margin: '0.25rem 0 0 0'
+                      }}>
+                        {selectedPatientDetails.phoneNumber || selectedPatientDetails.phone}
+                      </p>
+                    </div>
+                    <div>
+                      <label style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Fecha de Nacimiento
+                      </label>
+                      <p style={{
+                        fontSize: 14,
+                        color: '#374151',
+                        margin: '0.25rem 0 0 0'
+                      }}>
+                        {new Date(selectedPatientDetails.dateOfBirth).toLocaleDateString('es-ES')}
+                      </p>
+                    </div>
+                    <div>
+                      <label style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Género
+                      </label>
+                      <p style={{
+                        fontSize: 14,
+                        color: '#374151',
+                        margin: '0.25rem 0 0 0'
+                      }}>
+                        {selectedPatientDetails.gender}
+                      </p>
+                    </div>
+                    <div>
+                      <label style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Estado
+                      </label>
+                      <p style={{
+                        fontSize: 14,
+                        color: '#374151',
+                        margin: '0.25rem 0 0 0'
+                      }}>
+                        {selectedPatientDetails.userStatus}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedPatientDetails.address && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <label style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Dirección
+                      </label>
+                      <p style={{
+                        fontSize: 14,
+                        color: '#374151',
+                        margin: '0.25rem 0 0 0'
+                      }}>
+                        {selectedPatientDetails.address}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tags del Paciente */}
+                {(selectedPatientDetails.tag1 || selectedPatientDetails.tag2 || selectedPatientDetails.tag3) && (
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: 12,
+                    padding: '1.5rem'
+                  }}>
+                    <h3 style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: '#374151',
+                      margin: '0 0 1rem 0'
+                    }}>
+                      Tags del Paciente
+                    </h3>
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '0.75rem'
+                    }}>
+                      {selectedPatientDetails.tag1 && (
+                        <div style={{
+                          background: '#e0f2fe',
+                          color: '#0369a1',
+                          padding: '0.5rem 1rem',
+                          borderRadius: 8,
+                          fontSize: 14,
+                          fontWeight: 600
+                        }}>
+                          {selectedPatientDetails.tag1.name} ({Math.round(selectedPatientDetails.tag1.percentage * 100)}%)
+                        </div>
+                      )}
+                      {selectedPatientDetails.tag2 && (
+                        <div style={{
+                          background: '#e0f2fe',
+                          color: '#0369a1',
+                          padding: '0.5rem 1rem',
+                          borderRadius: 8,
+                          fontSize: 14,
+                          fontWeight: 600
+                        }}>
+                          {selectedPatientDetails.tag2.name} ({Math.round(selectedPatientDetails.tag2.percentage * 100)}%)
+                        </div>
+                      )}
+                      {selectedPatientDetails.tag3 && (
+                        <div style={{
+                          background: '#e0f2fe',
+                          color: '#0369a1',
+                          padding: '0.5rem 1rem',
+                          borderRadius: 8,
+                          fontSize: 14,
+                          fontWeight: 600
+                        }}>
+                          {selectedPatientDetails.tag3.name} ({Math.round(selectedPatientDetails.tag3.percentage * 100)}%)
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Información del Psicólogo Asignado */}
+                {selectedPatientDetails.psychologist && (
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: 12,
+                    padding: '1.5rem'
+                  }}>
+                    <h3 style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: '#374151',
+                      margin: '0 0 1rem 0'
+                    }}>
+                      Psicólogo Asignado
+                    </h3>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: '1rem'
+                    }}>
+                      <div>
+                        <label style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#6b7280',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Nombre
+                        </label>
+                        <p style={{
+                          fontSize: 14,
+                          color: '#374151',
+                          margin: '0.25rem 0 0 0'
+                        }}>
+                          {selectedPatientDetails.psychologist.name} {selectedPatientDetails.psychologist.lastName}
+                        </p>
+                      </div>
+                      <div>
+                        <label style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#6b7280',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Especialidad
+                        </label>
+                        <p style={{
+                          fontSize: 14,
+                          color: '#374151',
+                          margin: '0.25rem 0 0 0'
+                        }}>
+                          {selectedPatientDetails.psychologist.specialty}
+                        </p>
+                      </div>
+                      <div>
+                        <label style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#6b7280',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Licencia
+                        </label>
+                        <p style={{
+                          fontSize: 14,
+                          color: '#374151',
+                          margin: '0.25rem 0 0 0'
+                        }}>
+                          {selectedPatientDetails.psychologist.licenseNumber}
+                        </p>
+                      </div>
+                    </div>
+                    {selectedPatientDetails.psychologist.oneLiner && (
+                      <div style={{ marginTop: '1rem' }}>
+                        <label style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#6b7280',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Descripción
+                        </label>
+                        <p style={{
+                          fontSize: 14,
+                          color: '#374151',
+                          margin: '0.25rem 0 0 0'
+                        }}>
+                          {selectedPatientDetails.psychologist.oneLiner}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
