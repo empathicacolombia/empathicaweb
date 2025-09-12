@@ -18,6 +18,8 @@ const PsychologistScheduleModal = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Mapeo de días de inglés a español
   const dayMapping = {
@@ -126,7 +128,16 @@ const PsychologistScheduleModal = ({
     const [hours, minutes] = startTime.split(':');
     sessionDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
     
-    return sessionDate.toISOString();
+    // Formatear la fecha y hora sin conversión de zona horaria
+    // Usar el formato YYYY-MM-DDTHH:mm:ss para mantener la hora local
+    const year = sessionDate.getFullYear();
+    const month = String(sessionDate.getMonth() + 1).padStart(2, '0');
+    const dayOfMonth = String(sessionDate.getDate()).padStart(2, '0');
+    const hour = String(sessionDate.getHours()).padStart(2, '0');
+    const minute = String(sessionDate.getMinutes()).padStart(2, '0');
+    const second = String(sessionDate.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${dayOfMonth}T${hour}:${minute}:${second}`;
   };
 
   // Función para manejar la selección de horario
@@ -137,6 +148,99 @@ const PsychologistScheduleModal = ({
       slot: slot,
       sessionDateTime: sessionDateTime
     });
+  };
+
+  // Función para manejar la selección de fecha
+  const handleDateSelection = (date) => {
+    setSelectedDate(date);
+    setSelectedSlot(null); // Limpiar selección de horario
+  };
+
+  // Función para navegar entre meses
+  const navigateMonth = (direction) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(currentMonth.getMonth() + direction);
+    setCurrentMonth(newMonth);
+    setSelectedDate(null);
+    setSelectedSlot(null);
+  };
+
+  // Función para obtener los días disponibles en un mes
+  const getAvailableDaysInMonth = () => {
+    if (!schedule) return [];
+
+    const availableDays = [];
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const dayOfWeek = date.getDay();
+      const dayName = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][dayOfWeek];
+      
+      if (schedule[dayName] && schedule[dayName].length > 0) {
+        // Verificar que la fecha no sea en el pasado
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (date >= today) {
+          availableDays.push({
+            day: day,
+            date: date,
+            dayName: dayName,
+            slots: schedule[dayName]
+          });
+        }
+      }
+    }
+
+    return availableDays;
+  };
+
+  // Función para obtener los horarios de un día específico
+  const getSlotsForDate = (date) => {
+    if (!date || !schedule) return [];
+
+    const dayOfWeek = date.getDay();
+    const dayName = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][dayOfWeek];
+    
+    return schedule[dayName] || [];
+  };
+
+  // Función para generar el calendario
+  const generateCalendar = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    const calendar = [];
+    const availableDays = getAvailableDaysInMonth();
+    
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      
+      const isCurrentMonth = date.getMonth() === month;
+      const isToday = date.toDateString() === new Date().toDateString();
+      const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+      const isAvailable = availableDays.some(day => day.day === date.getDate());
+      const isPast = date < new Date().setHours(0, 0, 0, 0);
+      
+      calendar.push({
+        date: date,
+        day: date.getDate(),
+        isCurrentMonth,
+        isToday,
+        isSelected,
+        isAvailable,
+        isPast
+      });
+    }
+    
+    return calendar;
   };
 
   const processedSchedule = processSchedule();
@@ -298,36 +402,8 @@ const PsychologistScheduleModal = ({
                 </button>
               </div>
             </div>
-          ) : processedSchedule.length === 0 ? (
-            /* Sin horario disponible */
-            <div style={{
-              textAlign: 'center',
-              padding: '3rem 1rem'
-            }}>
-              <div style={{
-                background: '#f0f9ff',
-                border: '1px solid #bae6fd',
-                borderRadius: 12,
-                padding: '2rem'
-              }}>
-                <p style={{
-                  fontSize: 16,
-                  color: '#0369a1',
-                  margin: '0 0 1rem 0'
-                }}>
-                  No hay horarios disponibles en este momento
-                </p>
-                <p style={{
-                  fontSize: 14,
-                  color: '#0c4a6e',
-                  margin: 0
-                }}>
-                  El psicólogo aún no ha configurado su horario de atención
-                </p>
-              </div>
-            </div>
           ) : (
-            /* Horario disponible */
+            /* Calendario de horarios */
             <>
               {/* Información general */}
               <div style={{
@@ -342,105 +418,230 @@ const PsychologistScheduleModal = ({
                   margin: 0,
                   textAlign: 'center'
                 }}>
-                  📅 Selecciona un día y horario que te funcione mejor para tu sesión
+                  📅 Selecciona un día disponible y luego el horario que prefieras
                 </p>
               </div>
 
-              {/* Lista de días y horarios */}
-              {!selectedSlot && (
+              {/* Navegación del calendario */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '1rem'
+              }}>
+                <button
+                  onClick={() => navigateMonth(-1)}
+                  style={{
+                    background: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: 8,
+                    padding: '0.5rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ←
+                </button>
+                
+                <h3 style={{
+                  fontSize: 18,
+                  fontWeight: 600,
+                  color: '#374151',
+                  margin: 0
+                }}>
+                  {currentMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                </h3>
+                
+                <button
+                  onClick={() => navigateMonth(1)}
+                  style={{
+                    background: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: 8,
+                    padding: '0.5rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  →
+                </button>
+              </div>
+
+              {/* Calendario */}
+              <div style={{
+                background: '#fff',
+                border: '1px solid #e5e7eb',
+                borderRadius: 12,
+                overflow: 'hidden',
+                marginBottom: '2rem'
+              }}>
+                {/* Encabezados de días */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  background: '#f9fafb',
+                  borderBottom: '1px solid #e5e7eb'
+                }}>
+                  {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
+                    <div key={day} style={{
+                      padding: '0.75rem',
+                      textAlign: 'center',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: '#6b7280'
+                    }}>
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Días del calendario */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)'
+                }}>
+                  {generateCalendar().map((day, index) => (
+                    <button
+                      key={index}
+                      onClick={() => day.isAvailable && !day.isPast && handleDateSelection(day.date)}
+                      disabled={!day.isAvailable || day.isPast}
+                      style={{
+                        background: day.isSelected ? '#0057ff' : 
+                                   day.isToday ? '#fef3c7' : 
+                                   day.isAvailable ? '#fff' : '#f9fafb',
+                        color: day.isSelected ? '#fff' : 
+                               day.isToday ? '#92400e' : 
+                               day.isAvailable ? '#374151' : '#9ca3af',
+                        border: '1px solid #e5e7eb',
+                        padding: '0.75rem',
+                        fontSize: 14,
+                        fontWeight: day.isToday ? 600 : 400,
+                        cursor: day.isAvailable && !day.isPast ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s',
+                        minHeight: '48px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (day.isAvailable && !day.isPast && !day.isSelected) {
+                          e.target.style.background = '#f3f4f6';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (day.isAvailable && !day.isPast && !day.isSelected) {
+                          e.target.style.background = '#fff';
+                        }
+                      }}
+                    >
+                      {day.day}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mensaje de instrucción */}
+              {!selectedDate && (
                 <div style={{
                   background: '#fff3cd',
                   border: '1px solid #ffeaa7',
                   borderRadius: 8,
-                  padding: '0.75rem',
-                  marginBottom: '1rem',
-                  textAlign: 'center'
+                  padding: '1rem',
+                  textAlign: 'center',
+                  marginBottom: '2rem'
                 }}>
                   <p style={{
                     fontSize: 14,
                     color: '#856404',
                     margin: 0
                   }}>
-                    ⚠️ Selecciona un horario para continuar
+                    📅 Selecciona un día disponible del calendario para ver los horarios
                   </p>
                 </div>
               )}
-              
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.5rem'
-              }}>
-                {processedSchedule.map((daySchedule) => (
-                  <div key={daySchedule.day} style={{
-                    border: '1px solid #e5e7eb',
-                    borderRadius: 12,
-                    overflow: 'hidden'
+
+              {/* Horarios del día seleccionado */}
+              {selectedDate && (
+                <div style={{
+                  background: '#f8f9fa',
+                  borderRadius: 12,
+                  padding: '1.5rem',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <h4 style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: '#374151',
+                    margin: '0 0 1rem 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
                   }}>
-                    {/* Header del día */}
-                    <div style={{
-                      background: '#0057FF',
-                      color: '#fff',
-                      padding: '1rem',
-                      fontSize: 16,
-                      fontWeight: 600
-                    }}>
-                      {daySchedule.dayName}
-                    </div>
-                    
-                    {/* Horarios disponibles */}
-                    <div style={{
-                      padding: '1rem'
-                    }}>
-                      <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '0.75rem'
-                      }}>
-                        {daySchedule.slots.map((slot) => {
-                          const isSelected = selectedSlot && 
-                            selectedSlot.day === daySchedule.day && 
-                            selectedSlot.slot.id === slot.id;
-                          
-                          return (
-                            <div key={slot.id} style={{
-                              background: isSelected ? '#0057FF' : '#f0f4ff',
-                              border: `1px solid ${isSelected ? '#0057FF' : '#0057FF'}`,
-                              borderRadius: 8,
-                              padding: '0.75rem 1rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s',
-                              color: isSelected ? '#fff' : '#0057FF'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected) {
-                                e.currentTarget.style.background = '#0057FF';
-                                e.currentTarget.style.color = '#fff';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected) {
-                                e.currentTarget.style.background = '#f0f4ff';
-                                e.currentTarget.style.color = '#0057FF';
-                              }
-                            }}
-                            onClick={() => handleSlotSelection(daySchedule.day, slot)}
-                            >
-                              <Clock size={16} />
-                              <span style={{ fontSize: 14, fontWeight: 500 }}>
-                                {slot.startTimeFormatted} - {slot.endTimeFormatted}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <Clock size={18} color="#6b7280" />
+                    Horarios disponibles para {selectedDate.toLocaleDateString('es-ES', { 
+                      weekday: 'long', 
+                      day: 'numeric', 
+                      month: 'long' 
+                    })}
+                  </h4>
+
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                    gap: '0.75rem'
+                  }}>
+                    {getSlotsForDate(selectedDate).map((slot) => {
+                      const isSelected = selectedSlot && 
+                        selectedSlot.slot.psychologistScheduleId === slot.psychologistScheduleId;
+
+                      return (
+                        <button
+                          key={slot.psychologistScheduleId}
+                          onClick={() => {
+                            const dayOfWeek = selectedDate.getDay();
+                            const dayName = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][dayOfWeek];
+                            handleSlotSelection(dayName, slot);
+                          }}
+                          style={{
+                            background: isSelected ? '#0057ff' : '#fff',
+                            color: isSelected ? '#fff' : '#374151',
+                            border: `1px solid ${isSelected ? '#0057ff' : '#d1d5db'}`,
+                            borderRadius: 8,
+                            padding: '0.75rem',
+                            fontSize: 14,
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) {
+                              e.target.style.background = '#f3f4f6';
+                              e.target.style.borderColor = '#9ca3af';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) {
+                              e.target.style.background = '#fff';
+                              e.target.style.borderColor = '#d1d5db';
+                            }
+                          }}
+                        >
+                          <Clock size={16} />
+                          {formatTime(slot.startTime)}
+                        </button>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
 
               {/* Información adicional */}
               <div style={{

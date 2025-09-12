@@ -176,32 +176,6 @@ const BusinessSettings = ({ navigationProps }) => {
                   </span>
                 </div>
                 
-                <div style={{ display: 'flex', gap: 16 }}>
-                  <button style={{
-                    background: '#0057ff',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '0.5rem 1rem',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}>
-                    Cambiar Plan
-                  </button>
-                  <button style={{
-                    background: '#fff',
-                    color: '#7a8bbd',
-                    border: '1.5px solid #e0e7ef',
-                    borderRadius: 8,
-                    padding: '0.5rem 1rem',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}>
-                    Ver Facturas
-                  </button>
-                </div>
               </div>
             </div>
           )}

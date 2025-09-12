@@ -40,6 +40,10 @@ const PsychologistAppointments = () => {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const intervalRef = useRef(null);
 
+  // Estados para sesión activa
+  const [activeSession, setActiveSession] = useState(null);
+  const [sessionStarted, setSessionStarted] = useState(false);
+
   // Estados para las sesiones del backend
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
@@ -151,6 +155,7 @@ const PsychologistAppointments = () => {
         sessionTime: session.sessionTime,
         isToday,
         isUpcoming,
+        eventUrl: session.eventUrl,
         patient: session.patient,
         session: session
       };
@@ -416,6 +421,8 @@ const PsychologistAppointments = () => {
       ));
     }
     stopTimer(); // Detener el cronómetro
+    setActiveSession(null); // Limpiar sesión activa
+    setSessionStarted(false); // Marcar sesión como terminada
     closeNotesModal();
   };
 
@@ -723,27 +730,27 @@ const PsychologistAppointments = () => {
         {/* Estado de carga */}
         {loadingSessions && (
           <div style={{
-            background: '#fff',
-            borderRadius: 12,
+                background: '#fff',
+                borderRadius: 12,
             padding: '2rem',
             textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #f0f0f0'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                border: '1px solid #f0f0f0'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
               justifyContent: 'center',
               gap: '1rem',
               fontSize: 16,
               color: '#666'
-            }}>
-              <div style={{
+                }}>
+                  <div style={{
                 width: 24,
                 height: 24,
                 border: '3px solid #f3f3f3',
                 borderTop: '3px solid #0057FF',
-                borderRadius: '50%',
+                    borderRadius: '50%',
                 animation: 'spin 1s linear infinite'
               }} />
               Cargando sesiones...
@@ -762,9 +769,9 @@ const PsychologistAppointments = () => {
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
           }}>
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
               gap: '1rem',
               fontSize: 16,
               color: '#dc2626',
@@ -777,18 +784,18 @@ const PsychologistAppointments = () => {
               onClick={fetchSessions}
               style={{
                 background: '#0057FF',
-                color: '#fff',
+                    color: '#fff',
                 border: 'none',
                 borderRadius: 8,
                 padding: '0.75rem 1.5rem',
                 fontSize: 14,
-                fontWeight: 600,
+                    fontWeight: 600,
                 cursor: 'pointer'
               }}
             >
               Intentar de nuevo
             </button>
-          </div>
+                  </div>
         )}
 
         {/* Lista de citas */}
@@ -797,207 +804,141 @@ const PsychologistAppointments = () => {
             <div
               key={appointment.id}
               style={{
-                background: '#fff',
-                borderRadius: 12,
-                padding: '1.5rem',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #f0f0f0'
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: 20,
+                padding: '2rem',
+                marginBottom: '1.5rem',
+                position: 'relative',
+                overflow: 'hidden',
+                color: '#fff'
               }}
             >
-              {/* Header de la cita */}
+              {/* Patrón de fondo */}
               <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '1rem'
-              }}>
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '200px',
+                height: '200px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '50%',
+                transform: 'translate(50%, -50%)'
+              }} />
+              
+              {/* Contenido principal */}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                {/* Header con fecha y estado */}
                 <div style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem'
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '1.5rem'
                 }}>
-                  {/* Avatar del paciente */}
-                  <div style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    background: '#0057FF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontWeight: 600,
-                    fontSize: 16
-                  }}>
-                    {appointment.avatar}
-                  </div>
-
-                  {/* Información del paciente */}
                   <div>
+                    <div style={{
+                      fontSize: 14,
+                      opacity: 0.9,
+                      marginBottom: '0.5rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px'
+                    }}>
+                      {appointment.date}
+                    </div>
                     <h3 style={{
-                      fontSize: 18,
-                      fontWeight: 600,
-                      color: '#333',
-                      margin: '0 0 0.25rem 0'
+                      fontSize: 24,
+                      fontWeight: 700,
+                      margin: '0 0 0.5rem 0',
+                      color: '#fff'
                     }}>
                       {appointment.patientName}
                     </h3>
                     <div style={{
+                      fontSize: 16,
+                      opacity: 0.9,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '1rem',
-                      fontSize: 14,
-                      color: '#666'
+                      gap: '0.5rem'
                     }}>
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>
-                        <Mail size={14} />
+                      <span>👤</span>
                         {appointment.patientEmail}
-                      </span>
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>
-                        <Phone size={14} />
-                        {appointment.patientPhone}
-                      </span>
-                    </div>
                   </div>
                 </div>
 
-                {/* Estado de la cita y datos del backend */}
+                  {/* Estado */}
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  {/* Indicador de datos del backend */}
-                  <span style={{
-                    background: '#10B981',
-                    color: '#fff',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '12px',
-                    fontSize: 10,
+                    background: appointment.status === 'Confirmada' ? 'rgba(34, 197, 94, 0.2)' : 
+                               appointment.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.2)' :
+                               appointment.status === 'En Proceso' ? 'rgba(59, 130, 246, 0.2)' :
+                               appointment.status === 'Completada' ? 'rgba(34, 197, 94, 0.2)' :
+                               appointment.status === 'Cancelada' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+                    border: `1px solid ${appointment.status === 'Confirmada' ? '#22c55e' : 
+                                         appointment.status === 'Pendiente' ? '#f59e0b' :
+                                         appointment.status === 'En Proceso' ? '#3b82f6' :
+                                         appointment.status === 'Completada' ? '#22c55e' :
+                                         appointment.status === 'Cancelada' ? '#ef4444' : '#6b7280'}`,
+                    padding: '0.5rem 1rem',
+                    borderRadius: '25px',
+                    fontSize: 12,
                     fontWeight: 600,
                     textTransform: 'uppercase'
                   }}>
-                    Backend
-                  </span>
-                  
-                  {getStatusIcon(appointment.status)}
-                  <span style={{
-                    background: getStatusColor(appointment.status),
-                    color: '#fff',
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '20px',
-                    fontSize: 12,
-                    fontWeight: 600
-                  }}>
                     {appointment.status}
-                  </span>
                 </div>
               </div>
 
-              {/* Detalles de la cita */}
+                {/* Información de la sesión */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
                 gap: '1rem',
-                marginBottom: '1rem'
+                  marginBottom: '1.5rem'
               }}>
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: 14,
-                  color: '#666'
-                }}>
-                  <Calendar size={16} />
-                  <span><strong>Fecha:</strong> {appointment.date}</span>
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    padding: '1rem',
+                    borderRadius: 12,
+                    backdropFilter: 'blur(10px)'
+                  }}>
+                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>HORA</div>
+                    <div style={{ fontSize: 16, fontWeight: 600 }}>{appointment.time}</div>
                 </div>
+                  
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: 14,
-                  color: '#666'
-                }}>
-                  <Clock size={16} />
-                  <span><strong>Hora:</strong> {appointment.time} ({appointment.duration})</span>
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    padding: '1rem',
+                    borderRadius: 12,
+                    backdropFilter: 'blur(10px)'
+                  }}>
+                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>DURACIÓN</div>
+                    <div style={{ fontSize: 16, fontWeight: 600 }}>{appointment.duration}</div>
                 </div>
+                  
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: 14,
-                  color: '#666'
-                }}>
-                  <User size={16} />
-                  <span><strong>Tipo:</strong> {appointment.type}</span>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: 14,
-                  color: '#666'
-                }}>
-                  <MapPin size={16} />
-                  <span><strong>Ubicación:</strong> {appointment.location}</span>
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    padding: '1rem',
+                    borderRadius: 12,
+                    backdropFilter: 'blur(10px)'
+                  }}>
+                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>MODALIDAD</div>
+                    <div style={{ fontSize: 16, fontWeight: 600 }}>{appointment.location}</div>
                 </div>
               </div>
 
-                {/* Información adicional del backend */}
-                <div style={{
-                  background: '#f8f9fa',
-                  borderRadius: 8,
-                  padding: '0.75rem',
-                  marginBottom: '1rem',
-                  border: '1px solid #e0e0e0'
-                }}>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                    gap: '0.75rem',
-                    fontSize: 12,
-                    color: '#666'
-                  }}>
-                    <div>
-                      <strong>ID Sesión:</strong> {appointment.id}
-                    </div>
-                    <div>
-                      <strong>Fecha ISO:</strong> {appointment.sessionTime ? new Date(appointment.sessionTime).toISOString().split('T')[0] : 'N/A'}
-                    </div>
-                    <div>
-                      <strong>Hora UTC:</strong> {appointment.sessionTime ? new Date(appointment.sessionTime).toLocaleTimeString('en-US', { timeZone: 'UTC' }) : 'N/A'}
-                    </div>
-                  </div>
-                </div>
-
-              {/* Tags del paciente */}
+                {/* Tags del paciente si existen */}
               {appointment.tags && appointment.tags.length > 0 && (
-                <div style={{
-                  marginBottom: '1rem'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem'
-                  }}>
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.5rem' }}>DIAGNÓSTICOS</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {appointment.tags.map((tag, index) => (
                       <span
                         key={index}
                         style={{
-                          background: '#f0f8ff',
-                          color: '#0057FF',
+                            background: 'rgba(255, 255, 255, 0.2)',
                           padding: '0.25rem 0.75rem',
-                          borderRadius: '20px',
+                            borderRadius: '15px',
                           fontSize: 12,
-                          fontWeight: 600
+                            fontWeight: 500,
+                            border: '1px solid rgba(255, 255, 255, 0.3)'
                         }}
                       >
                         {tag}
@@ -1007,54 +948,120 @@ const PsychologistAppointments = () => {
                 </div>
               )}
 
-              {/* Notas */}
-              {appointment.notes && (
-                <div style={{
-                  background: '#f8f9fa',
-                  borderRadius: 8,
-                  padding: '1rem',
-                  marginBottom: '1rem'
-                }}>
-                  <p style={{
-                    fontSize: 14,
-                    color: '#333',
-                    margin: 0,
-                    fontStyle: 'italic'
-                  }}>
-                    <strong>Notas:</strong> {appointment.notes}
-                  </p>
-                </div>
-              )}
+                {/* Botones de acción */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {/* Botones principales */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    {getActionButton(appointment)}
+                    
+                    {/* Botón Entrar a Sesión / Terminar Sesión */}
+                    {appointment.eventUrl && (
+                      <>
+                        {!sessionStarted || activeSession?.id !== appointment.id ? (
+                          <button
+                            onClick={() => {
+                              if (appointment.isUpcoming) {
+                                window.open(appointment.eventUrl, '_blank');
+                                setActiveSession(appointment);
+                                setSessionStarted(true);
+                                startTimer(appointment.id);
+                              }
+                            }}
+                            disabled={!appointment.isUpcoming}
+                            style={{
+                              background: appointment.isUpcoming ? 'rgba(34, 197, 94, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+                              color: appointment.isUpcoming ? '#fff' : 'rgba(255, 255, 255, 0.6)',
+                              border: appointment.isUpcoming ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(107, 114, 128, 0.3)',
+                              borderRadius: 12,
+                              padding: '0.75rem 1.5rem',
+                              fontSize: 14,
+                              fontWeight: 600,
+                              cursor: appointment.isUpcoming ? 'pointer' : 'not-allowed',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              backdropFilter: 'blur(10px)',
+                              transition: 'all 0.2s',
+                              opacity: appointment.isUpcoming ? 1 : 0.6
+                            }}
+                            onMouseEnter={(e) => {
+                              if (appointment.isUpcoming) {
+                                e.currentTarget.style.background = 'rgba(34, 197, 94, 0.3)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (appointment.isUpcoming) {
+                                e.currentTarget.style.background = 'rgba(34, 197, 94, 0.2)';
+                              }
+                            }}
+                          >
+                            <span>{appointment.isUpcoming ? '🚀' : '⏰'}</span>
+                            {appointment.isUpcoming ? 'Entrar a Sesión' : 'Sesión Finalizada'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => openNotesModal(appointment)}
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.2)',
+                              color: '#fff',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              borderRadius: 12,
+                              padding: '0.75rem 1.5rem',
+                              fontSize: 14,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              backdropFilter: 'blur(10px)',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                            }}
+                          >
+                            <span>📝</span>
+                            Terminar Sesión
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
 
-              {/* Acciones */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                justifyContent: 'flex-end'
-              }}>
-                {getActionButton(appointment)}
-                {appointment.status !== 'Completada' && (
-                  <button 
-                    onClick={() => openCancelModal(appointment)}
-                    style={{
-                      background: '#fff',
-                      color: '#EF4444',
-                      border: '1px solid #EF4444',
-                      borderRadius: 6,
-                      padding: '0.5rem 1rem',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <Trash size={14} />
-                    Cancelar
-                  </button>
-                )}
+                  {/* Botón cancelar */}
+                  {appointment.status !== 'Completada' && (
+                    <button 
+                      onClick={() => openCancelModal(appointment)}
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.2)',
+                        color: '#fff',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        borderRadius: 12,
+                        padding: '0.75rem 1.5rem',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        backdropFilter: 'blur(10px)',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                      }}
+                    >
+                      <span>🗑️</span>
+                      Cancelar
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -1171,7 +1178,7 @@ const PsychologistAppointments = () => {
                 <textarea
                   value={notesForm.notes}
                   onChange={(e) => handleNotesFormChange('notes', e.target.value)}
-                  placeholder="Agregar notas sobre la sesión..."
+                  placeholder="Continuar trabajo en manejo de estrés laboral"
                   style={{
                     width: '100%',
                     minHeight: '100px',
@@ -1362,7 +1369,7 @@ const PsychologistAppointments = () => {
                   }}
                 >
                   <Check size={16} style={{ marginRight: '8px' }} />
-                  Guardar y Completar
+                  Subir
                 </button>
               </div>
             </div>

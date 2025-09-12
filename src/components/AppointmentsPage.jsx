@@ -121,7 +121,12 @@ const AppointmentsPage = ({ navigationProps }) => {
       setSessionsError(null);
       
       const data = await appointmentService.getPatientSessions();
-      console.log('Sesiones del paciente obtenidas del backend:', data);
+      console.log('=== SESIONES DEL PACIENTE OBTENIDAS ===');
+      console.log('Estructura completa:', data);
+      console.log('Total elementos:', data?.totalElements);
+      console.log('Contenido:', data?.content);
+      console.log('Primera sesión (si existe):', data?.content?.[0]);
+      console.log('========================================');
       
       if (data?.content && Array.isArray(data.content)) {
         setPatientSessions(data.content);
@@ -309,8 +314,9 @@ const AppointmentsPage = ({ navigationProps }) => {
       
       // Formatear fecha y hora
       const formattedDate = sessionDate.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
+        weekday: 'long',
+        day: 'numeric', 
+        month: 'long',
         year: 'numeric'
       });
       
@@ -319,11 +325,30 @@ const AppointmentsPage = ({ navigationProps }) => {
         minute: '2-digit'
       });
 
-      // Obtener tags del paciente
+      // Obtener tags del paciente desde la nueva estructura
       const patientTags = [];
-      if (session.patient?.tag1?.name) patientTags.push(session.patient.tag1.name);
-      if (session.patient?.tag2?.name) patientTags.push(session.patient.tag2.name);
-      if (session.patient?.tag3?.name) patientTags.push(session.patient.tag3.name);
+      if (session.patient?.tags && Array.isArray(session.patient.tags)) {
+        session.patient.tags.forEach(tag => {
+          if (tag.name) patientTags.push(tag.name);
+        });
+      }
+      
+      // También incluir tags directos de la sesión si existen
+      if (session.tag1) patientTags.push(session.tag1);
+      if (session.tag2) patientTags.push(session.tag2);
+      if (session.tag3) patientTags.push(session.tag3);
+
+      // Mapear el estado de la sesión a texto legible
+      const getStatusText = (status) => {
+        switch (status) {
+          case 'SCHEDULED': return 'Programada';
+          case 'ATTENDED': return 'Atendida';
+          case 'CANCELLED': return 'Cancelada';
+          case 'NO_SHOW': return 'No asistió';
+          case 'IN_PROGRESS': return 'En Proceso';
+          default: return 'Programada';
+        }
+      };
 
       return {
         id: session.sessionId,
@@ -331,15 +356,21 @@ const AppointmentsPage = ({ navigationProps }) => {
         psychologistName: `${session.psychologist?.name || 'N/A'} ${session.psychologist?.lastName || ''}`,
         psychologistEmail: session.psychologist?.email || 'N/A',
         psychologistSpecialty: session.psychologist?.specialty || 'N/A',
+        psychologistPhone: session.psychologist?.phoneNumber || 'N/A',
+        psychologistOneLiner: session.psychologist?.oneLiner || 'N/A',
         date: formattedDate,
         time: formattedTime,
         duration: '50 min',
         type: 'Sesión Individual',
-        status: session.status || 'Programada',
+        status: getStatusText(session.status),
+        statusCode: session.status,
         location: 'Virtual',
         notes: session.notes?.length > 0 ? session.notes[0]?.note : 'Sin notas',
         tags: patientTags,
         sessionTime: session.sessionTime,
+        eventId: session.eventId,
+        eventUrl: session.eventUrl,
+        tokensLeft: session.patient?.tokensLeft || 0,
         isUpcoming,
         session: session
       };
@@ -817,235 +848,227 @@ const AppointmentsPage = ({ navigationProps }) => {
               </div>
             ) : activeTab === 'upcoming' && appointments.length > 0 ? (
               /* ========================================
-                   ESTADO: PRÓXIMA SESIÓN VIRTUAL
+                   ESTADO: PRÓXIMAS CITAS
                    ======================================== */
               <div>
                 {/* Tarjeta principal de próxima sesión */}
                 <div style={{
-                  background: '#fff',
-                  borderRadius: 16,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: 20,
                   padding: '2rem',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #e0e0e0'
+                  marginBottom: '1.5rem',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  color: '#fff'
                 }}>
-                  {/* Header de la sesión */}
+                  {/* Patrón de fondo */}
                   <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '1rem',
-                    marginBottom: '1.5rem'
-                  }}>
-                    {/* Icono de reloj */}
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '200px',
+                    height: '200px',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: '50%',
+                    transform: 'translate(50%, -50%)'
+                  }} />
+                  
+                  {/* Contenido principal */}
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    {/* Header con fecha y estado */}
                     <div style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: '50%',
-                      background: '#E3F2FD',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '1.5rem'
                     }}>
+                      <div>
+                        <div style={{
+                          fontSize: 14,
+                          opacity: 0.9,
+                          marginBottom: '0.5rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px'
+                        }}>
+                          {appointments[0]?.date || 'Fecha no disponible'}
+                        </div>
+                        <h3 style={{
+                          fontSize: 24,
+                          fontWeight: 700,
+                          margin: '0 0 0.5rem 0',
+                          color: '#fff'
+                        }}>
+                          {appointments[0]?.type || 'Próxima Sesión'}
+                        </h3>
+                        <div style={{
+                          fontSize: 16,
+                          opacity: 0.9,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          <span>👨‍⚕️</span>
+                          Dr. {appointments[0]?.psychologistName || 'Psicólogo'}
+                        </div>
+                      </div>
+                      
+                      {/* Estado */}
                       <div style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: '50%',
-                        background: '#1976D2',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                        background: appointments[0]?.statusCode === 'SCHEDULED' ? 'rgba(34, 197, 94, 0.2)' : 
+                                   appointments[0]?.statusCode === 'ATTENDED' ? 'rgba(59, 130, 246, 0.2)' :
+                                   appointments[0]?.statusCode === 'CANCELLED' ? 'rgba(239, 68, 68, 0.2)' :
+                                   appointments[0]?.statusCode === 'NO_SHOW' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+                        border: `1px solid ${appointments[0]?.statusCode === 'SCHEDULED' ? '#22c55e' : 
+                                             appointments[0]?.statusCode === 'ATTENDED' ? '#3b82f6' :
+                                             appointments[0]?.statusCode === 'CANCELLED' ? '#ef4444' :
+                                             appointments[0]?.statusCode === 'NO_SHOW' ? '#f59e0b' : '#6b7280'}`,
+                        padding: '0.5rem 1rem',
+                        borderRadius: '25px',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        textTransform: 'uppercase'
                       }}>
-                        <span style={{ fontSize: 12, color: 'white', fontWeight: 'bold' }}>🕐</span>
+                        {appointments[0]?.status || 'Programada'}
                       </div>
                     </div>
-                    
-                    {/* Título y tiempo */}
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{
-                        fontSize: 20,
-                        fontWeight: 700,
-                        color: '#1565C0',
-                        margin: '0 0 0.25rem 0'
-                      }}>
-                        Próxima Sesión
-                      </h3>
-                      <p style={{
-                        fontSize: 16,
-                        color: '#1976D2',
-                        margin: 0,
-                        fontWeight: 500
-                      }}>
-                        14:00 • 1 hora
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Tipo de sesión y tags */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '1.5rem'
-                  }}>
+                    {/* Información de la sesión */}
                     <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      color: '#666',
-                      fontSize: 14
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                      gap: '1rem',
+                      marginBottom: '1.5rem'
                     }}>
-                      <span style={{ fontSize: 16 }}>👤</span>
-                      Sesión de seguimiento
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        padding: '1rem',
+                        borderRadius: 12,
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>HORA</div>
+                        <div style={{ fontSize: 16, fontWeight: 600 }}>{appointments[0]?.time || '14:00'}</div>
+                      </div>
+                      
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        padding: '1rem',
+                        borderRadius: 12,
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>DURACIÓN</div>
+                        <div style={{ fontSize: 16, fontWeight: 600 }}>{appointments[0]?.duration || '50 min'}</div>
+                      </div>
+                      
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        padding: '1rem',
+                        borderRadius: 12,
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>MODALIDAD</div>
+                        <div style={{ fontSize: 16, fontWeight: 600 }}>{appointments[0]?.location || 'Virtual'}</div>
+                      </div>
                     </div>
-                    
-                    {/* Tags de temas */}
-                    <div style={{
-                      display: 'flex',
-                      gap: '0.5rem'
-                    }}>
-                      {['Ansiedad', 'Estrés laboral', 'Mindfulness'].map((tag, index) => (
-                        <span
-                          key={index}
-                          style={{
-                            background: '#f8f9fa',
-                            color: '#666',
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: '20px',
-                            fontSize: 12,
-                            fontWeight: 500,
-                            border: '1px solid #e0e0e0'
+
+                    {/* Tags solo si existen en el backend */}
+                    {appointments[0]?.tags && appointments[0].tags.length > 0 && (
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.5rem' }}>DIAGNÓSTICOS</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          {appointments[0].tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.2)',
+                                padding: '0.25rem 0.75rem',
+                                borderRadius: '15px',
+                                fontSize: 12,
+                                fontWeight: 500,
+                                border: '1px solid rgba(255, 255, 255, 0.3)'
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Botones de acción */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      {/* Botón Ver Detalles */}
+                      <button
+                        onClick={() => openSessionDetails(appointments[0]?.session)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          color: '#fff',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          borderRadius: 12,
+                          padding: '0.75rem 1.5rem',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          backdropFilter: 'blur(10px)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                        }}
+                      >
+                        <span>👁️</span>
+                        Ver Detalles
+                      </button>
+
+                      {/* Botón Entrar a Sesión */}
+                      {appointments[0]?.eventUrl && (
+                        <button
+                          onClick={() => {
+                            if (appointments[0]?.isUpcoming) {
+                              window.open(appointments[0].eventUrl, '_blank');
+                            }
                           }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Verificación técnica */}
-                  <div style={{
-                    background: '#f8f9fa',
-                    borderRadius: 12,
-                    padding: '1rem',
-                    marginBottom: '1.5rem'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      marginBottom: '0.75rem',
-                      color: '#666',
-                      fontSize: 14
-                    }}>
-                      <span style={{ fontSize: 16 }}>ℹ️</span>
-                      Verificación técnica recomendada:
-                    </div>
-                    
-                    {/* Lista de verificaciones */}
-                    <div style={{
-                      display: 'flex',
-                      gap: '1.5rem'
-                    }}>
-                      {[
-                        { icon: '📹', label: 'Cámara' },
-                        { icon: '🎤', label: 'Micrófono' },
-                        { icon: '🎧', label: 'Audio' }
-                      ].map((item, index) => (
-                        <div
-                          key={index}
+                          disabled={!appointments[0]?.isUpcoming}
                           style={{
+                            background: appointments[0]?.isUpcoming ? 'rgba(34, 197, 94, 0.3)' : 'rgba(107, 114, 128, 0.2)',
+                            color: appointments[0]?.isUpcoming ? '#fff' : 'rgba(255, 255, 255, 0.5)',
+                            border: `1px solid ${appointments[0]?.isUpcoming ? 'rgba(34, 197, 94, 0.5)' : 'rgba(107, 114, 128, 0.3)'}`,
+                            borderRadius: 12,
+                            padding: '0.75rem 1.5rem',
+                            fontSize: 14,
+                            fontWeight: 600,
+                            cursor: appointments[0]?.isUpcoming ? 'pointer' : 'not-allowed',
+                            transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.5rem',
-                            color: '#666',
-                            fontSize: 14
+                            backdropFilter: 'blur(10px)',
+                            opacity: appointments[0]?.isUpcoming ? 1 : 0.6
+                          }}
+                          onMouseEnter={(e) => {
+                            if (appointments[0]?.isUpcoming) {
+                              e.currentTarget.style.background = 'rgba(34, 197, 94, 0.4)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (appointments[0]?.isUpcoming) {
+                              e.currentTarget.style.background = 'rgba(34, 197, 94, 0.3)';
+                            }
                           }}
                         >
-                          <span style={{ fontSize: 16 }}>{item.icon}</span>
-                          {item.label}
-                        </div>
-                      ))}
+                          <span>{appointments[0]?.isUpcoming ? '🚀' : '⏰'}</span>
+                          {appointments[0]?.isUpcoming ? 'Entrar a Sesión' : 'Sesión Finalizada'}
+                        </button>
+                      )}
                     </div>
                   </div>
-
-                  {/* Botón de unirse */}
-                  <div style={{
-                    background: '#f8f9fa',
-                    borderRadius: 12,
-                    padding: '1rem',
-                    textAlign: 'center',
-                    border: '1px solid #e0e0e0'
-                  }}>
-                    <button
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        color: '#666',
-                        fontSize: 16,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        width: '100%'
-                      }}
-                    >
-                      <span style={{ fontSize: 18 }}>▶️</span>
-                      Unirse
-                    </button>
-                    <p style={{
-                      fontSize: 12,
-                      color: '#999',
-                      margin: '0.5rem 0 0 0'
-                    }}>
-                      Podrás unirte 15 minutos antes de la sesión
-                    </p>
-                  </div>
                 </div>
 
-                {/* Información adicional */}
-                <div style={{
-                  display: 'flex',
-                  gap: '2rem',
-                  marginTop: '1rem',
-                  padding: '0 0.5rem'
-                }}>
-                  <div>
-                    <p style={{
-                      fontSize: 14,
-                      color: '#333',
-                      margin: '0 0 0.25rem 0',
-                      fontWeight: 600
-                    }}>
-                      Modalidad:
-                    </p>
-                    <p style={{
-                      fontSize: 14,
-                      color: '#666',
-                      margin: 0
-                    }}>
-                      Virtual
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p style={{
-                      fontSize: 14,
-                      color: '#333',
-                      margin: '0 0 0.25rem 0',
-                      fontWeight: 600
-                    }}>
-                      Duración:
-                    </p>
-                    <p style={{
-                      fontSize: 14,
-                      color: '#666',
-                      margin: 0
-                    }}>
-                      1 hora
-                    </p>
-                  </div>
-                </div>
               </div>
             ) : activeTab === 'history' && appointments.length === 0 ? (
               /* ========================================
@@ -1101,97 +1124,219 @@ const AppointmentsPage = ({ navigationProps }) => {
               <div
                 key={appointment.id}
                 style={{
-                  background: '#fff',
-                  borderRadius: 12,
-                  padding: '1.5rem',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: 20,
+                  padding: '2rem',
+                  marginBottom: '1.5rem',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  color: '#fff'
                 }}
               >
-                    <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: '#333',
-                    marginBottom: '0.5rem'
-                  }}>
-                    {appointment.type}
-                  </div>
-                  
+                {/* Patrón de fondo */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '200px',
+                  height: '200px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '50%',
+                  transform: 'translate(50%, -50%)'
+                }} />
+                
+                {/* Contenido principal */}
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  {/* Header con fecha y estado */}
                   <div style={{
                     display: 'flex',
-                    gap: '2rem',
-                    flexWrap: 'wrap'
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '1.5rem'
                   }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      color: '#666',
-                      fontSize: 14
-                    }}>
-                      <span role="img" aria-label="calendar" style={{ fontSize: 16 }}>📅</span>
-                      {appointment.date}
+                    <div>
+                      <div style={{
+                        fontSize: 14,
+                        opacity: 0.9,
+                        marginBottom: '0.5rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                      }}>
+                        {appointment.date}
+                      </div>
+                      <h3 style={{
+                        fontSize: 24,
+                        fontWeight: 700,
+                        margin: '0 0 0.5rem 0',
+                        color: '#fff'
+                      }}>
+                        {appointment.type}
+                      </h3>
+                      <div style={{
+                        fontSize: 16,
+                        opacity: 0.9,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <span>👨‍⚕️</span>
+                        Dr. {appointment.psychologistName}
+                      </div>
                     </div>
                     
+                    {/* Estado */}
                     <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      color: '#666',
-                      fontSize: 14
-                    }}>
-                      <span role="img" aria-label="clock" style={{ fontSize: 16 }}>🕐</span>
-                      {appointment.time}
-                    </div>
-                    
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      color: '#666',
-                      fontSize: 14
-                    }}>
-                      <span role="img" aria-label="person" style={{ fontSize: 16 }}>👤</span>
-                      {appointment.specialist}
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem'
-                }}>
-                  <div style={{
-                    background: appointment.statusColor,
-                    color: appointment.statusTextColor,
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '20px',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    textTransform: 'uppercase'
-                  }}>
-                    {appointment.status}
-                  </div>
-
-                      <button 
-                        onClick={() => openSessionDetails(appointment)}
-                        style={{
-                      background: 'transparent',
-                      color: '#0057FF',
-                      border: '1px solid #0057FF',
-                      borderRadius: 6,
+                      background: appointment.statusCode === 'SCHEDULED' ? 'rgba(34, 197, 94, 0.2)' : 
+                                 appointment.statusCode === 'ATTENDED' ? 'rgba(59, 130, 246, 0.2)' :
+                                 appointment.statusCode === 'CANCELLED' ? 'rgba(239, 68, 68, 0.2)' :
+                                 appointment.statusCode === 'NO_SHOW' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+                      border: `1px solid ${appointment.statusCode === 'SCHEDULED' ? '#22c55e' : 
+                                         appointment.statusCode === 'ATTENDED' ? '#3b82f6' :
+                                         appointment.statusCode === 'CANCELLED' ? '#ef4444' :
+                                         appointment.statusCode === 'NO_SHOW' ? '#f59e0b' : '#6b7280'}`,
                       padding: '0.5rem 1rem',
+                      borderRadius: '25px',
                       fontSize: 12,
                       fontWeight: 600,
-                      cursor: 'pointer'
-                        }}
-                      >
-                        Ver detalles
+                      textTransform: 'uppercase'
+                    }}>
+                      {appointment.status}
+                    </div>
+                  </div>
+
+                  {/* Información de la sesión */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gap: '1rem',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      padding: '1rem',
+                      borderRadius: 12,
+                      backdropFilter: 'blur(10px)'
+                    }}>
+                      <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>HORA</div>
+                      <div style={{ fontSize: 16, fontWeight: 600 }}>{appointment.time}</div>
+                    </div>
+                    
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      padding: '1rem',
+                      borderRadius: 12,
+                      backdropFilter: 'blur(10px)'
+                    }}>
+                      <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>DURACIÓN</div>
+                      <div style={{ fontSize: 16, fontWeight: 600 }}>{appointment.duration}</div>
+                    </div>
+                    
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      padding: '1rem',
+                      borderRadius: 12,
+                      backdropFilter: 'blur(10px)'
+                    }}>
+                      <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.25rem' }}>MODALIDAD</div>
+                      <div style={{ fontSize: 16, fontWeight: 600 }}>{appointment.location}</div>
+                    </div>
+                  </div>
+                  {/* Tags solo si existen en el backend */}
+                  {appointment.tags && appointment.tags.length > 0 && (
+                    <div style={{ marginBottom: '1.5rem' }}>
+                      <div style={{ fontSize: 12, opacity: 0.8, marginBottom: '0.5rem' }}>DIAGNÓSTICOS</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {appointment.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.2)',
+                              padding: '0.25rem 0.75rem',
+                              borderRadius: '15px',
+                              fontSize: 12,
+                              fontWeight: 500,
+                              border: '1px solid rgba(255, 255, 255, 0.3)'
+                            }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Botones de acción */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {/* Botón Ver Detalles */}
+                  <button
+                    onClick={() => openSessionDetails(appointment.session)}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      color: '#fff',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: 12,
+                      padding: '0.75rem 1.5rem',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      backdropFilter: 'blur(10px)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                    }}
+                  >
+                    <span>👁️</span>
+                    Ver Detalles
+                  </button>
+
+                  {/* Botón Entrar a Sesión */}
+                  {appointment.eventUrl && (
+                    <button
+                      onClick={() => {
+                        if (appointment.isUpcoming) {
+                          window.open(appointment.eventUrl, '_blank');
+                        }
+                      }}
+                      disabled={!appointment.isUpcoming}
+                      style={{
+                        background: appointment.isUpcoming ? 'rgba(34, 197, 94, 0.3)' : 'rgba(107, 114, 128, 0.2)',
+                        color: appointment.isUpcoming ? '#fff' : 'rgba(255, 255, 255, 0.5)',
+                        border: `1px solid ${appointment.isUpcoming ? 'rgba(34, 197, 94, 0.5)' : 'rgba(107, 114, 128, 0.3)'}`,
+                        borderRadius: 12,
+                        padding: '0.75rem 1.5rem',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: appointment.isUpcoming ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        backdropFilter: 'blur(10px)',
+                        opacity: appointment.isUpcoming ? 1 : 0.6
+                      }}
+                      onMouseEnter={(e) => {
+                        if (appointment.isUpcoming) {
+                          e.currentTarget.style.background = 'rgba(34, 197, 94, 0.4)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (appointment.isUpcoming) {
+                          e.currentTarget.style.background = 'rgba(34, 197, 94, 0.3)';
+                        }
+                      }}
+                    >
+                      <span>{appointment.isUpcoming ? '🚀' : '⏰'}</span>
+                      {appointment.isUpcoming ? 'Entrar a Sesión' : 'Sesión Finalizada'}
                     </button>
+                  )}
+                  </div>
                 </div>
               </div>
             ))}
