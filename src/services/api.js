@@ -6,8 +6,9 @@ import axios from 'axios';
  */
 
 // URL base del servidor backend
-const API_BASE_URL = 'https://local.julioperezag.com';
+const API_BASE_URL = 'https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443';
 //https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443
+//https://local.julioperezag.com
 
 // Crear instancia de axios con configuración base
 const apiClient = axios.create({
