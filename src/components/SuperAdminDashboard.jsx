@@ -110,6 +110,9 @@ function CreateCompanyForm({ onCompanyCreated }) {
         }
       };
       
+      console.log('=== ENVIANDO DATOS DE EMPRESA ===');
+      console.log('Datos a enviar:', companyData);
+      
       const response = await companyService.createCompany(companyData);
       console.log('Empresa y administrador creados exitosamente:', response);
       
@@ -133,13 +136,31 @@ function CreateCompanyForm({ onCompanyCreated }) {
 
     } catch (error) {
       console.error('Error creando empresa con administrador:', error);
-      if (error.response && error.response.data && error.response.data.message) {
-        setError(error.response.data.message);
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      // Mostrar mensaje de error más específico
+      let errorMessage = 'Error al crear la empresa. Por favor intenta nuevamente.';
+      
+      if (error.response?.status === 401) {
+        errorMessage = 'Error de autenticación. Por favor, verifica tu sesión.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'No tienes permisos para crear empresas.';
+      } else if (error.response?.status === 400) {
+        errorMessage = 'Datos inválidos. Por favor, verifica la información ingresada.';
+      } else if (error.response?.status === 409) {
+        errorMessage = 'Ya existe una empresa con ese nombre o un administrador con ese email.';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
       } else if (error.message) {
-        setError(error.message);
-      } else {
-        setError('Error al crear la empresa. Por favor intenta nuevamente.');
+        errorMessage = error.message;
       }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -670,6 +691,9 @@ const SuperAdminDashboard = ({ navigationProps }) => {
     setAdminsError('');
     
     try {
+      console.log('=== INICIANDO CARGA DE ADMINISTRADORES ===');
+      console.log('Company ID:', companyId);
+      
       const response = await companyService.getCompanyAdmins(companyId);
       console.log('Administradores obtenidos:', response);
       
@@ -680,7 +704,26 @@ const SuperAdminDashboard = ({ navigationProps }) => {
       console.log('Administradores extraídos:', adminsList);
     } catch (error) {
       console.error('Error cargando administradores:', error);
-      setAdminsError('Error al cargar los administradores de la empresa');
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      // Mostrar mensaje de error más específico
+      let errorMessage = 'Error al cargar los administradores de la empresa';
+      if (error.response?.status === 401) {
+        errorMessage = 'Error de autenticación. Por favor, verifica tu sesión.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'No tienes permisos para ver los administradores de esta empresa.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'No se encontraron administradores para esta empresa.';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      setAdminsError(errorMessage);
       setCompanyAdmins([]);
     } finally {
       setLoadingAdmins(false);
