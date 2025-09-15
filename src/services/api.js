@@ -20,14 +20,6 @@ const apiClient = axios.create({
 
 // Interceptor para agregar token automáticamente
 apiClient.interceptors.request.use((config) => {
-  console.log('=== PETICIÓN HTTP INICIADA ===');
-  console.log('Método:', config.method?.toUpperCase());
-  console.log('URL:', config.url);
-  console.log('URL Completa:', `${config.baseURL}${config.url}`);
-  console.log('Headers:', config.headers);
-  console.log('Data:', config.data);
-  console.log('==============================');
-  
   // Rutas que no requieren verificación de token
   const publicRoutes = [
     '/api/auth/login',
@@ -77,23 +69,8 @@ apiClient.interceptors.request.use((config) => {
 
 // Interceptor para manejar errores de autenticación
 apiClient.interceptors.response.use(
-  (response) => {
-    console.log('=== RESPUESTA HTTP EXITOSA ===');
-    console.log('URL:', response.config?.url);
-    console.log('Status:', response.status);
-    console.log('Status Text:', response.statusText);
-    console.log('Data:', response.data);
-    console.log('================================');
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.log('=== RESPUESTA HTTP CON ERROR ===');
-    console.log('URL:', error.config?.url);
-    console.log('Status:', error.response?.status);
-    console.log('Status Text:', error.response?.statusText);
-    console.log('Error Data:', error.response?.data);
-    console.log('Error Message:', error.message);
-    console.log('=================================');
     // Rutas que no deben causar redirección automática al login
     const nonCriticalRoutes = [
       '/api/auth/login', // Excluir login para no limpiar sesión en intentos fallidos
@@ -218,33 +195,18 @@ export const authService = {
           */
          login: async (credentials) => {
            try {
-             console.log('=== INICIANDO PROCESO DE LOGIN ===');
-             console.log('Email:', credentials.email);
-             console.log('Password length:', credentials.password?.length);
-             console.log('=====================================');
-             
              // Enviar solo email y password al backend
              const loginData = {
                email: credentials.email,
                password: credentials.password
              };
 
-      console.log('=== ENVIANDO PETICIÓN DE LOGIN ===');
-      console.log('URL:', '/api/auth/login');
-      console.log('Data:', { ...loginData, password: '[HIDDEN]' });
-      
       const response = await apiClient.post('/api/auth/login', loginData);
       const data = handleResponse(response);
-      
-      console.log('=== LOGIN EXITOSO ===');
-      console.log('Response data:', data);
-      console.log('Token recibido:', data.token ? 'SÍ' : 'NO');
-      console.log('========================');
       
       // Guardar el token en localStorage
       if (data.token) {
         localStorage.setItem('empathica_token', data.token);
-        console.log('Token guardado en localStorage');
       }
       
       return data;
@@ -297,29 +259,10 @@ export const userService = {
    */
   getUserDetails: async () => {
     try {
-      console.log('=== OBTENIENDO DETALLES DEL USUARIO ===');
-      console.log('URL:', '/api/users/details');
-      console.log('Token en localStorage:', localStorage.getItem('empathica_token') ? 'SÍ' : 'NO');
-      console.log('========================================');
-      
       const response = await apiClient.get('/api/users/details');
-      const data = handleResponse(response);
-      
-      console.log('=== DETALLES DE USUARIO OBTENIDOS ===');
-      console.log('User data:', data);
-      console.log('User ID:', data.userId || data.id);
-      console.log('Roles:', data.roles);
-      console.log('=====================================');
-      
-      return data;
+      return handleResponse(response);
     } catch (error) {
       console.error('Error obteniendo detalles del usuario:', error);
-      console.error('Error details:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message
-      });
       throw error;
     }
   },

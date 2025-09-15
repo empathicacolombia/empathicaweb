@@ -86,20 +86,13 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('empathica_token');
         if (token) {
-          // COMENTADO: Obtener detalles del usuario usando el token
-          // La información de details es la misma que viene en /api/patients/{id}
-          // const userDetails = await userService.getUserDetails();
+          // Obtener detalles del usuario usando el token
+          const userDetails = await userService.getUserDetails();
           
-          // Usar la información del usuario guardada en localStorage
-          const savedUser = localStorage.getItem('empathica_user');
-          if (savedUser) {
-            const userDetails = JSON.parse(savedUser);
-            console.log('Usuario cargado desde localStorage:', userDetails);
-            setUser(userDetails);
-          } else {
-            // Si no hay usuario guardado, limpiar sesión
-            clearSession();
-          }
+          // Mapear roles del backend a userType del frontend
+          const userWithType = mapUserRolesToType(userDetails);
+          
+          setUser(userWithType);
         }
               } catch (error) {
           console.error('Error al verificar autenticación:', error);
@@ -150,46 +143,25 @@ export const AuthProvider = ({ children }) => {
    */
   const login = async (credentials) => {
     try {
-      console.log('=== AUTHCONTEXT: INICIANDO LOGIN ===');
-      console.log('Credentials:', { ...credentials, password: '[HIDDEN]' });
-      
       // Limpiar sesión anterior antes de hacer login
       clearSession();
-      console.log('Sesión anterior limpiada');
       
       // Llamar al servicio de autenticación
-      console.log('Llamando a authService.login...');
       const response = await authService.login(credentials);
-      console.log('authService.login completado');
       
-      // COMENTADO: Obtener detalles del usuario usando el token
-      // La información de details es la misma que viene en /api/patients/{id}
-      // console.log('Llamando a userService.getUserDetails...');
-      // const userDetails = await userService.getUserDetails();
-      // console.log('userService.getUserDetails completado');
-      
-      // Usar la información que viene en la respuesta del login
-      console.log('Usando información de la respuesta del login...');
-      const userDetails = response.user || response; // Usar la información del usuario que viene en la respuesta
-      console.log('Información del usuario obtenida del login:', userDetails);
+      // Obtener detalles del usuario usando el token
+      const userDetails = await userService.getUserDetails();
       
       // Mapear roles del backend a userType del frontend
-      console.log('Mapeando roles de usuario...');
       const userWithType = mapUserRolesToType(userDetails);
-      console.log('Usuario mapeado:', userWithType);
       
       // Guardar usuario en localStorage
       localStorage.setItem('empathica_user', JSON.stringify(userWithType));
       setUser(userWithType);
-      console.log('Usuario guardado en localStorage y estado');
       
-      console.log('=== AUTHCONTEXT: LOGIN COMPLETADO ===');
       return userWithType;
     } catch (error) {
-      console.error('=== AUTHCONTEXT: ERROR EN LOGIN ===');
-      console.error('Error:', error);
-      console.error('Error message:', error.message);
-      console.error('Error response:', error.response?.data);
+      console.error('Error al iniciar sesión:', error);
       // Limpiar sesión en caso de error
       clearSession();
       throw error;
