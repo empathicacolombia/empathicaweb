@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X, User, Mail, Phone, Calendar, MapPin, Building } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { apiClient } from '../services/api';
 
 const BusinessEmployees = ({ navigationProps }) => {
   const { user } = useAuth();
@@ -67,24 +68,12 @@ const BusinessEmployees = ({ navigationProps }) => {
 
     try {
       console.log('=== OBTENIENDO EMPLEADOS POR COMPANY ID ===');
-      console.log('URL:', `https://local.julioperezag.com/api/companies/${companyId}/patients`);
+      console.log('URL:', `/api/companies/${companyId}/patients`);
       console.log('Company ID:', companyId);
       console.log('===========================================');
 
-      const response = await fetch(`https://local.julioperezag.com/api/companies/${companyId}/patients`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('empathica_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al obtener empleados');
-      }
-
-      const companyPatients = await response.json();
+      const response = await apiClient.get(`/api/companies/${companyId}/patients`);
+      const companyPatients = response.data;
       console.log('Pacientes de la empresa:', companyPatients);
 
       // Extraer el array de pacientes del objeto paginado
@@ -243,21 +232,8 @@ const BusinessEmployees = ({ navigationProps }) => {
       console.log('==========================');
 
       // Llamada al API
-      const response = await fetch('https://local.julioperezag.com/api/patients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('empathica_token')}`
-        },
-        body: JSON.stringify(employeeData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al agregar empleado');
-      }
-
-      const result = await response.json();
+      const response = await apiClient.post('/api/patients', employeeData);
+      const result = response.data;
       console.log('Respuesta del servidor:', result);
 
       // Crear empleado para la lista local (mantener compatibilidad con la UI)
@@ -331,23 +307,11 @@ const BusinessEmployees = ({ navigationProps }) => {
     try {
       console.log('=== OBTENIENDO DETALLES DEL EMPLEADO ===');
       console.log('Employee ID:', employeeId);
-      console.log('URL:', `https://local.julioperezag.com/api/patients/${employeeId}`);
+      console.log('URL:', `/api/patients/${employeeId}`);
       console.log('========================================');
 
-      const response = await fetch(`https://local.julioperezag.com/api/patients/${employeeId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('empathica_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al obtener detalles del empleado');
-      }
-
-      const employeeDetails = await response.json();
+      const response = await apiClient.get(`/api/patients/${employeeId}`);
+      const employeeDetails = response.data;
       console.log('Detalles del empleado:', employeeDetails);
 
       setSelectedEmployeeDetails(employeeDetails);
@@ -399,26 +363,13 @@ const BusinessEmployees = ({ navigationProps }) => {
       console.log('Employee ID:', selectedEmployeeForSessions.id);
       console.log('Sessions to add:', sessionsToAdd);
       console.log('Payload:', { tokensToAssign: parseInt(sessionsToAdd) });
-      console.log('URL:', `https://local.julioperezag.com/api/patients/${selectedEmployeeForSessions.id}/tokens`);
+      console.log('URL:', `/api/patients/${selectedEmployeeForSessions.id}/tokens`);
       console.log('========================');
 
-      const response = await fetch(`https://local.julioperezag.com/api/patients/${selectedEmployeeForSessions.id}/tokens`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('empathica_token')}`
-        },
-        body: JSON.stringify({
-          tokensToAssign: parseInt(sessionsToAdd)
-        })
+      const response = await apiClient.post(`/api/patients/${selectedEmployeeForSessions.id}/tokens`, {
+        tokensToAssign: parseInt(sessionsToAdd)
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al añadir sesiones');
-      }
-
-      const result = await response.json();
+      const result = response.data;
       console.log('Sesiones añadidas exitosamente:', result);
 
       setAddSessionsSuccess(`Se añadieron ${sessionsToAdd} sesiones a ${selectedEmployeeForSessions.name}`);
@@ -692,14 +643,14 @@ const BusinessEmployees = ({ navigationProps }) => {
                       <button 
                         onClick={() => handleViewDetails(employee)}
                         style={{
-                          background: '#0057ff',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          padding: '0.5rem 1rem',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: 'pointer'
+                        background: '#0057ff',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '0.5rem 1rem',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer'
                         }}
                       >
                         Ver Detalles

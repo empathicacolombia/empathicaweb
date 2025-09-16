@@ -658,8 +658,14 @@ const TestResults = ({ navigationProps, testAnswers }) => {
 
   const isUserRegistered = navigationProps && navigationProps.isUserRegistered;
 
+  // Determinar si el usuario está logueado verificando el token en localStorage
+  const isUserLoggedIn = () => {
+    const token = localStorage.getItem('empathica_token');
+    return token && token.trim() !== '';
+  };
+
   // Determinar si el usuario viene del dashboard (registrado) o del landing (no registrado)
-  const isFromDashboard = isUserRegistered || (navigationProps && navigationProps.location && navigationProps.location.state && navigationProps.location.state.fromDashboard);
+  const isFromDashboard = isUserRegistered || isUserLoggedIn() || (navigationProps && navigationProps.location && navigationProps.location.state && navigationProps.location.state.fromDashboard);
 
   if (!patientProfile) {
     return (
@@ -770,6 +776,27 @@ const TestResults = ({ navigationProps, testAnswers }) => {
                   fontWeight: 500
                 }}>
                   💡 <strong>Próximo paso:</strong> Para acceder a tu psicólogo recomendado y comenzar tu proceso terapéutico, necesitas crear una cuenta gratuita.
+          </p>
+        </div>
+            )}
+
+            {isFromDashboard && (
+        <div style={{ 
+                background: '#e8f5e8',
+                border: '1px solid #28a745',
+                borderRadius: 12,
+                padding: '16px',
+                marginTop: '20px',
+                maxWidth: '600px',
+                margin: '20px auto 0 auto'
+              }}>
+                <p style={{
+                  color: '#28a745',
+                  fontSize: 'clamp(14px, 2.5vw, 16px)',
+                  margin: 0,
+                  fontWeight: 500
+                }}>
+                  ✅ <strong>¡Perfecto!</strong> Ya tienes una cuenta. Puedes continuar con tu psicólogo recomendado o explorar otras opciones.
                 </p>
               </div>
             )}
@@ -1486,7 +1513,7 @@ const TestResults = ({ navigationProps, testAnswers }) => {
                 e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 87, 255, 0.3)';
               }}
             >
-                   Registrarme para continuar
+                   Regístrate para continuar
             </button>
             
             <button 

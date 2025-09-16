@@ -18,7 +18,7 @@ const BusinessSupport = ({ navigationProps }) => {
           fontWeight: 800, 
           marginBottom: '0.5rem' 
         }}>
-          Soporte
+        Soporte
         </h1>
         <p style={{ 
           color: '#7a8bbd', 
@@ -27,8 +27,8 @@ const BusinessSupport = ({ navigationProps }) => {
         }}>
           Centro de ayuda y contacto
         </p>
-      </div>
-
+          </div>
+          
       {/* Tabs */}
       <div style={{ 
         display: 'flex', 
@@ -40,10 +40,10 @@ const BusinessSupport = ({ navigationProps }) => {
         maxWidth: '400px'
       }}>
         {tabs.map(tab => (
-          <button 
-            key={tab.id} 
-            onClick={() => setActiveTab(tab.id)} 
-            style={{
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
               background: activeTab === tab.id ? '#fff' : 'transparent',
               color: activeTab === tab.id ? '#0057FF' : '#7a8bbd',
               border: activeTab === tab.id ? '2px solid #0057FF' : 'none',
@@ -57,20 +57,20 @@ const BusinessSupport = ({ navigationProps }) => {
               outline: 'none',
               transition: 'all 0.2s',
               flex: 1,
-              display: 'flex',
-              alignItems: 'center',
+                display: 'flex',
+                alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem'
             }}
           >
             {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </div>
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
       {/* Contenido de las pestañas */}
-      {activeTab === 'contact' && (
+          {activeTab === 'contact' && (
         <div style={{
           background: '#fff',
           borderRadius: 16,
@@ -87,14 +87,14 @@ const BusinessSupport = ({ navigationProps }) => {
               Contacto Directo
             </h2>
             <p style={{
-              fontSize: 16,
+                      fontSize: 16,
               color: '#666',
               lineHeight: 1.6,
               margin: 0
             }}>
               Estamos aquí para ayudarte. Puedes contactarnos a través de los siguientes medios:
             </p>
-          </div>
+                </div>
 
           {/* Información de contacto */}
           <div style={{
@@ -106,7 +106,7 @@ const BusinessSupport = ({ navigationProps }) => {
             <div style={{
               background: '#f8fafc',
               border: '1px solid #e2e8f0',
-              borderRadius: 12,
+                      borderRadius: 12,
               padding: '1.5rem',
               textAlign: 'center'
             }}>
@@ -121,7 +121,7 @@ const BusinessSupport = ({ navigationProps }) => {
                 margin: '0 auto 1rem auto'
               }}>
                 <Mail size={24} color="#fff" />
-              </div>
+                </div>
               <h3 style={{
                 fontSize: 18,
                 fontWeight: 600,
@@ -139,7 +139,7 @@ const BusinessSupport = ({ navigationProps }) => {
               </p>
               <a 
                 href="mailto:soporte@empathica.com"
-                style={{
+                    style={{
                   color: '#0057FF',
                   textDecoration: 'none',
                   fontWeight: 600,
@@ -148,14 +148,14 @@ const BusinessSupport = ({ navigationProps }) => {
               >
                 soporte@empathica.com
               </a>
-            </div>
+                </div>
 
             {/* Teléfono */}
             <div style={{
               background: '#f8fafc',
               border: '1px solid #e2e8f0',
-              borderRadius: 12,
-              padding: '1.5rem',
+                    borderRadius: 12,
+                    padding: '1.5rem',
               textAlign: 'center'
             }}>
               <div style={{
@@ -178,8 +178,8 @@ const BusinessSupport = ({ navigationProps }) => {
               }}>
                 Teléfono
               </h3>
-              <p style={{
-                fontSize: 14,
+                    <p style={{
+                      fontSize: 14,
                 color: '#666',
                 margin: '0 0 1rem 0'
               }}>
@@ -202,8 +202,8 @@ const BusinessSupport = ({ navigationProps }) => {
             <div style={{
               background: '#f8fafc',
               border: '1px solid #e2e8f0',
-              borderRadius: 12,
-              padding: '1.5rem',
+                    borderRadius: 12,
+                    padding: '1.5rem',
               textAlign: 'center'
             }}>
               <div style={{
@@ -217,7 +217,7 @@ const BusinessSupport = ({ navigationProps }) => {
                 margin: '0 auto 1rem auto'
               }}>
                 <Clock size={24} color="#fff" />
-              </div>
+                      </div>
               <h3 style={{
                 fontSize: 18,
                 fontWeight: 600,
@@ -226,8 +226,8 @@ const BusinessSupport = ({ navigationProps }) => {
               }}>
                 Horarios de Atención
               </h3>
-              <p style={{
-                fontSize: 14,
+                    <p style={{
+                      fontSize: 14,
                 color: '#666',
                 margin: '0 0 1rem 0'
               }}>
@@ -235,26 +235,26 @@ const BusinessSupport = ({ navigationProps }) => {
               </p>
               <div style={{
                 color: '#F59E0B',
-                fontWeight: 600,
+                        fontWeight: 600,
                 fontSize: 16
               }}>
                 Lunes - Viernes<br />
                 8:00 AM - 6:00 PM
               </div>
             </div>
-          </div>
+              </div>
 
           {/* Información adicional */}
           <div style={{
             background: '#e6f0ff',
             border: '1px solid #b3d9ff',
-            borderRadius: 12,
+                    borderRadius: 12,
             padding: '1.5rem',
             marginTop: '2rem'
           }}>
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
               gap: '0.75rem',
               marginBottom: '1rem'
             }}>
@@ -267,7 +267,7 @@ const BusinessSupport = ({ navigationProps }) => {
               }}>
                 ¿Necesitas ayuda urgente?
               </h3>
-            </div>
+                    </div>
             <p style={{
               fontSize: 14,
               color: '#1e40af',
@@ -278,9 +278,9 @@ const BusinessSupport = ({ navigationProps }) => {
               Nuestro equipo de soporte técnico está disponible para resolver cualquier inconveniente 
               que pueda afectar el funcionamiento de tu plataforma.
             </p>
-          </div>
-        </div>
-      )}
+              </div>
+            </div>
+          )}
     </div>
   );
 };

@@ -6,7 +6,7 @@ import axios from 'axios';
  */
 
 // URL base del servidor backend
-const API_BASE_URL = 'https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443';
+const API_BASE_URL = 'https://api.empathica.com.co';
 //https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443
 //https://local.julioperezag.com
 
@@ -20,6 +20,9 @@ const apiClient = axios.create({
 
 // Interceptor para agregar token automáticamente
 apiClient.interceptors.request.use((config) => {
+  // Log básico para debugging de peticiones
+  console.log(`🌐 ${config.method?.toUpperCase()} ${config.url}`);
+  
   // Rutas que no requieren verificación de token
   const publicRoutes = [
     '/api/auth/login',
@@ -69,8 +72,14 @@ apiClient.interceptors.request.use((config) => {
 
 // Interceptor para manejar errores de autenticación
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log básico para respuestas exitosas
+    console.log(`✅ ${response.status} ${response.config?.url}`);
+    return response;
+  },
   (error) => {
+    // Log básico para errores
+    console.log(`❌ ${error.response?.status || 'ERROR'} ${error.config?.url}`);
     // Rutas que no deben causar redirección automática al login
     const nonCriticalRoutes = [
       '/api/auth/login', // Excluir login para no limpiar sesión en intentos fallidos
