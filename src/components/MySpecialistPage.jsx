@@ -85,8 +85,7 @@ const MySpecialistPage = ({ navigationProps }) => {
         setRecommendedPsychologist(data);
         console.log('Psicólogo recomendado cargado con ID específico:', recommendedPsychologistId);
         
-        // Enviar PUT de tags cuando se presenta el psicólogo recomendado
-        await updatePatientTagsFromLocalStorage();
+        // NO enviar tags aquí - se enviarán después de la asignación exitosa
       } else {
         console.warn('No se encontró ID de psicólogo recomendado en localStorage');
         // No usar fallback hardcodeado, simplemente no mostrar psicólogo recomendado
@@ -290,6 +289,10 @@ const MySpecialistPage = ({ navigationProps }) => {
       
       // Recargar los datos del paciente para mostrar la información actualizada
       await fetchPatientData();
+      
+      // DESPUÉS de la asignación exitosa, enviar tags al backend
+      console.log('Asignación exitosa, ahora enviando tags al backend...');
+      await updatePatientTagsFromLocalStorage();
       
       // Verificar que los tags se actualizaron exitosamente antes de borrar localStorage
       if (tagsUpdated) {

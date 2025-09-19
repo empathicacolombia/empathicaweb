@@ -87,44 +87,8 @@ const LoginPage = ({ navigationProps }) => {
       // Usar el contexto de autenticación para login
       const userData = await login({ email, password });
 
-      // Si es paciente, procesar tags del test si existen
-      if (userData.userType === 'client' || userData.userType === 'patient') {
-        try {
-          const storedTags = localStorage.getItem('empathica_test_tags');
-          if (storedTags) {
-            const tagsData = JSON.parse(storedTags);
-            console.log('Tags encontrados en localStorage durante login:', tagsData);
-            console.log('Estructura de tag1:', tagsData.tag1);
-            console.log('Estructura de tag2:', tagsData.tag2);
-            console.log('Estructura de tag3:', tagsData.tag3);
-            
-            // Preparar datos para el POST (solo los nombres de los tags)
-            const tagsPayload = {
-              tag1: { name: tagsData.tag1?.name || 'string' },
-              tag2: { name: tagsData.tag2?.name || 'string' },
-              tag3: { name: tagsData.tag3?.name || 'string' }
-            };
-            
-            console.log('Enviando tags al backend durante login:', tagsPayload);
-            console.log('Valor final de tag1:', tagsPayload.tag1);
-            console.log('Valor final de tag2:', tagsPayload.tag2);
-            console.log('Valor final de tag3:', tagsPayload.tag3);
-            
-            // Hacer POST para subir los tags del paciente
-            await userService.uploadPatientTags(tagsPayload);
-            console.log('Tags subidos exitosamente al perfil del paciente');
-            
-            // Eliminar tags de localStorage después del POST exitoso
-            localStorage.removeItem('empathica_test_tags');
-            console.log('Tags eliminados de localStorage después del login');
-          } else {
-            console.log('No hay tags en localStorage para procesar durante el login');
-          }
-        } catch (tagsError) {
-          console.error('Error actualizando tags del paciente durante login:', tagsError);
-          // No lanzar error aquí para no interrumpir el flujo de login
-        }
-      }
+      // Tags se procesarán cuando el usuario seleccione un psicólogo
+      // No procesar automáticamente durante el login
 
       // Redirigir según el tipo de usuario
       if (userData.userType === 'superadmin') {

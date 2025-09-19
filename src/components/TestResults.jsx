@@ -600,9 +600,8 @@ const TestResults = ({ navigationProps, testAnswers }) => {
       
       if (hasExistingTags) {
         console.log('Usuario ya tiene tags en el backend, no es necesario enviar POST');
-        // Limpiar localStorage ya que no necesitamos enviar tags
-        localStorage.removeItem('empathica_test_tags');
-        console.log('localStorage limpiado - usuario ya tiene tags');
+        // NO limpiar localStorage - se mantendrá hasta que seleccione médico o cierre sesión
+        console.log('localStorage mantenido - usuario ya tiene tags');
         return;
       }
       
@@ -621,9 +620,8 @@ const TestResults = ({ navigationProps, testAnswers }) => {
       
       console.log('Tags enviados exitosamente al backend');
       
-      // Limpiar localStorage después de enviar exitosamente
-      localStorage.removeItem('empathica_test_tags');
-      console.log('localStorage limpiado después de enviar tags');
+      // NO limpiar localStorage - se mantendrá hasta que seleccione médico o cierre sesión
+      console.log('localStorage mantenido después de enviar tags');
       
     } catch (error) {
       console.error('Error enviando tags al backend:', error);
@@ -663,15 +661,10 @@ const TestResults = ({ navigationProps, testAnswers }) => {
         recommendedPsychologistId: recommendedPsychologist.id
       };
       
-      // Si el usuario está logueado, enviar tags al backend
-      if (isFromDashboard) {
-        console.log('Usuario logueado detectado, enviando tags al backend...');
-        sendTagsToBackend(patientProfile.tags);
-      } else {
-        // Si no está logueado, guardar en localStorage
-        localStorage.setItem('empathica_test_tags', JSON.stringify(tagsForStorage));
-        console.log('Tags y psicólogo recomendado guardados en localStorage:', tagsForStorage);
-      }
+      // Guardar en localStorage para ambos casos (logueado y no logueado)
+      // Los tags se enviarán al backend cuando el usuario seleccione un psicólogo
+      localStorage.setItem('empathica_test_tags', JSON.stringify(tagsForStorage));
+      console.log('Tags y psicólogo recomendado guardados en localStorage:', tagsForStorage);
     }
   }, [patientProfile, recommendedPsychologist, isFromDashboard]);
 

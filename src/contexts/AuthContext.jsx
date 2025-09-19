@@ -176,6 +176,10 @@ export const AuthProvider = ({ children }) => {
       // Usar el servicio de autenticación para logout
       authService.logout();
       
+      // Limpiar localStorage de test tags para evitar duplicaciones
+      localStorage.removeItem('empathica_test_tags');
+      console.log('localStorage de test tags limpiado al cerrar sesión');
+      
       // Limpiar estado del usuario
       setUser(null);
     } catch (error) {
@@ -192,6 +196,7 @@ export const AuthProvider = ({ children }) => {
       // Limpiar localStorage
       localStorage.removeItem('empathica_token');
       localStorage.removeItem('empathica_user');
+      localStorage.removeItem('empathica_test_tags'); // Limpiar test tags también
       
       // Limpiar estado
       setUser(null);
