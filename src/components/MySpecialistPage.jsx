@@ -35,6 +35,65 @@ const MySpecialistPage = ({ navigationProps }) => {
     return age;
   };
 
+  // Función para formatear horarios
+  const formatSchedule = (schedule) => {
+    if (!schedule) return [];
+    
+    const days = {
+      'MONDAY': 'Lunes',
+      'TUESDAY': 'Martes', 
+      'WEDNESDAY': 'Miércoles',
+      'THURSDAY': 'Jueves',
+      'FRIDAY': 'Viernes',
+      'SATURDAY': 'Sábado',
+      'SUNDAY': 'Domingo'
+    };
+    
+    const formattedSchedule = [];
+    Object.keys(schedule).forEach(day => {
+      if (schedule[day] && schedule[day].length > 0) {
+        const dayName = days[day] || day;
+        const timeSlots = schedule[day].map(slot => 
+          `${slot.startTime.slice(0, 5)} - ${slot.endTime.slice(0, 5)}`
+        ).join(', ');
+        formattedSchedule.push(`${dayName}: ${timeSlots}`);
+      }
+    });
+    
+    return formattedSchedule;
+  };
+
+  // Función para formatear información de contacto
+  const formatContactInfo = (psychologist) => {
+    const contactInfo = [];
+    
+    if (psychologist.email) {
+      contactInfo.push({
+        icon: '📧',
+        label: 'Email',
+        value: psychologist.email
+      });
+    }
+    
+    if (psychologist.phoneNumber) {
+      contactInfo.push({
+        icon: '📞',
+        label: 'Teléfono',
+        value: psychologist.phoneNumber
+      });
+    }
+    
+    if (psychologist.company?.name) {
+      contactInfo.push({
+        icon: '🏢',
+        label: 'Empresa',
+        value: psychologist.company.name
+      });
+    }
+    
+    return contactInfo;
+  };
+
   // Función para obtener los datos del paciente
   const fetchPatientData = async () => {
     if (!user?.id) {
@@ -645,32 +704,187 @@ const MySpecialistPage = ({ navigationProps }) => {
 
                       {/* Información adicional */}
                 <div style={{
-                  display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.5rem',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
                   marginBottom: '1rem'
                 }}>
                         {patientData.psychologist.oneliner && (
-                          <p style={{
-                            fontSize: 16,
-                            lineHeight: 1.5,
-                            color: 'rgba(255, 255, 255, 0.9)',
-                            fontStyle: 'italic',
-                            margin: 0
+                          <div style={{
+                            gridColumn: '1 / -1',
+                            padding: '1rem',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            borderRadius: 8,
+                            marginBottom: '0.5rem'
                           }}>
-                            "{patientData.psychologist.oneliner}"
-                          </p>
+                            <p style={{
+                              fontSize: 16,
+                              lineHeight: 1.5,
+                              color: 'rgba(255, 255, 255, 0.9)',
+                              fontStyle: 'italic',
+                              margin: 0,
+                              textAlign: 'center'
+                            }}>
+                              "{patientData.psychologist.oneliner}"
+                            </p>
+                          </div>
                         )}
                         
-                        {patientData.psychologist.cedula && (
-                          <p style={{
-                    fontSize: 14,
-                            color: 'rgba(255, 255, 255, 0.8)',
-                            margin: 0
-                          }}>
-                            Cédula: {patientData.psychologist.cedula}
-                          </p>
-                        )}
+                        {/* Columna izquierda */}
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.75rem'
+                        }}>
+                          {/* Información de contacto */}
+                          {formatContactInfo(patientData.psychologist).map((contact, index) => (
+                            <div key={index} style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '0.5rem 0',
+                              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}>
+                              <span style={{
+                                fontSize: 13,
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                {contact.label}
+                              </span>
+                              <span style={{
+                                fontSize: 14,
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                fontWeight: 600
+                              }}>
+                                {contact.value}
+                              </span>
+                            </div>
+                          ))}
+                          
+                          {/* Edad */}
+                          {patientData.psychologist.dateOfBirth && (
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '0.5rem 0',
+                              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}>
+                              <span style={{
+                                fontSize: 13,
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                Edad
+                              </span>
+                              <span style={{
+                                fontSize: 14,
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                fontWeight: 600
+                              }}>
+                                {calculateAge(patientData.psychologist.dateOfBirth)} años
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Columna derecha */}
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.75rem'
+                        }}>
+                          {/* Género */}
+                          {patientData.psychologist.gender && (
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '0.5rem 0',
+                              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}>
+                              <span style={{
+                                fontSize: 13,
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                Género
+                              </span>
+                              <span style={{
+                                fontSize: 14,
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                fontWeight: 600
+                              }}>
+                                {patientData.psychologist.gender === 'MALE' ? 'Masculino' : 'Femenino'}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Estado */}
+                          {patientData.psychologist.userStatus && (
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '0.5rem 0',
+                              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}>
+                              <span style={{
+                                fontSize: 13,
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                Estado
+                              </span>
+                              <span style={{
+                                fontSize: 14,
+                                color: patientData.psychologist.userStatus === 'ACTIVE' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+                                fontWeight: 600,
+                                padding: '0.25rem 0.75rem',
+                                borderRadius: '12px',
+                                background: patientData.psychologist.userStatus === 'ACTIVE' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'
+                              }}>
+                                {patientData.psychologist.userStatus === 'ACTIVE' ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {patientData.psychologist.cedula && (
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '0.5rem 0',
+                              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}>
+                              <span style={{
+                                fontSize: 13,
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                Cédula
+                              </span>
+                              <span style={{
+                                fontSize: 14,
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                fontWeight: 600
+                              }}>
+                                {patientData.psychologist.cedula}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -945,42 +1159,252 @@ const MySpecialistPage = ({ navigationProps }) => {
                         
                         {/* Información detallada */}
                         <div style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.5rem'
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '1rem',
+                          marginTop: '1rem'
                         }}>
-                          {recommendedPsychologist.attendAges && recommendedPsychologist.attendAges.length > 0 && (
-                            <p style={{
-                              fontSize: 14,
-                              color: '#666',
-                              margin: 0
-                            }}>
-                              <strong>Edades que atiende:</strong> {recommendedPsychologist.attendAges.join(', ')}
-                            </p>
-                          )}
+                          {/* Columna izquierda */}
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem'
+                          }}>
+                            {/* Información de contacto */}
+                            {formatContactInfo(recommendedPsychologist).map((contact, index) => (
+                              <div key={index} style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0.5rem 0',
+                                borderBottom: '1px solid #f0f0f0'
+                              }}>
+                                <span style={{
+                                  fontSize: 13,
+                                  color: '#666',
+                                  fontWeight: 500,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}>
+                                  {contact.label}
+                                </span>
+                                <span style={{
+                                  fontSize: 14,
+                                  color: '#333',
+                                  fontWeight: 600
+                                }}>
+                                  {contact.value}
+                                </span>
+                              </div>
+                            ))}
+                            
+                            {/* Edad */}
+                            {recommendedPsychologist.dateOfBirth && (
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0.5rem 0',
+                                borderBottom: '1px solid #f0f0f0'
+                              }}>
+                                <span style={{
+                                  fontSize: 13,
+                                  color: '#666',
+                                  fontWeight: 500,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}>
+                                  Edad
+                                </span>
+                                <span style={{
+                                  fontSize: 14,
+                                  color: '#333',
+                                  fontWeight: 600
+                                }}>
+                                  {calculateAge(recommendedPsychologist.dateOfBirth)} años
+                                </span>
+                              </div>
+                            )}
+                            
+                            {/* Género */}
+                            {recommendedPsychologist.gender && (
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0.5rem 0',
+                                borderBottom: '1px solid #f0f0f0'
+                              }}>
+                                <span style={{
+                                  fontSize: 13,
+                                  color: '#666',
+                                  fontWeight: 500,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}>
+                                  Género
+                                </span>
+                                <span style={{
+                                  fontSize: 14,
+                                  color: '#333',
+                                  fontWeight: 600
+                                }}>
+                                  {recommendedPsychologist.gender === 'MALE' ? 'Masculino' : 'Femenino'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                           
-                          {recommendedPsychologist.therapeuticStyle && recommendedPsychologist.therapeuticStyle.length > 0 && (
-                            <p style={{
-                              fontSize: 14,
-                              color: '#666',
-                              margin: 0
-                            }}>
-                              <strong>Estilos terapéuticos:</strong> {recommendedPsychologist.therapeuticStyle.join(', ')}
-                            </p>
-                          )}
-                          
-                          {recommendedPsychologist.additionalModalities && recommendedPsychologist.additionalModalities.length > 0 && (
-                            <p style={{
-                              fontSize: 14,
-                              color: '#666',
-                              margin: 0
-                            }}>
-                              <strong>Modalidades adicionales:</strong> {recommendedPsychologist.additionalModalities.join(', ')}
-                            </p>
-                          )}
+                          {/* Columna derecha */}
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem'
+                          }}>
+                            {/* Estado */}
+                            {recommendedPsychologist.userStatus && (
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0.5rem 0',
+                                borderBottom: '1px solid #f0f0f0'
+                              }}>
+                                <span style={{
+                                  fontSize: 13,
+                                  color: '#666',
+                                  fontWeight: 500,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}>
+                                  Estado
+                                </span>
+                                <span style={{
+                                  fontSize: 14,
+                                  color: recommendedPsychologist.userStatus === 'ACTIVE' ? '#10b981' : '#ef4444',
+                                  fontWeight: 600,
+                                  padding: '0.25rem 0.75rem',
+                                  borderRadius: '12px',
+                                  background: recommendedPsychologist.userStatus === 'ACTIVE' ? '#ecfdf5' : '#fef2f2'
+                                }}>
+                                  {recommendedPsychologist.userStatus === 'ACTIVE' ? 'Activo' : 'Inactivo'}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {recommendedPsychologist.attendAges && recommendedPsychologist.attendAges.length > 0 && (
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0.5rem 0',
+                                borderBottom: '1px solid #f0f0f0'
+                              }}>
+                                <span style={{
+                                  fontSize: 13,
+                                  color: '#666',
+                                  fontWeight: 500,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}>
+                                  Edades
+                                </span>
+                                <span style={{
+                                  fontSize: 14,
+                                  color: '#333',
+                                  fontWeight: 600
+                                }}>
+                                  {recommendedPsychologist.attendAges.join(', ')}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {recommendedPsychologist.therapeuticStyle && recommendedPsychologist.therapeuticStyle.length > 0 && (
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0.5rem 0',
+                                borderBottom: '1px solid #f0f0f0'
+                              }}>
+                                <span style={{
+                                  fontSize: 13,
+                                  color: '#666',
+                                  fontWeight: 500,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}>
+                                  Estilos
+                                </span>
+                                <span style={{
+                                  fontSize: 14,
+                                  color: '#333',
+                                  fontWeight: 600
+                                }}>
+                                  {recommendedPsychologist.therapeuticStyle.join(', ')}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    {/* Horarios disponibles */}
+                    {recommendedPsychologist.psychologistSchedule && (
+                      <div style={{
+                        background: '#fff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: 12,
+                        padding: '1.5rem',
+                        marginBottom: '1.5rem'
+                      }}>
+                        <h5 style={{
+                          fontSize: 16,
+                          fontWeight: 700,
+                          color: '#1f2937',
+                          margin: '0 0 1rem 0',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}>
+                          Horarios Disponibles
+                        </h5>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                          gap: '0.75rem'
+                        }}>
+                          {formatSchedule(recommendedPsychologist.psychologistSchedule).map((schedule, index) => (
+                            <div key={index} style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '0.75rem',
+                              background: '#f9fafb',
+                              borderRadius: 8,
+                              border: '1px solid #f3f4f6'
+                            }}>
+                              <span style={{
+                                fontSize: 13,
+                                color: '#6b7280',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                {schedule.split(':')[0]}
+                              </span>
+                              <span style={{
+                                fontSize: 14,
+                                color: '#374151',
+                                fontWeight: 600
+                              }}>
+                                {schedule.split(':').slice(1).join(':').trim()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Botón de seleccionar */}
                     <div style={{
@@ -988,7 +1412,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                       justifyContent: 'center'
                     }}>
                       <button
-                        onClick={handleAssignPsychologist}
+                        onClick={() => handleAssignPsychologist(recommendedPsychologist.id)}
                         disabled={assigningPsychologist}
                         style={{
                           background: assigningPsychologist ? '#ccc' : '#0057FF',
@@ -1283,165 +1707,170 @@ const MySpecialistPage = ({ navigationProps }) => {
               padding: '1.5rem',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '1rem'
+              <h3 style={{
+                fontSize: 18,
+                fontWeight: 700,
+                margin: '0 0 1rem 0',
+                color: '#1f2937',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}>
-                <span role="img" aria-label="graduation" style={{ fontSize: 20 }}>🎓</span>
-                <h3 style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  margin: 0,
-                  color: '#333'
-                }}>
-                  Formación Académica
-                </h3>
-              </div>
+                Formación Académica
+              </h3>
               
-                {patientData.psychologist.academicHistory && patientData.psychologist.academicHistory.length > 0 ? (
-              <ul style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0
-              }}>
-                    {patientData.psychologist.academicHistory.map((academic, index) => (
-                      <li key={index} style={{
-                  padding: '0.5rem 0',
-                        borderBottom: index < patientData.psychologist.academicHistory.length - 1 ? '1px solid #f0f0f0' : 'none',
-                  fontSize: 14,
-                  color: '#666'
+              {patientData.psychologist.academicHistory && patientData.psychologist.academicHistory.length > 0 ? (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem'
                 }}>
-                        {academic.degree} - {academic.institution}
-                        {academic.year && ` (${academic.year})`}
-                </li>
-                    ))}
-                  </ul>
-                ) : (
+                  {patientData.psychologist.academicHistory.map((academic, index) => (
+                    <div key={index} style={{
+                      padding: '1rem',
+                      background: '#f9fafb',
+                      borderRadius: 8,
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '0.5rem'
+                      }}>
+                        <h4 style={{
+                          fontSize: 16,
+                          fontWeight: 600,
+                          color: '#1f2937',
+                          margin: 0
+                        }}>
+                          {academic.degree}
+                        </h4>
+                        {academic.graduationYear && (
+                          <span style={{
+                            fontSize: 12,
+                            color: '#6b7280',
+                            fontWeight: 500,
+                            background: '#e5e7eb',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '4px'
+                          }}>
+                            {academic.graduationYear}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem'
+                      }}>
+                        <p style={{
+                          fontSize: 14,
+                          color: '#374151',
+                          margin: 0,
+                          fontWeight: 500
+                        }}>
+                          {academic.institution}
+                        </p>
+                        
+                        {academic.major && (
+                          <p style={{
+                            fontSize: 13,
+                            color: '#6b7280',
+                            margin: 0,
+                            fontStyle: 'italic'
+                          }}>
+                            Especialización: {academic.major}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  background: '#f9fafb',
+                  borderRadius: 8,
+                  border: '1px solid #e5e7eb'
+                }}>
                   <p style={{
-                  fontSize: 14,
-                    color: '#999',
-                    fontStyle: 'italic',
-                    margin: 0
+                    fontSize: 14,
+                    color: '#6b7280',
+                    margin: 0,
+                    fontStyle: 'italic'
                   }}>
                     Información académica no disponible
                   </p>
-                )}
+                  <p style={{
+                    fontSize: 12,
+                    color: '#9ca3af',
+                    margin: '0.5rem 0 0 0'
+                  }}>
+                    El psicólogo aún no ha completado su perfil académico
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Información Personal */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: '1.5rem',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-            }}>
+
+            {/* Horarios de Atención */}
+            {patientData.psychologist.psychologistSchedule && (
               <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '1rem'
+                background: '#fff',
+                borderRadius: 12,
+                padding: '1.5rem',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                gridColumn: '1 / -1'
               }}>
-                <span role="img" aria-label="person" style={{ fontSize: 20 }}>👤</span>
                 <h3 style={{
                   fontSize: 18,
                   fontWeight: 700,
-                  margin: 0,
-                  color: '#333'
+                  margin: '0 0 1rem 0',
+                  color: '#1f2937',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
                 }}>
-                  Información Personal
+                  Horarios de Atención
                 </h3>
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.75rem'
-              }}>
-                  {patientData.psychologist.dateOfBirth && (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: 14,
-                  color: '#666'
-                }}>
-                  <span>Edad:</span>
-                      <span style={{ fontWeight: 600, color: '#333' }}>
-                        {calculateAge(patientData.psychologist.dateOfBirth)} años
-                      </span>
-                </div>
-                  )}
                 
-                  {patientData.psychologist.specialty && (
                 <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: 14,
-                  color: '#666'
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                  gap: '1rem'
                 }}>
-                      <span>Especialidad:</span>
-                  <span style={{
-                    background: '#0057FF',
-                    color: '#fff',
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '12px',
-                    fontSize: 12,
-                    fontWeight: 600
-                  }}>
-                        {patientData.psychologist.specialty}
-                  </span>
-                </div>
-                  )}
-                
-                  {patientData.psychologist.therapeuticStyle && (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: 14,
-                  color: '#666'
-                }}>
-                      <span>Estilo Terapéutico:</span>
-                      <span style={{ fontWeight: 600, color: '#333' }}>
-                        {patientData.psychologist.therapeuticStyle}
-                      </span>
-                  </div>
-                  )}
-
-                  {patientData.psychologist.attendAges && patientData.psychologist.attendAges.length > 0 && (
-          <div style={{
-            display: 'flex',
-                      justifyContent: 'space-between',
-            alignItems: 'center',
-                      fontSize: 14,
-                      color: '#666'
-                    }}>
-                      <span>Edades que atiende:</span>
-                      <span style={{ fontWeight: 600, color: '#333' }}>
-                        {patientData.psychologist.attendAges.join(', ')}
-                      </span>
-              </div>
-                  )}
-              
-                  {patientData.psychologist.licenseNumber && (
-              <div style={{
+                  {formatSchedule(patientData.psychologist.psychologistSchedule).map((schedule, index) => (
+                    <div key={index} style={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                  fontSize: 14,
-                  color: '#666'
-                }}>
-                      <span>Licencia:</span>
-                      <span style={{ fontWeight: 600, color: '#333' }}>
-                        {patientData.psychologist.licenseNumber}
+                      padding: '1rem',
+                      background: '#f9fafb',
+                      borderRadius: 8,
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <span style={{
+                        fontSize: 14,
+                        color: '#6b7280',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {schedule.split(':')[0]}
                       </span>
+                      <span style={{
+                        fontSize: 14,
+                        color: '#374151',
+                        fontWeight: 600
+                      }}>
+                        {schedule.split(':').slice(1).join(':').trim()}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                  )}
               </div>
-            </div>
+            )}
             </div>
           )}
 
