@@ -766,7 +766,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                 <button 
                       onClick={() => {
                         setError(null); // Limpiar error al navegar al test
-                        handleNavigation('test-matching');
+                        handleNavigation('questionnaire-match', { fromDashboard: true });
                       }}
                   style={{
                         background: '#f59e0b',

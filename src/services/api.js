@@ -26,12 +26,15 @@ apiClient.interceptors.request.use((config) => {
   // Rutas que no requieren verificación de token
   const publicRoutes = [
     '/api/auth/login',
-    '/api/patients',
     '/api/psychologists' // Solo para POST (registro)
   ];
   
+  // Rutas con token opcional (se envía si existe, no se requiere)
+  const optionalTokenRoutes = [
+    '/api/patients' // POST: registro público (sin token) o dashboard empresa (con token)
+  ];
+  
   // Si es una ruta pública, no verificar token
-  // Solo considerar públicas las rutas POST de registro específicas
   const isPublicRoute = publicRoutes.some(route => {
     if (route === '/api/psychologists') {
       // Para /api/psychologists, considerar público si es POST (registro) o GET (listar todos)
@@ -39,14 +42,29 @@ apiClient.interceptors.request.use((config) => {
              (config.method === 'post' && !config.url.includes('/schedule')) ||
              (config.method === 'get' && config.url === '/api/psychologists');
     }
-    if (route === '/api/patients') {
-      // Para /api/patients, solo considerar público si es POST exacto (registro) y NO es /psychologist
-      return config.url === route && config.method === 'post' && !config.url.includes('/psychologist');
-    }
     return config.url.includes(route) && config.method === 'post';
   });
   
+  // Si es una ruta con token opcional, no verificar expiración pero enviar token si existe
+  const isOptionalTokenRoute = optionalTokenRoutes.some(route => {
+    if (route === '/api/patients') {
+      // Para /api/patients, considerar opcional SOLO si es POST exacto
+      // NO incluir rutas como /api/patients/{id}/tokens o /api/patients/{id}
+      return config.url === route && config.method === 'post';
+    }
+    return false;
+  });
+  
   if (isPublicRoute) {
+    return config;
+  }
+  
+  if (isOptionalTokenRoute) {
+    // Para rutas con token opcional, enviar token si existe pero no verificar expiración
+    const token = localStorage.getItem('empathica_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   }
   
@@ -276,20 +294,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Obtiene la información del paciente por ID
-   * @param {number} patientId - ID del paciente
-   * @returns {Promise} - Datos del paciente
-   */
-  getPatientById: async (patientId) => {
-    try {
-      const response = await apiClient.get(`/api/patients/${patientId}`);
-      return handleResponse(response);
-    } catch (error) {
-      console.error('Error obteniendo paciente:', error);
-      throw error;
-    }
-  },
 
   /**
    * Obtiene el perfil del usuario actual
@@ -557,18 +561,29 @@ export const userService = {
 
   /**
    * Sube los tags del paciente usando POST /api/patients/tags
-   * @param {Object} tagsData - Datos de los tags del paciente
-   * @param {Object} tagsData.tag1 - Primer tag con { tagId: 0, name: "string", percentage: 0.1, patient: "string" }
-   * @param {Object} tagsData.tag2 - Segundo tag con { tagId: 0, name: "string", percentage: 0.1, patient: "string" }
-   * @param {Object} tagsData.tag3 - Tercer tag con { tagId: 0, name: "string", percentage: 0.1, patient: "string" }
+   * @param {Array} tagsData - Array de tags con formato [{ name: "string", percentage: 0.1 }]
    * @returns {Promise} - Respuesta del servidor
    */
   uploadPatientTags: async (tagsData) => {
     try {
+      console.log('=== ENVIANDO TAGS DEL PACIENTE ===');
+      console.log('URL:', '/api/patients/tags');
+      console.log('Tags data:', tagsData);
+      console.log('==================================');
+      
       const response = await apiClient.post('/api/patients/tags', tagsData);
-      return handleResponse(response);
+      const data = handleResponse(response);
+      
+      console.log('Tags enviados exitosamente:', data);
+      return data;
     } catch (error) {
       console.error('Error subiendo tags del paciente:', error);
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   },

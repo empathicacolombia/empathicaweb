@@ -86,9 +86,7 @@ const QuestionnaireMatch = ({ navigationProps }) => {
       // Terminar cuestionario
       if (navigationProps && navigationProps.onNavigate) {
         // Determinar si viene del dashboard o del landing
-        const isFromDashboard = navigationProps.location && navigationProps.location.pathname && 
-                               (navigationProps.location.pathname.includes('dashboard') || 
-                                navigationProps.location.pathname.includes('client-'));
+        const isFromDashboard = navigationProps.location && navigationProps.location.state && navigationProps.location.state.fromDashboard;
         
         navigationProps.onNavigate('test-results', { 
           testAnswers: answers,
