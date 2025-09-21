@@ -104,7 +104,7 @@ const PsychologistScheduleModal = ({
     return processedSchedule;
   };
 
-  // Función para generar la fecha de la sesión
+  // Función para generar la fecha de la sesión con zona horaria
   const generateSessionDateTime = (day, startTime) => {
     const today = new Date();
     const dayMapping = {
@@ -128,8 +128,11 @@ const PsychologistScheduleModal = ({
     const [hours, minutes] = startTime.split(':');
     sessionDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
     
-    // Formatear la fecha y hora sin conversión de zona horaria
-    // Usar el formato YYYY-MM-DDTHH:mm:ss para mantener la hora local
+    // Usar siempre la zona horaria de Colombia (UTC-5)
+    const timezoneString = '-05:00';
+    
+    // Formatear la fecha y hora con zona horaria
+    // Usar el formato YYYY-MM-DDTHH:mm:ss+HH:mm para incluir timezone
     const year = sessionDate.getFullYear();
     const month = String(sessionDate.getMonth() + 1).padStart(2, '0');
     const dayOfMonth = String(sessionDate.getDate()).padStart(2, '0');
@@ -137,7 +140,7 @@ const PsychologistScheduleModal = ({
     const minute = String(sessionDate.getMinutes()).padStart(2, '0');
     const second = String(sessionDate.getSeconds()).padStart(2, '0');
     
-    return `${year}-${month}-${dayOfMonth}T${hour}:${minute}:${second}`;
+    return `${year}-${month}-${dayOfMonth}T${hour}:${minute}:${second}${timezoneString}`;
   };
 
   // Función para manejar la selección de horario

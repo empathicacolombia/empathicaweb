@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, User, Mail, Phone, Calendar, MapPin, Building } from 'lucide-react';
+import { Plus, X, User, Mail, Phone, Calendar, MapPin, Building, Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { apiClient } from '../services/api';
+import { apiClient, appointmentService } from '../services/api';
+
+// URL base del servidor backend
+const API_BASE_URL = 'https://api.empathica.com.co';
 
 const BusinessEmployees = ({ navigationProps }) => {
   const { user } = useAuth();
@@ -44,6 +47,13 @@ const BusinessEmployees = ({ navigationProps }) => {
   const [addSessionsError, setAddSessionsError] = useState('');
   const [addSessionsSuccess, setAddSessionsSuccess] = useState('');
 
+  // Estados para el modal de upload CSV
+  const [csvFile, setCsvFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState('');
+  const [csvPreview, setCsvPreview] = useState(null);
+
   // Filtrar empleados
   const filteredEmployees = employees.filter(emp =>
     emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -51,7 +61,22 @@ const BusinessEmployees = ({ navigationProps }) => {
     emp.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const openUploadModal = () => setShowUploadModal(true);
+  const openUploadModal = () => {
+    setShowUploadModal(true);
+    setCsvFile(null);
+    setCsvPreview(null);
+    setUploadError('');
+    setUploadSuccess('');
+  };
+
+  const closeUploadModal = () => {
+    setShowUploadModal(false);
+    setCsvFile(null);
+    setCsvPreview(null);
+    setUploadError('');
+    setUploadSuccess('');
+  };
+
   const openAssignSessionsModal = () => {
     setShowAddSessionsModal(true);
     setSelectedEmployeeForSessions(null);
@@ -395,6 +420,91 @@ const BusinessEmployees = ({ navigationProps }) => {
     setSessionsToAdd('');
     setAddSessionsError('');
     setAddSessionsSuccess('');
+  };
+
+  // Función para manejar la selección del archivo CSV
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validar que sea un archivo CSV
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setUploadError('Por favor selecciona un archivo CSV válido.');
+      return;
+    }
+
+    // Validar tamaño del archivo (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('El archivo es demasiado grande. Máximo 5MB permitido.');
+      return;
+    }
+
+    setCsvFile(file);
+    setUploadError('');
+    setUploadSuccess('');
+
+    // Leer y mostrar preview del archivo
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const lines = text.split('\n');
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const firstRow = lines[1] ? lines[1].split(',').map(c => c.trim().replace(/"/g, '')) : null;
+      
+      setCsvPreview({
+        headers,
+        firstRow,
+        totalLines: lines.length - 1
+      });
+    };
+    reader.readAsText(file);
+  };
+
+  // Función para subir el archivo CSV
+  const handleUploadCSV = async () => {
+    if (!csvFile) {
+      setUploadError('Por favor selecciona un archivo CSV.');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError('');
+    setUploadSuccess('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', csvFile);
+
+      console.log('=== SUBIENDO ARCHIVO CSV ===');
+      console.log('Archivo:', csvFile.name);
+      console.log('Tamaño:', csvFile.size);
+      console.log('Tipo de archivo:', csvFile.type);
+      console.log('FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value);
+      }
+      console.log('Token en localStorage:', localStorage.getItem('empathica_token') ? 'Presente' : 'Ausente');
+      console.log('URL de la petición:', `${API_BASE_URL}/api/patients/bulk`);
+      console.log('===========================');
+
+      const response = await appointmentService.createBulkPatients(formData);
+      
+      console.log('Respuesta del servidor:', response);
+      
+      setUploadSuccess(`✅ Archivo subido exitosamente. ${response.createdCount || 0} empleados creados.`);
+      
+      // Recargar la lista de empleados después de 2 segundos
+      setTimeout(() => {
+        fetchEmployees();
+        closeUploadModal();
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error subiendo archivo CSV:', error);
+      setUploadError(error.response?.data?.message || error.message || 'Error al subir el archivo CSV.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -1609,6 +1719,371 @@ const BusinessEmployees = ({ navigationProps }) => {
                     </>
                   ) : (
                     'Añadir Sesiones'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Upload CSV */}
+      {showUploadModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 20,
+            width: '100%',
+            maxWidth: 600,
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            position: 'relative'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '2rem 2rem 1rem 2rem',
+              borderBottom: '1px solid #e0e7ef',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  background: '#2ecc71',
+                  borderRadius: 12,
+                  padding: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Upload size={20} color="#fff" />
+                </div>
+                <h2 style={{ color: '#222', fontWeight: 700, fontSize: 24, margin: 0 }}>
+                  Subir CSV de Empleados
+                </h2>
+              </div>
+              <button
+                onClick={closeUploadModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 24,
+                  color: '#7a8bbd',
+                  cursor: 'pointer',
+                  padding: 4
+                }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Contenido */}
+            <div style={{ padding: '2rem' }}>
+              {/* Instrucciones */}
+              <div style={{
+                background: '#f8f9fa',
+                borderRadius: 12,
+                padding: '1.5rem',
+                marginBottom: '2rem',
+                border: '1px solid #e0e7ef'
+              }}>
+                <h3 style={{
+                  color: '#222',
+                  fontWeight: 600,
+                  fontSize: 18,
+                  margin: '0 0 1rem 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                  <AlertCircle size={20} color="#0057ff" />
+                  Instrucciones para el archivo CSV
+                </h3>
+                
+                <div style={{ color: '#374151', fontSize: 14, lineHeight: 1.6 }}>
+                  <p style={{ margin: '0 0 1rem 0' }}>
+                    Para subir empleados masivamente, prepara un archivo CSV con las siguientes columnas:
+                  </p>
+                  
+                  <div style={{
+                    background: '#fff',
+                    borderRadius: 8,
+                    padding: '1rem',
+                    border: '1px solid #d1d5db',
+                    fontFamily: 'monospace',
+                    fontSize: 13,
+                    margin: '1rem 0'
+                  }}>
+                    <div style={{ fontWeight: 600, color: '#1f2937', marginBottom: 8 }}>Columnas requeridas:</div>
+                    <div>name,lastName,email,password,phoneNumber,dateOfBirth,gender</div>
+                  </div>
+
+                  <div style={{ marginTop: '1rem' }}>
+                    <div style={{ fontWeight: 600, color: '#1f2937', marginBottom: 8 }}>Ejemplo de contenido:</div>
+                    <div style={{
+                      background: '#fff',
+                      borderRadius: 8,
+                      padding: '1rem',
+                      border: '1px solid #d1d5db',
+                      fontFamily: 'monospace',
+                      fontSize: 13
+                    }}>
+                      <div>Mike,Romero,mike@mail.com,12345678,1234567890,17/05/1995,M</div>
+                      <div>Ana,García,ana@mail.com,87654321,0987654321,22/08/1990,F</div>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: '#fff3cd',
+                    border: '1px solid #ffeaa7',
+                    borderRadius: 8,
+                    padding: '1rem',
+                    marginTop: '1rem'
+                  }}>
+                    <div style={{ fontWeight: 600, color: '#856404', marginBottom: 4 }}>
+                      ⚠️ Importante:
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: '1.2rem', color: '#856404' }}>
+                      <li>El archivo debe tener extensión .csv</li>
+                      <li>La primera fila debe contener los nombres de las columnas</li>
+                      <li>Usa comas (,) como separadores</li>
+                      <li>El formato de fecha debe ser DD/MM/AAAA</li>
+                      <li>El género debe ser M (masculino) o F (femenino)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selector de archivo */}
+              <div style={{ marginBottom: '2rem' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#374151',
+                  fontWeight: 600,
+                  fontSize: 16,
+                  marginBottom: 8
+                }}>
+                  Seleccionar archivo CSV
+                </label>
+                
+                <div style={{
+                  border: '2px dashed #d1d5db',
+                  borderRadius: 12,
+                  padding: '2rem',
+                  textAlign: 'center',
+                  background: csvFile ? '#f0fdf4' : '#f9fafb',
+                  borderColor: csvFile ? '#16a34a' : '#d1d5db',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                    id="csv-upload"
+                  />
+                  <label
+                    htmlFor="csv-upload"
+                    style={{
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 12
+                    }}
+                  >
+                    {csvFile ? (
+                      <>
+                        <CheckCircle size={48} color="#16a34a" />
+                        <div style={{ color: '#16a34a', fontWeight: 600 }}>
+                          {csvFile.name}
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: 14 }}>
+                          {(csvFile.size / 1024).toFixed(1)} KB
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <FileText size={48} color="#6b7280" />
+                        <div style={{ color: '#374151', fontWeight: 600 }}>
+                          Haz clic para seleccionar archivo CSV
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: 14 }}>
+                          o arrastra y suelta el archivo aquí
+                        </div>
+                      </>
+                    )}
+                  </label>
+                </div>
+              </div>
+
+              {/* Preview del archivo */}
+              {csvPreview && (
+                <div style={{
+                  background: '#f8f9fa',
+                  borderRadius: 12,
+                  padding: '1.5rem',
+                  marginBottom: '2rem',
+                  border: '1px solid #e0e7ef'
+                }}>
+                  <h4 style={{
+                    color: '#222',
+                    fontWeight: 600,
+                    fontSize: 16,
+                    margin: '0 0 1rem 0'
+                  }}>
+                    Vista previa del archivo
+                  </h4>
+                  
+                  <div style={{
+                    background: '#fff',
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                    border: '1px solid #d1d5db'
+                  }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#f3f4f6' }}>
+                          {csvPreview.headers.map((header, index) => (
+                            <th key={index} style={{
+                              padding: '0.75rem',
+                              textAlign: 'left',
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: '#374151',
+                              borderBottom: '1px solid #d1d5db'
+                            }}>
+                              {header}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {csvPreview.firstRow && (
+                          <tr>
+                            {csvPreview.firstRow.map((cell, index) => (
+                              <td key={index} style={{
+                                padding: '0.75rem',
+                                fontSize: 13,
+                                color: '#6b7280',
+                                borderBottom: '1px solid #f3f4f6'
+                              }}>
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div style={{
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    background: '#e0f2fe',
+                    borderRadius: 8,
+                    color: '#0277bd',
+                    fontSize: 14
+                  }}>
+                    📊 Total de registros: {csvPreview.totalLines}
+                  </div>
+                </div>
+              )}
+
+              {/* Mensajes de error y éxito */}
+              {uploadError && (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  color: '#dc2626',
+                  padding: '12px 16px',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  marginBottom: '1rem'
+                }}>
+                  ⚠️ {uploadError}
+                </div>
+              )}
+
+              {uploadSuccess && (
+                <div style={{
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  color: '#16a34a',
+                  padding: '12px 16px',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  marginBottom: '1rem'
+                }}>
+                  ✅ {uploadSuccess}
+                </div>
+              )}
+
+              {/* Botones */}
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button
+                  onClick={closeUploadModal}
+                  disabled={uploading}
+                  style={{
+                    background: '#fff',
+                    color: '#7a8bbd',
+                    border: '1.5px solid #e0e7ef',
+                    borderRadius: 8,
+                    padding: '0.8rem 1.5rem',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: uploading ? 'not-allowed' : 'pointer',
+                    opacity: uploading ? 0.6 : 1
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleUploadCSV}
+                  disabled={uploading || !csvFile}
+                  style={{
+                    background: uploading ? '#ccc' : '#2ecc71',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '0.8rem 1.5rem',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: (uploading || !csvFile) ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8
+                  }}
+                >
+                  {uploading ? (
+                    <>
+                      <div style={{
+                        width: 16,
+                        height: 16,
+                        border: '2px solid #fff',
+                        borderTop: '2px solid transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }} />
+                      Subiendo...
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} />
+                      Subir CSV
+                    </>
                   )}
                 </button>
               </div>

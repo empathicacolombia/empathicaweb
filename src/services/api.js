@@ -49,8 +49,8 @@ apiClient.interceptors.request.use((config) => {
   const isOptionalTokenRoute = optionalTokenRoutes.some(route => {
     if (route === '/api/patients') {
       // Para /api/patients, considerar opcional SOLO si es POST exacto
-      // NO incluir rutas como /api/patients/{id}/tokens o /api/patients/{id}
-      return config.url === route && config.method === 'post';
+      // NO incluir rutas como /api/patients/bulk, /api/patients/{id}/tokens o /api/patients/{id}
+      return config.url === route && config.method === 'post' && !config.url.includes('/bulk');
     }
     return false;
   });
@@ -638,6 +638,28 @@ export const appointmentService = {
   },
 
   /**
+   * Crea múltiples pacientes desde un archivo CSV
+   * @param {FormData} csvFile - Archivo CSV con datos de pacientes
+   * @returns {Promise} - Respuesta del servidor
+   */
+  createBulkPatients: async (csvFile) => {
+    try {
+      // Crear una nueva instancia de axios para esta petición específica
+      // para evitar conflictos con el interceptor principal
+      const response = await axios.post(`${API_BASE_URL}/api/patients/bulk`, csvFile, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('empathica_token')}`,
+        },
+      });
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Error creando pacientes masivos:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Crea una nueva sesión con un psicólogo específico
    * @param {number} psychologistId - ID del psicólogo
    * @param {string} sessionTime - Fecha y hora de la sesión en formato ISO
@@ -648,6 +670,9 @@ export const appointmentService = {
       console.log('=== API SERVICE - createSession ===');
       console.log('URL:', `/api/patients/session/${psychologistId}`);
       console.log('Payload completo:', { sessionTime: sessionTime });
+      console.log('Tipo de sessionTime:', typeof sessionTime);
+      console.log('Formato de fecha enviada:', sessionTime);
+      console.log('Fecha parseada:', new Date(sessionTime));
       console.log('Headers:', apiClient.defaults.headers);
       console.log('=====================================');
       
