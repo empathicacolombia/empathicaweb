@@ -133,14 +133,17 @@ const PsychologistSchedule = () => {
             ...existingSlot,
             slots: [...existingSlot.slots, { time: availableTime, scheduleId: null }]
           };
+          console.log(`Horario agregado a ${day}: ${availableTime}`);
           return updatedSlots;
         } else {
+          console.log(`No hay horarios disponibles para agregar en ${day}`);
           // Si todos los horarios están ocupados, no agregar nada
           return prev;
         }
       } else {
         // Si el día no existe, crear nueva entrada con el primer horario disponible
         const availableTime = timeOptions[0]; // Usar el primer horario disponible
+        console.log(`Nuevo día agregado: ${day} con horario: ${availableTime}`);
         return [...prev, {
           day: day,
           slots: [{ time: availableTime, scheduleId: null }]
@@ -256,6 +259,11 @@ const PsychologistSchedule = () => {
     setError(null);
 
     try {
+      console.log('=== GUARDANDO CONFIGURACIÓN DE HORARIOS ===');
+      console.log('Modo edición:', showEditMode);
+      console.log('Días seleccionados:', selectedDays);
+      console.log('TimeSlots actuales:', timeSlots);
+
       // Preparar todos los horarios para enviar al backend
       const scheduleData = [];
       
@@ -272,16 +280,39 @@ const PsychologistSchedule = () => {
         }
       });
 
-      // Si está en modo edición, usar PUT para actualizar todos los horarios
-      if (showEditMode) {
-        await userService.updatePsychologistSchedule(user.id, scheduleData);
-      } else {
-        // Si es la primera vez, usar POST para crear horarios individuales
-        const promises = scheduleData.map(schedule => 
-          userService.createPsychologistSchedule(schedule)
-        );
-        await Promise.all(promises);
+      console.log('Datos de horarios a enviar:', scheduleData);
+
+      // Si está en modo edición, primero eliminar horarios existentes
+      if (showEditMode && existingSchedule) {
+        console.log('Eliminando horarios existentes...');
+        
+        // Eliminar horarios existentes uno por uno
+        for (const day in existingSchedule) {
+          const daySlots = existingSchedule[day];
+          if (daySlots && Array.isArray(daySlots)) {
+            for (const slot of daySlots) {
+              if (slot.psychologistScheduleId) {
+                try {
+                  await userService.deletePsychologistSchedule(slot.psychologistScheduleId);
+                  console.log(`Horario eliminado: ${day} ${slot.startTime}-${slot.endTime}`);
+                } catch (deleteError) {
+                  console.warn(`No se pudo eliminar horario ${slot.psychologistScheduleId}:`, deleteError);
+                  // Continuar aunque falle la eliminación
+                }
+              }
+            }
+          }
+        }
       }
+
+      // Crear los nuevos horarios
+      console.log('Creando nuevos horarios...');
+      const promises = scheduleData.map(schedule => 
+        userService.createPsychologistSchedule(schedule)
+      );
+      await Promise.all(promises);
+
+      console.log('Horarios guardados exitosamente');
 
       // Marcar como guardado exitosamente
       setScheduleSaved(true);
@@ -293,8 +324,8 @@ const PsychologistSchedule = () => {
       await loadExistingSchedule();
 
     } catch (error) {
-      setError('Error al guardar los horarios. Por favor, inténtalo de nuevo.');
       console.error('Error guardando horarios:', error);
+      setError(`Error al guardar los horarios: ${error.message || 'Por favor, inténtalo de nuevo.'}`);
     } finally {
       setIsLoading(false);
     }
@@ -307,6 +338,9 @@ const PsychologistSchedule = () => {
   const enableEditMode = () => {
     setShowEditMode(true);
     setScheduleSaved(false);
+    
+    console.log('=== HABILITANDO MODO EDICIÓN ===');
+    console.log('Horarios existentes:', existingSchedule);
     
     // Cargar los horarios existentes en el formulario
     if (existingSchedule) {
@@ -322,10 +356,14 @@ const PsychologistSchedule = () => {
           
           // Convertir los horarios del formato del backend al formato del formulario
           // Mantener tanto el horario formateado como el ID del backend
-          const formattedSlots = daySlots.map(slot => ({
-            time: `${formatTime(slot.startTime)}-${formatTime(slot.endTime)}`,
-            scheduleId: slot.psychologistScheduleId
-          }));
+          const formattedSlots = daySlots.map(slot => {
+            const timeString = `${formatTime(slot.startTime)}-${formatTime(slot.endTime)}`;
+            console.log(`Procesando horario: ${spanishDay} ${timeString} (ID: ${slot.psychologistScheduleId})`);
+            return {
+              time: timeString,
+              scheduleId: slot.psychologistScheduleId
+            };
+          });
           
           newTimeSlots.push({
             day: spanishDay,
@@ -333,6 +371,9 @@ const PsychologistSchedule = () => {
           });
         }
       });
+      
+      console.log('Días seleccionados para edición:', newSelectedDays);
+      console.log('TimeSlots para edición:', newTimeSlots);
       
       // Actualizar el estado del formulario
       setSelectedDays(newSelectedDays);

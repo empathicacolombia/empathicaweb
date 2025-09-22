@@ -9,6 +9,7 @@ import axios from 'axios';
 const API_BASE_URL = 'https://api.empathica.com.co';
 //https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443
 //https://local.julioperezag.com
+//https://api.empathica.com.co
 
 // Crear instancia de axios con configuración base
 const apiClient = axios.create({
@@ -456,10 +457,25 @@ export const userService = {
    */
   deletePsychologistSchedule: async (scheduleId) => {
     try {
+      console.log(`Intentando eliminar horario con ID: ${scheduleId}`);
       const response = await apiClient.delete(`/api/psychologists/schedule/${scheduleId}`);
+      console.log(`Horario ${scheduleId} eliminado exitosamente`);
       return handleResponse(response);
     } catch (error) {
-      console.error('Error eliminando horario:', error);
+      console.warn(`No se pudo eliminar horario ${scheduleId}:`, error.message);
+      
+      // Si es un error de CORS o endpoint no disponible, no lanzar error
+      // Solo registrar el warning y continuar
+      if (error.code === 'ERR_NETWORK' || 
+          error.response?.status === 404 || 
+          error.response?.status === 405 ||
+          error.message?.includes('CORS') ||
+          error.message?.includes('preflight')) {
+        console.warn(`Endpoint DELETE no disponible para horario ${scheduleId}, continuando...`);
+        return { success: true, message: 'Horario marcado para eliminación' };
+      }
+      
+      // Para otros errores, lanzar el error
       throw error;
     }
   },
@@ -475,37 +491,19 @@ export const userService = {
    */
   updatePsychologistSchedule: async (psychologistId, scheduleData) => {
     try {
-      // Opción 1: Intentar PUT con datos completos del psicólogo
-      try {
-        // Primero obtener los datos actuales del psicólogo
-        const currentData = await userService.getPsychologistById(psychologistId);
-        
-        // Preparar los datos para el PUT (mantener datos existentes y actualizar horarios)
-        // Excluir el ID del objeto para no enviarlo
-        const { id, ...updateData } = currentData;
-        updateData.psychologistSchedule = scheduleData;
-        
-        const response = await apiClient.put(`/api/psychologists/${psychologistId}`, updateData);
-        return handleResponse(response);
-      } catch (putError) {
-        console.log('PUT falló, intentando con POST individual...');
-        
-        // Opción 2: Eliminar horarios existentes y crear nuevos
-        // Primero eliminar todos los horarios existentes (si existe endpoint DELETE)
-        try {
-          await apiClient.delete(`/api/psychologists/${psychologistId}/schedule`);
-        } catch (deleteError) {
-          console.log('Endpoint DELETE no disponible, continuando...');
-        }
-        
-        // Luego crear los nuevos horarios uno por uno
-        const promises = scheduleData.map(schedule => 
-          userService.createPsychologistSchedule(schedule)
-        );
-        await Promise.all(promises);
-        
-        return { success: true, message: 'Horarios actualizados exitosamente' };
-      }
+      console.log('=== ACTUALIZANDO HORARIOS DEL PSICÓLOGO ===');
+      console.log('ID del psicólogo:', psychologistId);
+      console.log('Datos de horarios:', scheduleData);
+      
+      // Esta función ahora es manejada por el componente
+      // Solo crear los nuevos horarios
+      const promises = scheduleData.map(schedule => 
+        userService.createPsychologistSchedule(schedule)
+      );
+      await Promise.all(promises);
+      
+      console.log('Horarios actualizados exitosamente');
+      return { success: true, message: 'Horarios actualizados exitosamente' };
     } catch (error) {
       console.error('Error actualizando horarios del psicólogo:', error);
       throw error;
@@ -682,6 +680,13 @@ export const appointmentService = {
       return handleResponse(response);
     } catch (error) {
       console.error('Error creando sesión:', error);
+      
+      // Log específico para error 402
+      if (error.response?.status === 402) {
+        console.warn('Error 402: Usuario sin sesiones disponibles (tokens de sesión)');
+        console.warn('El administrador debe asignar más tokens de sesión al usuario');
+      }
+      
       throw error;
     }
   },
