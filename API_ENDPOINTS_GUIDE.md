@@ -161,9 +161,9 @@ FormData con campo 'file' conteniendo archivo CSV
 
 **Formato CSV esperado**:
 ```csv
-name,lastName,email,password,phoneNumber,dateOfBirth,gender,departmentId
-Juan,Pérez,juan@empresa.com,12345678,1234567890,17/05/1995,M,1
-María,García,maria@empresa.com,87654321,0987654321,22/08/1990,F,2
+name,lastName,email,phoneNumber,dateOfBirth,gender,departmentId
+Juan,Pérez,juan@empresa.com,1234567890,17/05/1995,M,1
+María,García,maria@empresa.com,0987654321,22/08/1990,F,2
 ```
 
 **Departamentos disponibles**:

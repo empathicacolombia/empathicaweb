@@ -362,6 +362,8 @@ const generateSessionDateTime = (day, startTime) => {
 - Selección de departamento para empleados
 - Navegación entre páginas de empleados
 - Visualización del nombre del departamento en la tabla
+- Estadísticas generales basadas en datos reales del API
+- Modal de CSV más ancho con scroll horizontal para mejor visualización
 
 **Estado**:
 ```javascript
@@ -387,6 +389,12 @@ const [currentPage, setCurrentPage] = useState(0);
 const [totalPages, setTotalPages] = useState(0);
 const [totalElements, setTotalElements] = useState(0);
 const [pageSize] = useState(10);
+
+// Estados para estadísticas generales
+const [totalEmployees, setTotalEmployees] = useState(0);
+const [activeEmployees, setActiveEmployees] = useState(0);
+const [inactiveEmployees, setInactiveEmployees] = useState(0);
+const [totalSessions, setTotalSessions] = useState(0);
 ```
 
 **Departamentos disponibles**:
@@ -480,6 +488,34 @@ const transformedEmployees = patientsArray.map((patient, index) => {
     tags: patient.tags || []
   };
 });
+
+// Actualización de estadísticas generales
+const updateStatistics = (companyPatients, patientsArray) => {
+  // Actualizar información de paginación
+  setTotalPages(companyPatients.totalPages || 0);
+  setTotalElements(companyPatients.totalElements || 0);
+  setCurrentPage(companyPatients.number || 0);
+  
+  // Actualizar estadísticas generales
+  setTotalEmployees(companyPatients.totalElements || 0);
+  
+  // Calcular empleados activos e inactivos de la página actual
+  const activeCount = patientsArray.filter(patient => patient.userStatus === 'ACTIVE').length;
+  const inactiveCount = patientsArray.filter(patient => patient.userStatus !== 'ACTIVE').length;
+  
+  // Calcular sesiones de la página actual
+  const sessionsCount = patientsArray.reduce((sum, patient) => sum + (patient.tokensLeft || 0), 0);
+  
+  setActiveEmployees(activeCount);
+  setInactiveEmployees(inactiveCount);
+  setTotalSessions(sessionsCount);
+};
+
+// UI de estadísticas con etiquetas específicas
+// - "Total empleados": Número total de empleados en la empresa
+// - "Activos en esta página": Empleados activos en la página actual
+// - "Inactivos en esta página": Empleados inactivos en la página actual
+// - "Sesiones en esta página": Suma de tokens disponibles en la página actual
 ```
 
 // Crear nuevo empleado

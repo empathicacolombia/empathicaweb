@@ -72,6 +72,12 @@ const BusinessEmployees = ({ navigationProps }) => {
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(10);
 
+  // Estados para estadísticas generales
+  const [totalEmployees, setTotalEmployees] = useState(0);
+  const [activeEmployees, setActiveEmployees] = useState(0);
+  const [inactiveEmployees, setInactiveEmployees] = useState(0);
+  const [totalSessions, setTotalSessions] = useState(0);
+
   // Filtrar empleados (solo en la página actual)
   const filteredEmployees = employees.filter(emp =>
     emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -147,6 +153,29 @@ const BusinessEmployees = ({ navigationProps }) => {
       setTotalPages(companyPatients.totalPages || 0);
       setTotalElements(companyPatients.totalElements || 0);
       setCurrentPage(companyPatients.number || 0);
+      
+      // Actualizar estadísticas generales
+      setTotalEmployees(companyPatients.totalElements || 0);
+      
+      // Calcular empleados activos e inactivos de la página actual
+      const activeCount = patientsArray.filter(patient => patient.userStatus === 'ACTIVE').length;
+      const inactiveCount = patientsArray.filter(patient => patient.userStatus !== 'ACTIVE').length;
+      
+      // Calcular sesiones totales de la página actual
+      const sessionsCount = patientsArray.reduce((sum, patient) => sum + (patient.tokensLeft || 0), 0);
+      
+      // Para estadísticas más precisas, podríamos hacer una llamada adicional al API
+      // Por ahora usamos los datos de la página actual como aproximación
+      setActiveEmployees(activeCount);
+      setInactiveEmployees(inactiveCount);
+      setTotalSessions(sessionsCount);
+      
+      console.log('=== ESTADÍSTICAS ACTUALIZADAS ===');
+      console.log('Total empleados:', companyPatients.totalElements);
+      console.log('Activos en esta página:', activeCount);
+      console.log('Inactivos en esta página:', inactiveCount);
+      console.log('Sesiones totales en esta página:', sessionsCount);
+      console.log('==================================');
       console.log('Array de pacientes:', patientsArray);
       console.log('Primer paciente (si existe):', patientsArray[0]);
       if (patientsArray[0]) {
@@ -620,26 +649,23 @@ const BusinessEmployees = ({ navigationProps }) => {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
             <span>Total empleados</span>
-            <span style={{ color: '#0057ff', fontWeight: 800, fontSize: 20 }}>{employees.length}</span>
+            <span style={{ color: '#0057ff', fontWeight: 800, fontSize: 20 }}>{totalEmployees}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-            <span>Activos</span>
-            <span style={{ color: '#2ecc71', fontWeight: 800, fontSize: 20 }}>{employees.filter(emp => emp.status === 'Activo').length}</span>
+            <span>Activos en esta página</span>
+            <span style={{ color: '#2ecc71', fontWeight: 800, fontSize: 20 }}>{activeEmployees}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
-            <span>Inactivos</span>
-            <span style={{ color: '#888', fontWeight: 800, fontSize: 20 }}>{employees.filter(emp => emp.status === 'Inactivo').length}</span>
+            <span>Inactivos en esta página</span>
+            <span style={{ color: '#888', fontWeight: 800, fontSize: 20 }}>{inactiveEmployees}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
             <span>Reportan estrés</span>
-            <span style={{ color: '#ff4444', fontWeight: 800, fontSize: 20 }}>1</span>
+            <span style={{ color: '#ff4444', fontWeight: 800, fontSize: 20 }}>0</span>
           </div>
-          <div style={{ color: '#7a8bbd', fontWeight: 600, fontSize: 15, margin: '10px 0 2px 0' }}>Sesiones totales</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ color: '#2050c7', fontWeight: 700, fontSize: 16 }}>{employees.reduce((sum, emp) => sum + emp.sessions, 0)}/20</span>
-            <div style={{ flex: 1, height: 10, background: '#f5e3d6', borderRadius: 8, overflow: 'hidden' }}>
-              <div style={{ width: `${(employees.reduce((sum, emp) => sum + emp.sessions, 0) / 20) * 100}%`, height: '100%', background: '#0057ff', borderRadius: 8 }}></div>
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16 }}>
+            <span>Sesiones en esta página</span>
+            <span style={{ color: '#2050c7', fontWeight: 800, fontSize: 20 }}>{totalSessions}</span>
           </div>
         </div>
         
@@ -1913,7 +1939,7 @@ const BusinessEmployees = ({ navigationProps }) => {
             background: '#fff',
             borderRadius: 20,
             width: '100%',
-            maxWidth: 600,
+            maxWidth: 900,
             maxHeight: '90vh',
             overflowY: 'auto',
             position: 'relative'
@@ -1994,7 +2020,7 @@ const BusinessEmployees = ({ navigationProps }) => {
                     margin: '1rem 0'
                   }}>
                     <div style={{ fontWeight: 600, color: '#1f2937', marginBottom: 8 }}>Columnas requeridas:</div>
-                    <div>name,lastName,email,password,phoneNumber,dateOfBirth,gender,departmentId</div>
+                    <div>name,lastName,email,phoneNumber,dateOfBirth,gender,departmentId</div>
                   </div>
 
                   <div style={{ marginTop: '1rem' }}>
@@ -2007,8 +2033,8 @@ const BusinessEmployees = ({ navigationProps }) => {
                       fontFamily: 'monospace',
                       fontSize: 13
                     }}>
-                      <div>Mike,Romero,mike@mail.com,12345678,1234567890,17/05/1995,M,1</div>
-                      <div>Ana,García,ana@mail.com,87654321,0987654321,22/08/1990,F,2</div>
+                      <div>Mike,Romero,mike@mail.com,1234567890,17/05/1995,M,1</div>
+                      <div>Ana,García,ana@mail.com,0987654321,22/08/1990,F,2</div>
                     </div>
                   </div>
 
@@ -2138,9 +2164,10 @@ const BusinessEmployees = ({ navigationProps }) => {
                     background: '#fff',
                     borderRadius: 8,
                     overflow: 'hidden',
-                    border: '1px solid #d1d5db'
+                    border: '1px solid #d1d5db',
+                    overflowX: 'auto'
                   }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
                       <thead>
                         <tr style={{ background: '#f3f4f6' }}>
                           {csvPreview.headers.map((header, index) => (

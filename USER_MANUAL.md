@@ -423,6 +423,13 @@ El test de matching es un cuestionario psicológico que nos ayuda a entender tus
 - Cada página muestra hasta 10 empleados
 - El contador muestra cuántos empleados hay en total
 
+**Estadísticas generales**
+- Total empleados: Muestra el número total de empleados en la empresa
+- Activos en esta página: Empleados con estado activo en la página actual
+- Inactivos en esta página: Empleados con estado inactivo en la página actual
+- Sesiones en esta página: Suma de tokens de sesión disponibles en la página actual
+- Las estadísticas se actualizan automáticamente al cambiar de página
+
 ---
 
 ## Solución de Problemas
