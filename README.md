@@ -1,11 +1,11 @@
-# Empathica - Landing Page
+# Empathica - Plataforma de Bienestar Emocional
 
-Landing page moderna para Empathica, plataforma de bienestar emocional.
+Plataforma integral de bienestar emocional que conecta pacientes con psicólogos especializados, incluyendo test de matching, gestión de citas y dashboards especializados.
 
-## 🚀 Instalación
+## Instalación
 
 ### Prerrequisitos
-- Node.js (versión 14 o superior)
+- Node.js (versión 16 o superior)
 - npm o yarn
 
 ### Pasos de instalación
@@ -21,14 +21,20 @@ cd empathica-landing
 npm install
 ```
 
-3. **Ejecuta el proyecto en modo desarrollo**
+3. **Configura las variables de entorno**
+```bash
+# El proyecto usa la URL del backend configurada en src/services/api.js
+# API_BASE_URL: https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443
+```
+
+4. **Ejecuta el proyecto en modo desarrollo**
 ```bash
 npm start
 ```
 
 El proyecto se abrirá automáticamente en `http://localhost:3000`
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 empathica-landing/
@@ -40,11 +46,24 @@ empathica-landing/
 │   │   ├── LoginPage.jsx
 │   │   ├── RegisterPage.jsx
 │   │   ├── PsychologistDashboard.jsx
+│   │   ├── ClientDashboard.jsx
+│   │   ├── BusinessDashboard.jsx
 │   │   ├── AppointmentsPage.jsx
 │   │   ├── ForYouPage.jsx
 │   │   ├── MySpecialistPage.jsx
 │   │   ├── SupportPage.jsx
-│   │   └── PsychologistsPage.jsx
+│   │   ├── PsychologistsPage.jsx
+│   │   ├── BusinessEmployees.jsx
+│   │   ├── TestResults.jsx
+│   │   ├── QuestionnaireMatch.jsx
+│   │   ├── PsychologistSchedule.jsx
+│   │   └── PsychologistScheduleModal.jsx
+│   ├── contexts/          # Contextos de React
+│   │   └── AuthContext.jsx
+│   ├── services/          # Servicios API
+│   │   └── api.js
+│   ├── hooks/             # Hooks personalizados
+│   │   └── useSessionTimeout.js
 │   ├── App.js             # Componente principal
 │   ├── AppMain.js         # Router principal
 │   └── index.js           # Punto de entrada
@@ -53,49 +72,62 @@ empathica-landing/
 └── README.md             # Este archivo
 ```
 
-## 🛠️ Scripts Disponibles
+## Scripts Disponibles
 
 - `npm start` - Ejecuta el proyecto en modo desarrollo
-- `npm build` - Construye el proyecto para producción
+- `npm run build` - Construye el proyecto para producción
 - `npm test` - Ejecuta las pruebas
 - `npm eject` - Expone la configuración de webpack (irreversible)
 
-## 🌐 Páginas Disponibles
+## Páginas y Funcionalidades
 
-- **Landing Principal** (`/`) - Página de inicio
-- **Psicólogos** (`/psychologists`) - Lista de psicólogos
-- **Empresas** (`/business`) - Página para empresas
+### Páginas Públicas
+- **Landing Principal** (`/`) - Página de inicio con información de la plataforma
+- **Psicólogos** (`/psychologists`) - Lista de psicólogos disponibles
+- **Empresas** (`/business`) - Información para empresas
 - **Login** (`/login`) - Página de inicio de sesión
-- **Registro** (`/register`) - Página de registro
-- **Dashboard Psicólogo** (`/psychologist-dashboard`) - Panel del psicólogo
-- **Citas** (`/appointments`) - Gestión de citas
+- **Registro** (`/register`) - Página de registro de usuarios
+
+### Dashboards Especializados
+- **Dashboard Psicólogo** (`/psychologist-dashboard`) - Panel para psicólogos
+- **Dashboard Cliente** (`/client-dashboard`) - Panel para pacientes
+- **Dashboard Empresa** (`/business-dashboard`) - Panel para administradores de empresa
+
+### Funcionalidades Principales
+- **Test de Matching** (`/questionnaire-match`) - Cuestionario para encontrar psicólogo compatible
+- **Resultados del Test** (`/test-results`) - Muestra psicólogos recomendados
+- **Mi Especialista** (`/my-specialist`) - Perfil del psicólogo asignado
+- **Citas** (`/appointments`) - Gestión de citas y sesiones
 - **For You** (`/for-you`) - Contenido personalizado
-- **Mi Especialista** (`/my-specialist`) - Perfil del especialista
 - **Soporte** (`/support`) - Página de soporte
 
-## 🎨 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
-- **React.js** - Biblioteca de JavaScript para interfaces
+- **React.js 18** - Biblioteca de JavaScript para interfaces de usuario
+- **React Router** - Navegación client-side
+- **Axios** - Cliente HTTP para comunicación con API
+- **Context API** - Gestión de estado global (autenticación)
 - **CSS Inline** - Estilos aplicados directamente en componentes
-- **React Hooks** - useState, useEffect para manejo de estado
-- **Git** - Control de versiones
+- **React Hooks** - useState, useEffect, useContext para manejo de estado
 
-## 📦 Dependencias Principales
+## Dependencias Principales
 
-- `react` - Biblioteca principal
+- `react` - Biblioteca principal de React
 - `react-dom` - Renderizado en el DOM
+- `react-router-dom` - Enrutamiento de la aplicación
+- `axios` - Cliente HTTP para peticiones API
 - `react-scripts` - Scripts de Create React App
 
-## 🔧 Configuración de Desarrollo
+## Configuración de Desarrollo
 
-El proyecto está configurado con Create React App, por lo que incluye:
-- Hot reloading
-- Source maps
-- ESLint
-- Babel
-- Webpack
+El proyecto está configurado con Create React App e incluye:
+- Hot reloading para desarrollo rápido
+- Source maps para debugging
+- ESLint para calidad de código
+- Babel para transpilación
+- Webpack para bundling
 
-## 🚀 Despliegue
+## Despliegue
 
 Para construir el proyecto para producción:
 
@@ -105,14 +137,53 @@ npm run build
 
 Esto creará una carpeta `build` con los archivos optimizados listos para desplegar.
 
-## 📝 Notas Importantes
+## Características Principales
 
-- El proyecto usa datos en duro (hardcoded) para desarrollo
-- La navegación es client-side sin backend
-- Los estilos están aplicados inline para simplicidad
-- El sidebar del dashboard mantiene su estado global
+### Sistema de Autenticación
+- Login/registro con JWT tokens
+- Gestión automática de sesiones
+- Timeout por inactividad
+- Limpieza automática de tokens
 
-## 🤝 Contribución
+### Test de Matching
+- Cuestionario psicológico interactivo
+- Algoritmo de matching con psicólogos
+- Guardado de resultados en localStorage
+- Sincronización con backend
+
+### Gestión de Citas
+- Agendamiento de sesiones
+- Calendario de disponibilidad
+- Notificaciones de citas
+- Integración con videollamadas
+
+### Dashboards Especializados
+- Dashboard para psicólogos
+- Dashboard para pacientes
+- Dashboard para empresas
+- Gestión de empleados (CSV upload)
+
+## API y Backend
+
+### Configuración
+- **URL Base**: `https://ec2-3-143-252-0.us-east-2.compute.amazonaws.com:8443`
+- **Autenticación**: JWT Bearer tokens
+- **Interceptores**: Manejo automático de tokens y errores
+
+### Endpoints Principales
+- `POST /api/auth/login` - Autenticación de usuarios
+- `POST /api/auth/signup` - Registro de usuarios
+- `POST /api/patients` - Creación de pacientes
+- `POST /api/patients/bulk` - Carga masiva de empleados (CSV)
+- `GET /api/psychologists` - Lista de psicólogos
+- `POST /api/patients/session/{id}` - Creación de sesiones
+
+## Documentación Adicional
+
+- `SESSION_MANAGEMENT_GUIDE.md` - Guía completa de manejo de sesiones
+- `REGISTRO_FLUJO_DATOS.md` - Flujo de datos en el registro de usuarios
+
+## Contribución
 
 1. Fork el proyecto
 2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
@@ -120,6 +191,6 @@ Esto creará una carpeta `build` con los archivos optimizados listos para desple
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto es privado para Empathica. 

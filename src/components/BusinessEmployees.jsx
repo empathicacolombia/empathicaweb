@@ -6,6 +6,17 @@ import { apiClient, appointmentService } from '../services/api';
 // URL base del servidor backend
 const API_BASE_URL = 'https://api.empathica.com.co';
 
+// Departamentos disponibles
+const DEPARTMENTS = [
+  { departmentId: 1, name: "Ventas" },
+  { departmentId: 2, name: "Marketing" },
+  { departmentId: 3, name: "Tecnología" },
+  { departmentId: 4, name: "Recursos humanos" },
+  { departmentId: 5, name: "Finanzas" },
+  { departmentId: 6, name: "Operaciones" },
+  { departmentId: 7, name: "Otros" }
+];
+
 const BusinessEmployees = ({ navigationProps }) => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,6 +33,7 @@ const BusinessEmployees = ({ navigationProps }) => {
     phoneNumber: '',
     dateOfBirth: '',
     gender: '',
+    departmentId: '',
     companyId: user?.company?.companyId || 1 // ID de la empresa del usuario autenticado
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +66,13 @@ const BusinessEmployees = ({ navigationProps }) => {
   const [uploadSuccess, setUploadSuccess] = useState('');
   const [csvPreview, setCsvPreview] = useState(null);
 
-  // Filtrar empleados
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [pageSize] = useState(10);
+
+  // Filtrar empleados (solo en la página actual)
   const filteredEmployees = employees.filter(emp =>
     emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -86,23 +104,49 @@ const BusinessEmployees = ({ navigationProps }) => {
   };
   const openNotificationModal = () => setShowNotificationModal(true);
 
+  // Funciones para manejar la paginación
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      setCurrentPage(newPage);
+      fetchEmployees(newPage);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 0) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      handlePageChange(currentPage + 1);
+    }
+  };
+
   // Función para obtener empleados del API usando companyId
-  const fetchEmployeesByCompanyId = async (companyId) => {
+  const fetchEmployeesByCompanyId = async (companyId, page = 0) => {
     setLoadingEmployees(true);
     setEmployeesError('');
 
     try {
       console.log('=== OBTENIENDO EMPLEADOS POR COMPANY ID ===');
-      console.log('URL:', `/api/companies/${companyId}/patients`);
+      console.log('URL:', `/api/companies/${companyId}/patients?page=${page}&size=${pageSize}`);
       console.log('Company ID:', companyId);
+      console.log('Page:', page);
       console.log('===========================================');
 
-      const response = await apiClient.get(`/api/companies/${companyId}/patients`);
+      const response = await apiClient.get(`/api/companies/${companyId}/patients?page=${page}&size=${pageSize}`);
       const companyPatients = response.data;
       console.log('Pacientes de la empresa:', companyPatients);
 
       // Extraer el array de pacientes del objeto paginado
       const patientsArray = companyPatients.content || [];
+      
+      // Actualizar información de paginación
+      setTotalPages(companyPatients.totalPages || 0);
+      setTotalElements(companyPatients.totalElements || 0);
+      setCurrentPage(companyPatients.number || 0);
       console.log('Array de pacientes:', patientsArray);
       console.log('Primer paciente (si existe):', patientsArray[0]);
       if (patientsArray[0]) {
@@ -115,7 +159,8 @@ const BusinessEmployees = ({ navigationProps }) => {
         console.log(`Transformando paciente ${index}:`, {
           name: patient.name,
           tokensLeft: patient.tokensLeft,
-          tokensLeftType: typeof patient.tokensLeft
+          tokensLeftType: typeof patient.tokensLeft,
+          department: patient.department
         });
         
         return {
@@ -126,7 +171,8 @@ const BusinessEmployees = ({ navigationProps }) => {
         email: patient.email || '',
         phone: patient.phoneNumber || patient.phone || '',
         gender: patient.gender || 'No especificado',
-        department: 'N/A', // No viene del API
+        department: patient.department?.name || 'Sin departamento', // Usar el nombre del departamento del API
+        departmentId: patient.department?.departmentId || null, // Guardar también el ID
         position: 'N/A', // No viene del API
         hireDate: new Date().toISOString().split('T')[0], // Fecha actual como placeholder
         address: 'N/A', // No viene del API
@@ -150,7 +196,7 @@ const BusinessEmployees = ({ navigationProps }) => {
   };
 
   // Función para obtener empleados del API
-  const fetchEmployees = async () => {
+  const fetchEmployees = async (page = 0) => {
     // Obtener el companyId del usuario usando la nueva estructura
     const companyId = user?.company?.companyId;
     
@@ -163,9 +209,10 @@ const BusinessEmployees = ({ navigationProps }) => {
     console.log('User:', user);
     console.log('User company:', user?.company);
     console.log('Company ID:', companyId);
+    console.log('Page:', page);
     console.log('=======================');
 
-    await fetchEmployeesByCompanyId(companyId);
+    await fetchEmployeesByCompanyId(companyId, page);
   };
 
   // Debug: Verificar cuando el componente se monta
@@ -207,6 +254,14 @@ const BusinessEmployees = ({ navigationProps }) => {
     }
   }, [user?.company?.companyId]);
 
+  // Resetear página cuando cambie el término de búsqueda
+  useEffect(() => {
+    if (searchTerm) {
+      setCurrentPage(0);
+      fetchEmployees(0);
+    }
+  }, [searchTerm]);
+
   // Funciones para manejar el formulario de nuevo empleado
   const handleInputChange = (field, value) => {
     setNewEmployee(prev => ({
@@ -226,7 +281,7 @@ const BusinessEmployees = ({ navigationProps }) => {
 
     try {
       // Validaciones básicas
-      if (!newEmployee.name || !newEmployee.lastName || !newEmployee.email || !newEmployee.phoneNumber || !newEmployee.dateOfBirth || !newEmployee.gender) {
+      if (!newEmployee.name || !newEmployee.lastName || !newEmployee.email || !newEmployee.phoneNumber || !newEmployee.dateOfBirth || !newEmployee.gender || !newEmployee.departmentId) {
         throw new Error('Por favor completa todos los campos obligatorios');
       }
 
@@ -249,7 +304,8 @@ const BusinessEmployees = ({ navigationProps }) => {
           phoneNumber: newEmployee.phoneNumber.replace(/\D/g, ''), // Solo números
           dateOfBirth: newEmployee.dateOfBirth,
           gender: newEmployee.gender,
-          companyId: newEmployee.companyId
+          companyId: newEmployee.companyId,
+          departmentId: parseInt(newEmployee.departmentId) // Convertir a número
         };
 
       console.log('=== AGREGANDO EMPLEADO ===');
@@ -772,6 +828,83 @@ const BusinessEmployees = ({ navigationProps }) => {
               </tbody>
             </table>
           </div>
+          
+          {/* Controles de paginación */}
+          {totalPages > 1 && (
+            <div style={{
+              padding: '1.5rem 2rem',
+              borderTop: '1px solid #e0e7ef',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: '#f8f9fa'
+            }}>
+              <div style={{ color: '#6b7280', fontSize: 14 }}>
+                Mostrando {currentPage * pageSize + 1} - {Math.min((currentPage + 1) * pageSize, totalElements)} de {totalElements} empleados
+              </div>
+              
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 0}
+                  style={{
+                    background: currentPage === 0 ? '#e5e7eb' : '#0057ff',
+                    color: currentPage === 0 ? '#9ca3af' : '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '0.5rem 1rem',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Anterior
+                </button>
+                
+                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handlePageChange(i)}
+                      style={{
+                        background: i === currentPage ? '#0057ff' : '#fff',
+                        color: i === currentPage ? '#fff' : '#374151',
+                        border: `1px solid ${i === currentPage ? '#0057ff' : '#d1d5db'}`,
+                        borderRadius: 6,
+                        padding: '0.5rem 0.75rem',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        minWidth: '40px'
+                      }}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages - 1}
+                  style={{
+                    background: currentPage === totalPages - 1 ? '#e5e7eb' : '#0057ff',
+                    color: currentPage === totalPages - 1 ? '#9ca3af' : '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '0.5rem 1rem',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: currentPage === totalPages - 1 ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1030,6 +1163,40 @@ const BusinessEmployees = ({ navigationProps }) => {
                       onFocus={(e) => e.target.style.borderColor = '#0057FF'}
                       onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
                     />
+                  </div>
+
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      color: '#374151',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      marginBottom: 8
+                    }}>
+                      Departamento *
+                    </label>
+                    <select
+                      value={newEmployee.departmentId}
+                      onChange={(e) => handleInputChange('departmentId', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e0e7ef',
+                        borderRadius: 8,
+                        fontSize: 14,
+                        transition: 'border-color 0.2s ease',
+                        background: '#fff'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#0057FF'}
+                      onBlur={(e) => e.target.style.borderColor = '#e0e7ef'}
+                    >
+                      <option value="">Selecciona un departamento</option>
+                      {DEPARTMENTS.map(dept => (
+                        <option key={dept.departmentId} value={dept.departmentId}>
+                          {dept.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -1827,7 +1994,7 @@ const BusinessEmployees = ({ navigationProps }) => {
                     margin: '1rem 0'
                   }}>
                     <div style={{ fontWeight: 600, color: '#1f2937', marginBottom: 8 }}>Columnas requeridas:</div>
-                    <div>name,lastName,email,password,phoneNumber,dateOfBirth,gender</div>
+                    <div>name,lastName,email,password,phoneNumber,dateOfBirth,gender,departmentId</div>
                   </div>
 
                   <div style={{ marginTop: '1rem' }}>
@@ -1840,8 +2007,27 @@ const BusinessEmployees = ({ navigationProps }) => {
                       fontFamily: 'monospace',
                       fontSize: 13
                     }}>
-                      <div>Mike,Romero,mike@mail.com,12345678,1234567890,17/05/1995,M</div>
-                      <div>Ana,García,ana@mail.com,87654321,0987654321,22/08/1990,F</div>
+                      <div>Mike,Romero,mike@mail.com,12345678,1234567890,17/05/1995,M,1</div>
+                      <div>Ana,García,ana@mail.com,87654321,0987654321,22/08/1990,F,2</div>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: '#e0f2fe',
+                    border: '1px solid #81d4fa',
+                    borderRadius: 8,
+                    padding: '1rem',
+                    marginTop: '1rem'
+                  }}>
+                    <div style={{ fontWeight: 600, color: '#0277bd', marginBottom: 8 }}>
+                      Departamentos disponibles:
+                    </div>
+                    <div style={{ fontSize: 13, color: '#0277bd' }}>
+                      {DEPARTMENTS.map(dept => (
+                        <div key={dept.departmentId} style={{ marginBottom: 4 }}>
+                          <strong>{dept.departmentId}</strong> - {dept.name}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -1861,6 +2047,7 @@ const BusinessEmployees = ({ navigationProps }) => {
                       <li>Usa comas (,) como separadores</li>
                       <li>El formato de fecha debe ser DD/MM/AAAA</li>
                       <li>El género debe ser M (masculino) o F (femenino)</li>
+                      <li>El departmentId debe ser un número del 1 al 7</li>
                     </ul>
                   </div>
                 </div>
@@ -1985,9 +2172,9 @@ const BusinessEmployees = ({ navigationProps }) => {
                             ))}
                           </tr>
                         )}
-                      </tbody>
-                    </table>
-                  </div>
+              </tbody>
+            </table>
+          </div>
                   
                   <div style={{
                     marginTop: '1rem',
@@ -1998,8 +2185,8 @@ const BusinessEmployees = ({ navigationProps }) => {
                     fontSize: 14
                   }}>
                     📊 Total de registros: {csvPreview.totalLines}
-                  </div>
-                </div>
+        </div>
+      </div>
               )}
 
               {/* Mensajes de error y éxito */}

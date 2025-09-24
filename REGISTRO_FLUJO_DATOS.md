@@ -1,12 +1,12 @@
-# 🔄 Flujo de Datos en el Registro de Usuarios (Actualizado)
+# Flujo de Datos en el Registro de Usuarios (Actualizado)
 
-## 📋 Resumen del Proceso
+## Resumen del Proceso
 
-Este documento muestra **exactamente** cómo fluyen los datos desde que el usuario llena el formulario hasta que se guarda en el backend, incluyendo la nueva estructura con endpoints separados.
+Este documento muestra **exactamente** cómo fluyen los datos desde que el usuario llena el formulario hasta que se guarda en el backend, incluyendo la nueva estructura con endpoints separados y el flujo completo de test de matching.
 
-## 🎯 Proceso Completo (Nueva Estructura)
+## Proceso Completo (Nueva Estructura)
 
-### **1. 📝 Usuario Llena el Formulario**
+### **1. Usuario Llena el Formulario**
 
 **Formulario en RegisterPage.jsx**:
 ```javascript
@@ -306,3 +306,162 @@ console.log('5. Respuesta de patients:', patientResult);
 1. **Network tab**: Ver las dos peticiones HTTP
 2. **Console**: Verificar logs de cada paso
 3. **Response**: Confirmar que los datos se guardan correctamente
+
+---
+
+## Flujo de Test de Matching
+
+### **1. Usuario Completa el Test**
+
+**En QuestionnaireMatch.jsx**:
+```javascript
+// Usuario responde preguntas del test
+const [answers, setAnswers] = useState({});
+
+// Al completar el test
+const handleSubmit = () => {
+  // Procesar respuestas y generar tags
+  const tags = processAnswers(answers);
+  
+  // Navegar a resultados
+  navigate('/test-results', { 
+    state: { 
+      tags: tags,
+      fromDashboard: isFromDashboard 
+    } 
+  });
+};
+```
+
+### **2. Procesamiento de Resultados**
+
+**En TestResults.jsx**:
+```javascript
+// Obtener tags del test
+const { tags, fromDashboard } = location.state;
+
+// Generar perfil del paciente
+const patientProfile = {
+  tags: tags, // ["ansiedad", "depresión", "estrés"]
+  // ... otros datos
+};
+
+// Obtener psicólogos recomendados
+const recommendedPsychologist = await getRecommendedPsychologist();
+
+// Guardar en localStorage (NO enviar al backend aún)
+useEffect(() => {
+  if (patientProfile && patientProfile.tags && patientProfile.tags.length > 0 && recommendedPsychologist) {
+    const tagsForStorage = {
+      tags: patientProfile.tags.slice(0, 3).map(tag => ({
+        name: tag,
+        percentage: 100
+      })),
+      recommendedPsychologistId: recommendedPsychologist.id
+    };
+    localStorage.setItem('empathica_test_tags', JSON.stringify(tagsForStorage));
+  }
+}, [patientProfile, recommendedPsychologist]);
+```
+
+### **3. Selección de Psicólogo**
+
+**En MySpecialistPage.jsx**:
+```javascript
+// Usuario selecciona psicólogo
+const handleAssignPsychologist = async (psychologistId) => {
+  try {
+    // 1. Asignar psicólogo al backend
+    const assignResponse = await userService.assignPsychologistToPatient({
+      userId: psychologistId
+    });
+    
+    // 2. Actualizar estado local
+    setPsychologistAssigned(true);
+    await fetchPatientData();
+    
+    // 3. Enviar tags al backend DESPUÉS de asignación exitosa
+    await updatePatientTagsFromLocalStorage();
+    
+    // 4. Limpiar localStorage si los tags se enviaron correctamente
+    if (tagsUpdated) {
+      clearLocalStorageTags();
+    }
+  } catch (error) {
+    console.error('Error asignando psicólogo:', error);
+  }
+};
+```
+
+### **4. Envío de Tags al Backend**
+
+**Función updatePatientTagsFromLocalStorage**:
+```javascript
+const updatePatientTagsFromLocalStorage = async () => {
+  try {
+    const storedTags = localStorage.getItem('empathica_test_tags');
+    if (!storedTags) return;
+    
+    const parsedTags = JSON.parse(storedTags);
+    
+    // Verificar si el usuario ya tiene tags en el backend
+    const existingPatient = await userService.getPatientById(user.id);
+    if (existingPatient.tags && existingPatient.tags.length > 0) {
+      console.log('Usuario ya tiene tags en el backend, no se envían');
+      localStorage.removeItem('empathica_test_tags');
+      return;
+    }
+    
+    // Enviar tags al backend
+    const tagsPayload = {
+      tags: parsedTags.tags.map(tag => tag.name)
+    };
+    
+    await userService.uploadPatientTags(tagsPayload);
+    setTagsUpdated(true);
+    console.log('Tags enviados al backend exitosamente');
+  } catch (error) {
+    console.error('Error enviando tags:', error);
+    setTagsUpdated(false);
+  }
+};
+```
+
+### **5. Limpieza de localStorage**
+
+**Función clearLocalStorageTags**:
+```javascript
+const clearLocalStorageTags = () => {
+  localStorage.removeItem('empathica_test_tags');
+  console.log('localStorage de test tags limpiado');
+};
+```
+
+---
+
+## Flujo Completo de Datos
+
+### **Resumen del Flujo**:
+
+1. **Registro**: Usuario se registra → POST /api/auth/signup → POST /api/patients
+2. **Test**: Usuario completa test → Tags guardados en localStorage
+3. **Selección**: Usuario selecciona psicólogo → POST /api/patients/psychologist
+4. **Tags**: Tags enviados al backend → POST /api/patients/tags
+5. **Limpieza**: localStorage limpiado → Usuario redirigido a dashboard
+
+### **Puntos Clave**:
+
+- **Tags NO se envían al backend inmediatamente** después del test
+- **Tags se envían SOLO después** de asignación exitosa de psicólogo
+- **localStorage se limpia** después de envío exitoso o logout
+- **Verificación previa** de tags existentes en el backend
+- **Manejo de errores** en cada paso del proceso
+
+### **Endpoints Utilizados**:
+
+- `POST /api/auth/signup` - Registro básico
+- `POST /api/patients` - Información adicional del paciente
+- `GET /api/psychologists` - Lista de psicólogos
+- `POST /api/patients/psychologist` - Asignación de psicólogo
+- `POST /api/patients/tags` - Envío de tags de test
+- `GET /api/patients/{id}` - Verificación de tags existentes
