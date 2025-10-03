@@ -399,6 +399,25 @@ El test de matching es un cuestionario psicológico que nos ayuda a entender tus
 - 6 - Operaciones
 - 7 - Otros
 
+## Dashboard Principal
+
+**Métricas principales:**
+- Estado Emocional General: Bienestar promedio del equipo
+- Colaboradores Activos: Total de empleados registrados en la empresa
+- Reportan Estrés: Empleados que reportan problemas de estrés
+
+**Mapeo Emocional por Áreas:**
+- Análisis detallado por departamento
+- Indicadores de estrés laboral
+- Comentarios específicos por área
+- Métricas de bienestar en tiempo real
+
+**Distribución de Empleados:**
+- Visualización por departamento
+- Porcentajes de empleados por área
+- Comparación entre departamentos
+- Empleados sin departamento asignado
+
 ### Asignación de Tokens de Sesión
 
 **¿Qué son los tokens de sesión?**

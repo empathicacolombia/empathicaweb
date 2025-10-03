@@ -348,6 +348,31 @@ const generateSessionDateTime = (day, startTime) => {
 
 ---
 
+## Componentes de Dashboard Empresarial
+
+### BusinessDashboardHome.jsx
+**Propósito**: Dashboard principal de empresa con métricas y análisis
+
+**Funcionalidades**:
+- Métricas principales (estado emocional, colaboradores activos)
+- Mapeo emocional por departamentos con datos reales
+- Distribución de empleados por departamento con porcentajes reales
+- Análisis de estrés laboral por área
+- Métricas en tiempo real
+- Conexión con API para datos reales de empleados
+- Distribución automática de empleados por departamento
+- Manejo de empleados sin departamento asignado
+- Procesamiento de métricas AVERAGE_TAG_PER_COMPANY y AVERAGE_TAG_PER_DEPARTMENT
+
+**Departamentos soportados**:
+- 1 - Ventas
+- 2 - Marketing  
+- 3 - Tecnología
+- 4 - Recursos Humanos
+- 5 - Finanzas
+- 6 - Operaciones
+- 7 - Otros
+
 ## Componentes de Gestión de Empleados
 
 ### BusinessEmployees.jsx

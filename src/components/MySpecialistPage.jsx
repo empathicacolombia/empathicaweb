@@ -731,8 +731,8 @@ const MySpecialistPage = ({ navigationProps }) => {
                         )}
                         
                         {/* Columna izquierda */}
-                        <div style={{
-                          display: 'flex',
+                <div style={{
+                  display: 'flex',
                           flexDirection: 'column',
                           gap: '0.75rem'
                         }}>
@@ -741,11 +741,11 @@ const MySpecialistPage = ({ navigationProps }) => {
                             <div key={index} style={{
                               display: 'flex',
                               justifyContent: 'space-between',
-                              alignItems: 'center',
+                  alignItems: 'center',
                               padding: '0.5rem 0',
                               borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-                            }}>
-                              <span style={{
+                }}>
+                  <span style={{
                                 fontSize: 13,
                                 color: 'rgba(255, 255, 255, 0.7)',
                                 fontWeight: 500,
@@ -753,15 +753,15 @@ const MySpecialistPage = ({ navigationProps }) => {
                                 letterSpacing: '0.5px'
                               }}>
                                 {contact.label}
-                              </span>
-                              <span style={{
-                                fontSize: 14,
+                  </span>
+                  <span style={{
+                    fontSize: 14,
                                 color: 'rgba(255, 255, 255, 0.9)',
                                 fontWeight: 600
-                              }}>
+                  }}>
                                 {contact.value}
-                              </span>
-                            </div>
+                  </span>
+                </div>
                           ))}
                           
                           {/* Edad */}
@@ -995,19 +995,19 @@ const MySpecialistPage = ({ navigationProps }) => {
                     fontWeight: 600,
                     cursor: 'pointer',
                         transition: 'all 0.2s'
-                      }}
+                  }}
                       onMouseEnter={(e) => e.currentTarget.style.background = '#d97706'}
                       onMouseLeave={(e) => e.currentTarget.style.background = '#f59e0b'}
-                    >
+                >
                       Hacer Test de Matching
-                    </button>
-                  </div>
+                </button>
+          </div>
 
                   {/* Psicólogo recomendado - Solo mostrar si no hay error (hay datos en localStorage) */}
                   {!error && (
                     <>
                       {loadingRecommendation ? (
-                  <div style={{
+          <div style={{
                     background: '#fff',
                     borderRadius: 16,
                     padding: '2rem',
@@ -1035,8 +1035,8 @@ const MySpecialistPage = ({ navigationProps }) => {
                     </div>
                   </div>
                 ) : recommendedPsychologist ? (
-                  <div style={{
-                    background: '#fff',
+            <div style={{
+              background: '#fff',
                     borderRadius: 16,
                     padding: '2rem',
                     marginBottom: '2rem',
@@ -1044,9 +1044,9 @@ const MySpecialistPage = ({ navigationProps }) => {
                     border: '2px solid #f0f4ff'
                   }}>
                     {/* Encabezado de recomendación */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
                       gap: '0.75rem',
                       marginBottom: '1.5rem'
                     }}>
@@ -1061,16 +1061,16 @@ const MySpecialistPage = ({ navigationProps }) => {
                       }}>
                         <span style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>⭐</span>
                       </div>
-                      <h3 style={{
+                <h3 style={{
                         fontSize: 20,
-                        fontWeight: 700,
+                  fontWeight: 700,
                         color: '#0057FF',
                         margin: 0
-                      }}>
+                }}>
                         Psicólogo Recomendado
-                      </h3>
-                    </div>
-
+                </h3>
+              </div>
+              
                     {/* Indicador de tags */}
                     {loadingTags && (
                       <div style={{
@@ -1081,7 +1081,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                         padding: '0.5rem 1rem',
                         background: '#f0f4ff',
                         borderRadius: 8,
-                    fontSize: 14,
+                  fontSize: 14,
                         color: '#0057FF'
                       }}>
                         <div style={{
@@ -1105,7 +1105,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                         padding: '0.5rem 1rem',
                         background: '#d1fae5',
                         borderRadius: 8,
-                        fontSize: 14,
+                  fontSize: 14,
                         color: '#065f46'
                       }}>
                         <span style={{ fontSize: 16 }}>✅</span>
@@ -1113,24 +1113,24 @@ const MySpecialistPage = ({ navigationProps }) => {
                         <span style={{ fontSize: 12, opacity: 0.8 }}>
                           (Datos temporales se limpiarán al asignar psicólogo)
                         </span>
-                      </div>
+            </div>
                     )}
 
                     {/* Información del psicólogo recomendado */}
-                    <div style={{
+            <div style={{
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: '1.5rem',
                       marginBottom: '1.5rem'
                     }}>
                       {/* Avatar del psicólogo */}
-                      <div style={{
+              <div style={{
                         width: 100,
                         height: 100,
                         borderRadius: '50%',
                         background: '#f0f4ff',
-                        display: 'flex',
-                        alignItems: 'center',
+                display: 'flex',
+                alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: 36,
                         flexShrink: 0
@@ -1142,7 +1142,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                       <div style={{ flex: 1 }}>
                         <h4 style={{
                           fontSize: 24,
-                          fontWeight: 700,
+                  fontWeight: 700,
                           color: '#333',
                           margin: '0 0 0.5rem 0'
                         }}>
@@ -1165,17 +1165,17 @@ const MySpecialistPage = ({ navigationProps }) => {
                           marginTop: '1rem'
                         }}>
                           {/* Columna izquierda */}
-                          <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.75rem'
-                          }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem'
+              }}>
                             {/* Información de contacto */}
                             {formatContactInfo(recommendedPsychologist).map((contact, index) => (
                               <div key={index} style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                                 padding: '0.5rem 0',
                                 borderBottom: '1px solid #f0f0f0'
                               }}>
@@ -1189,21 +1189,21 @@ const MySpecialistPage = ({ navigationProps }) => {
                                   {contact.label}
                                 </span>
                                 <span style={{
-                                  fontSize: 14,
+                  fontSize: 14,
                                   color: '#333',
                                   fontWeight: 600
-                                }}>
+                }}>
                                   {contact.value}
                                 </span>
-                              </div>
+                </div>
                             ))}
-                            
+                
                             {/* Edad */}
                             {recommendedPsychologist.dateOfBirth && (
-                              <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                                 padding: '0.5rem 0',
                                 borderBottom: '1px solid #f0f0f0'
                               }}>
@@ -1217,21 +1217,21 @@ const MySpecialistPage = ({ navigationProps }) => {
                                   Edad
                                 </span>
                                 <span style={{
-                                  fontSize: 14,
+                  fontSize: 14,
                                   color: '#333',
                                   fontWeight: 600
-                                }}>
+                }}>
                                   {calculateAge(recommendedPsychologist.dateOfBirth)} años
                                 </span>
-                              </div>
+                </div>
                             )}
-                            
+                
                             {/* Género */}
                             {recommendedPsychologist.gender && (
-                              <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                                 padding: '0.5rem 0',
                                 borderBottom: '1px solid #f0f0f0'
                               }}>
@@ -1245,7 +1245,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                                   Género
                                 </span>
                                 <span style={{
-                                  fontSize: 14,
+                  fontSize: 14,
                                   color: '#333',
                                   fontWeight: 600
                                 }}>
@@ -1270,7 +1270,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                                 padding: '0.5rem 0',
                                 borderBottom: '1px solid #f0f0f0'
                               }}>
-                                <span style={{
+                  <span style={{
                                   fontSize: 13,
                                   color: '#666',
                                   fontWeight: 500,
@@ -1283,20 +1283,20 @@ const MySpecialistPage = ({ navigationProps }) => {
                                   fontSize: 14,
                                   color: recommendedPsychologist.userStatus === 'ACTIVE' ? '#10b981' : '#ef4444',
                                   fontWeight: 600,
-                                  padding: '0.25rem 0.75rem',
-                                  borderRadius: '12px',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '12px',
                                   background: recommendedPsychologist.userStatus === 'ACTIVE' ? '#ecfdf5' : '#fef2f2'
-                                }}>
+                  }}>
                                   {recommendedPsychologist.userStatus === 'ACTIVE' ? 'Activo' : 'Inactivo'}
-                                </span>
-                              </div>
+                  </span>
+                </div>
                             )}
-                            
+                
                             {recommendedPsychologist.attendAges && recommendedPsychologist.attendAges.length > 0 && (
-                              <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                                 padding: '0.5rem 0',
                                 borderBottom: '1px solid #f0f0f0'
                               }}>
@@ -1310,7 +1310,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                                   Edades
                                 </span>
                                 <span style={{
-                                  fontSize: 14,
+                  fontSize: 14,
                                   color: '#333',
                                   fontWeight: 600
                                 }}>
@@ -1320,10 +1320,10 @@ const MySpecialistPage = ({ navigationProps }) => {
                             )}
                             
                             {recommendedPsychologist.therapeuticStyle && recommendedPsychologist.therapeuticStyle.length > 0 && (
-                              <div style={{
-                                display: 'flex',
+                  <div style={{
+                    display: 'flex',
                                 justifyContent: 'space-between',
-                                alignItems: 'center',
+                    alignItems: 'center',
                                 padding: '0.5rem 0',
                                 borderBottom: '1px solid #f0f0f0'
                               }}>
@@ -1343,20 +1343,20 @@ const MySpecialistPage = ({ navigationProps }) => {
                                 }}>
                                   {recommendedPsychologist.therapeuticStyle.join(', ')}
                                 </span>
-                              </div>
+                  </div>
                             )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
                     {/* Horarios disponibles */}
                     {recommendedPsychologist.psychologistSchedule && (
-                      <div style={{
-                        background: '#fff',
+          <div style={{
+            background: '#fff',
                         border: '1px solid #e5e7eb',
-                        borderRadius: 12,
-                        padding: '1.5rem',
+            borderRadius: 12,
+            padding: '1.5rem',
                         marginBottom: '1.5rem'
                       }}>
                         <h5 style={{
@@ -1376,9 +1376,9 @@ const MySpecialistPage = ({ navigationProps }) => {
                         }}>
                           {formatSchedule(recommendedPsychologist.psychologistSchedule).map((schedule, index) => (
                             <div key={index} style={{
-                              display: 'flex',
+            display: 'flex',
                               justifyContent: 'space-between',
-                              alignItems: 'center',
+            alignItems: 'center',
                               padding: '0.75rem',
                               background: '#f9fafb',
                               borderRadius: 8,
@@ -1407,7 +1407,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                     )}
 
                     {/* Botón de seleccionar */}
-                    <div style={{
+            <div style={{
                       display: 'flex',
                       justifyContent: 'center'
                     }}>
@@ -1424,8 +1424,8 @@ const MySpecialistPage = ({ navigationProps }) => {
                           fontWeight: 600,
                           cursor: assigningPsychologist ? 'not-allowed' : 'pointer',
                           transition: 'all 0.2s',
-                          display: 'flex',
-                          alignItems: 'center',
+              display: 'flex',
+              alignItems: 'center',
                           gap: '0.5rem'
                         }}
                         onMouseEnter={(e) => {
@@ -1564,16 +1564,16 @@ const MySpecialistPage = ({ navigationProps }) => {
                           <div style={{
                             display: 'flex',
                             alignItems: 'flex-start',
-                            gap: '1rem'
-                          }}>
+              gap: '1rem'
+            }}>
                             {/* Avatar del psicólogo */}
-                            <div style={{
+              <div style={{
                               width: 60,
                               height: 60,
                               borderRadius: '50%',
                               background: '#f0f4ff',
-                              display: 'flex',
-                              alignItems: 'center',
+                display: 'flex',
+                alignItems: 'center',
                               justifyContent: 'center',
                               fontSize: 24,
                               flexShrink: 0
@@ -1707,19 +1707,19 @@ const MySpecialistPage = ({ navigationProps }) => {
               padding: '1.5rem',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}>
-              <h3 style={{
-                fontSize: 18,
-                fontWeight: 700,
+                <h3 style={{
+                  fontSize: 18,
+                  fontWeight: 700,
                 margin: '0 0 1rem 0',
                 color: '#1f2937',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
               }}>
                 Formación Académica
-              </h3>
+                </h3>
               
               {patientData.psychologist.academicHistory && patientData.psychologist.academicHistory.length > 0 ? (
-                <div style={{
+              <div style={{
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1rem'
@@ -1730,16 +1730,16 @@ const MySpecialistPage = ({ navigationProps }) => {
                       background: '#f9fafb',
                       borderRadius: 8,
                       border: '1px solid #e5e7eb'
-                    }}>
-                      <div style={{
+              }}>
+                <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'flex-start',
                         marginBottom: '0.5rem'
                       }}>
                         <h4 style={{
-                          fontSize: 16,
-                          fontWeight: 600,
+                  fontSize: 16,
+                  fontWeight: 600,
                           color: '#1f2937',
                           margin: 0
                         }}>
@@ -1757,15 +1757,15 @@ const MySpecialistPage = ({ navigationProps }) => {
                             {academic.graduationYear}
                           </span>
                         )}
-                      </div>
+                </div>
                       
-                      <div style={{
+                <div style={{
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '0.25rem'
                       }}>
                         <p style={{
-                          fontSize: 14,
+                  fontSize: 14,
                           color: '#374151',
                           margin: 0,
                           fontWeight: 500
@@ -1783,8 +1783,8 @@ const MySpecialistPage = ({ navigationProps }) => {
                             Especialización: {academic.major}
                           </p>
                         )}
-                      </div>
-                    </div>
+                </div>
+              </div>
                   ))}
                 </div>
               ) : (
@@ -1813,7 +1813,7 @@ const MySpecialistPage = ({ navigationProps }) => {
                 </div>
               )}
             </div>
-
+            
 
             {/* Horarios de Atención */}
             {patientData.psychologist.psychologistSchedule && (
@@ -1847,13 +1847,13 @@ const MySpecialistPage = ({ navigationProps }) => {
                       alignItems: 'center',
                       padding: '1rem',
                       background: '#f9fafb',
-                      borderRadius: 8,
+              borderRadius: 8,
                       border: '1px solid #e5e7eb'
                     }}>
                       <span style={{
                         fontSize: 14,
                         color: '#6b7280',
-                        fontWeight: 600,
+              fontWeight: 600,
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px'
                       }}>
@@ -1866,10 +1866,10 @@ const MySpecialistPage = ({ navigationProps }) => {
                       }}>
                         {schedule.split(':').slice(1).join(':').trim()}
                       </span>
-                    </div>
+          </div>
                   ))}
-                </div>
-              </div>
+        </div>
+      </div>
             )}
             </div>
           )}
